@@ -10,7 +10,7 @@
     <!-- Title -->
     
     <title>
-        links | WeaponX&#39;s Blog
+        捐赠 | WeaponX&#39;s Blog
     </title>
     
     <!-- Favicons -->
@@ -46,7 +46,7 @@
     <!-- The Open Graph protocol -->
     <meta property="og:url" content="http://weaponx.site">
     <meta property="og:type" content="blog">
-    <meta property="og:title" content="links | WeaponX&#39;s Blog">
+    <meta property="og:title" content="捐赠 | WeaponX&#39;s Blog">
     <meta property="og:description" content="Vuln">
     
      <!--[if lte IE 9]>
@@ -205,117 +205,173 @@
 
 <!-- Layouts -->
 
-    <!-- Single Links Page -->
-    <style>
-    .md-links {
-        min-height: calc(100% - 120px - 5pc - 6em);
-        text-align: center;
-		overflow: auto;
-		padding: 0;
-		margin: 0 auto;
-		max-width: 320px;
-    }
-	@media screen and (min-width: 640px){
-		.md-links {
-			max-width: 640px;
-		}
-	}
-	@media screen and (min-width: 960px){
-		.md-links {
-			max-width: 960px;
-		}
-	}
-	@media screen and (min-width: 1280px){
-		.md-links {
-			max-width: 1280px;
-		}
-	}
-	@media screen and (min-width: 1600px){
-		.md-links {
-			max-width: 1600px;
-		}
-	}
+    <!-- Post Module -->
+    <div class="material-post_container">
+		
+        <div class="material-post mdl-grid">
+            <div class="mdl-card mdl-shadow--4dp mdl-cell mdl-cell--12-col">
+
+                <!-- Post Header(Thumbnail & Title) -->
+                
+	<!-- Paradox Post Header -->
 	
-    @media screen and (max-width: 480px) {
-        .md-links {
-            min-height: calc(100% - 200px - 5pc - 6em);
-            margin-top: 6em;
-        }
-    }
-    .md-links-item {
-        background: #fff;
-        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, .14), 0 3px 1px -2px rgba(0, 0, 0, .2), 0 1px 5px 0 rgba(0, 0, 0, .12);
-        height: 72px;
-        line-height: 15px;
-        margin: 20px 10px;
-        padding: 0px 0px;
-        transition: box-shadow 0.25s;
-    }
+		<!-- Custom Thumbnail -->
+		<div class="post_thumbnail-custom mdl-card__media mdl-color-text--grey-50" style="background-image:url(/donate/index/banner.png)">
+	
+        <p class="article-headline-p">
+            捐赠
+        </p>
+    </div>
 
-    .md-links a {
-        color: #333;
-        text-decoration: none;
-    }
+	
 
-    .md-links li {
-		width: 300px;
-		float: left;
-        list-style: none;
-    }
+				
+				
+					<!-- Paradox Post Info -->
+					<div class="mdl-color-text--grey-700 mdl-card__supporting-text meta">
 
-    .md-links-item img {
-        float: left;
-        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, .14), 0 3px 11px -2px rgba(0, 0, 0, .2), 0 1px 5px 0 rgba(0, 0, 0, .12);
-    }
+    <!-- Author Avatar -->
+    <div id="author-avatar">
+        <img src="/img/avatar.png" width="44px" height="44px" alt="Author Avatar"/>
+    </div>
+    <!-- Author Name & Date -->
+    <div>
+        <strong>WeaponX</strong>
+        <span>1月 12, 2017</span>
+    </div>
 
-    .md-links-item:hover {
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    }
-	.md-links-item a:hover{
-		cursor: pointer;
-	}
+    <div class="section-spacer"></div>
 
-    .md-links-title {
-        font-size: 20px;
-        line-height: 50px;
-    }
-	#scheme-Paradox .mdl-mini-footer{
-		clear: left;
-	}
-	#bottom{
-		position: relative;
-	}
-</style>
+    <!-- Favorite -->
+<!--
+    <button id="article-functions-like-button" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon btn-like">
+        <i class="material-icons" role="presentation">favorite</i>
+        <span class="visuallyhidden">favorites</span>
+    </button>
+-->
 
-<ul class="md-links">
+    <!-- Qrcode -->
     
+
+
+    <!-- Tags (bookmark) -->
+    
+    <button id="article-functions-viewtags-button" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
+        <i class="material-icons" role="presentation">bookmark</i>
+        <span class="visuallyhidden">bookmark</span>
+    </button>
+    <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="article-functions-viewtags-button">
+        <li class="mdl-menu__item">
         
-			<li class="md-links-item">
-				<a href="http://example.com" title="Name" target="_blank">
-					<img src="http://example.com/avatar.png" alt="Name" width="72px"/>
-					<span  class="md-links-title">Name</span><br />
-					<span>这是一个描述</span>
-				</a>
-			</li>
-        
+    </ul>
+    
+
+    <!-- Share -->
+    <button id="article-fuctions-share-button" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
+    <i class="material-icons" role="presentation">share</i>
+    <span class="visuallyhidden">share</span>
+</button>
+<ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="article-fuctions-share-button">
+
+    
+
+    
+
+    <!-- Share Weibo -->
+    
+    <a class="post_share-link" href="http://service.weibo.com/share/share.php?appkey=&title=捐赠&url=http://weaponx.site//donate/index.html&pic=&searchPic=false&style=simple" target="_blank">
+        <li class="mdl-menu__item">
+            分享到微博
+        </li>
+    </a>
+    
+
+    <!-- Share Twitter -->
+    
+
+    <!-- Share Facebook -->
+    
+
+    <!-- Share Google+ -->
+    
+
+    <!-- Share LinkedIn -->
+    
+
+    <!-- Share QQ -->
+    
+    <a class="post_share-link" href="http://connect.qq.com/widget/shareqq/index.html?site=WeaponX&#39;s Blog&title=捐赠&summary=Vuln&pics=http://weaponx.site/img/favicon.png&url=http://weaponx.site/donate/index.html" target="_blank">
+        <li class="mdl-menu__item">
+            分享到 QQ
+        </li>
+    </a>
+    
+
+    <!-- Share Telegram -->
     
 </ul>
 
-<script>
-	var adjustFooter = function(){
-		if( ($("#bottom").offset().top + $("#bottom").outerHeight() )<$(window).height() ){
-			var footerBottom = $(window).height() - $("#bottom").outerHeight() - $("#bottom").offset().top;
-//			console.log(footerBottom);
-			$("#bottom").css("bottom", "-" + footerBottom + "px");
-		}
-	};
-	
-	$(document).ready(function(){
-		adjustFooter();
-	});
-	
-</script>
+</div>
 
+				
+
+                <!-- Post Content -->
+                <div id="post-content" class="markdown-Github mdl-color-text--grey-700 mdl-card__supporting-text fade out">
+	
+		<h2 id="关于捐赠"><a href="#关于捐赠" class="headerlink" title="关于捐赠"></a>关于捐赠</h2><h2 id="为什么捐赠"><a href="#为什么捐赠" class="headerlink" title="为什么捐赠"></a>为什么捐赠</h2><h2 id="捐赠二维码"><a href="#捐赠二维码" class="headerlink" title="捐赠二维码"></a>捐赠二维码</h2><p><img src="/donate/index/qrcode.png" alt=""></p>
+
+	
+	
+	
+	
+</div>
+				
+				
+
+                <!-- Post Comments -->
+                
+                    
+    <!-- 使用多说评论 -->
+    <link rel="stylesheet" href="/css/duoshuo.min.css">
+<style>
+    #ds-thread #ds-reset .ds-post-button{
+        background-color: #0097A7 !important;
+    }
+    #ds-wrapper #ds-reset .ds-icons-32{
+        background-color: #0097A7 !important;
+    }
+    #ds-reset .ds-highlight {
+        color: #0097A7 !important;
+    }
+</style>
+<div id="comments">
+    <!-- 多说评论框 start -->
+        <div class="ds-thread" 
+            data-thread-key="donate/index.html" 
+            data-url="http://weaponx.site/donate/index.html"
+            data-title="捐赠"></div>
+    <!-- 多说评论框 end -->
+</div>
+
+
+
+                
+            </div>
+
+            <!-- Post Prev & Next Nav -->
+            <nav class="material-nav mdl-color-text--grey-50 mdl-cell mdl-cell--12-col">
+    
+    <!-- Prev Nav -->
+    
+
+    <!-- Section Spacer -->
+    <div class="section-spacer"></div>
+
+    <!-- Next Nav -->
+    
+</nav>
+        </div>
+    </div>
 
 				
 				
