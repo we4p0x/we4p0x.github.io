@@ -101,14 +101,41 @@
 <h2 id="0x02-解决方法"><a href="#0x02-解决方法" class="headerlink" title="0x02 解决方法"></a>0x02 解决方法</h2><p>解决方法有两种：</p>
 <ul>
 <li>将程序编译成64bit的</li>
-<li>使用重定向函数Wow64DisableWow64FsRedirection</li>
+<li>使用关闭重定向的函数Wow64DisableWow64FsRedirection</li>
 </ul>
 <p>第一种方法当然简单粗暴，但是在x86的系统上却无法运行，只能寻求第二种方法。</p>
 <figure class="highlight c++"><table><tr><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;stdlib.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;windows.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></div><div class="line">&#123;</div><div class="line">    PVOID OldVal = <span class="literal">NULL</span>;</div><div class="line">    <span class="keyword">if</span> (Wow64DisableWow64FsRedirection(&amp;OldVal))</div><div class="line">    &#123;</div><div class="line">        system(<span class="string">"cmd"</span>);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">if</span> (FALSE == Wow64RevertWow64FsRedirection(OldVal))</div><div class="line">    &#123;</div><div class="line">        <span class="keyword">return</span> <span class="number">1</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p><img src="http://i.imgur.com/M51OdMS.png" alt=""></p>
 <p>可以看到启动的cmd已经是64bit的了。</p>
-<h2 id="0x03-x86-64-Redirect-in-x86"><a href="#0x03-x86-64-Redirect-in-x86" class="headerlink" title="0x03 x86_64 Redirect in x86"></a>0x03 x86_64 Redirect in x86</h2><p>wow64其实相当于64bit系统的一个子系统，用来兼容32bit的程序。</p>
-<p>未完待续</p>
+<p>注意，关闭重定向后完成相关操作一定要恢复重定向<del>，一定要恢复重定向，一定要恢复重定向，重要的事情说三遍</del>，若不恢复的话会导致一些dll等调用失败。</p>
+<h2 id="0x03-x86-Redirect-in-x86-64"><a href="#0x03-x86-Redirect-in-x86-64" class="headerlink" title="0x03 x86 Redirect in x86_64"></a>0x03 x86 Redirect in x86_64</h2><p>wow64其实相当于64bit系统的一个子系统，用来兼容32bit的程序。32bit程序运行时会收到重定向的影响，这个重定向主要分为：</p>
+<ul>
+<li>文件重定向</li>
+</ul>
+<p>当32bit程序运行时，会存在以下的重定向规则。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">访问</th>
+<th style="text-align:center">重定向</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">%systemroot%/system32</td>
+<td style="text-align:center">%systemroot%/SysWOW64</td>
+</tr>
+</tbody>
+</table>
+<p>比如，当32bit程序访问calc.exe时，本应访问</p>
+<figure class="highlight taggerscript"><table><tr><td class="code"><pre><div class="line">C:<span class="symbol">\w</span>indows<span class="symbol">\s</span>ystem32<span class="symbol">\c</span>alc.exe</div></pre></td></tr></table></figure>
+<p>但是由于重定向机制，会被重定向到</p>
+<figure class="highlight taggerscript"><table><tr><td class="code"><pre><div class="line">C:<span class="symbol">\w</span>indwos<span class="symbol">\S</span>ysWOW64<span class="symbol">\c</span>alc.exe</div></pre></td></tr></table></figure>
+<ul>
+<li>注册表重定向</li>
+</ul>
+<p>不多说，想了解的话看看微软的文章。<br><a href="https://msdn.microsoft.com/en-us/library/windows/desktop/aa384253(v=vs.85).aspx" target="_blank" rel="external">https://msdn.microsoft.com/en-us/library/windows/desktop/aa384253(v=vs.85).aspx</a></p>
+<h2 id="0x04-Refer"><a href="#0x04-Refer" class="headerlink" title="0x04 Refer"></a>0x04 Refer</h2><p><a href="http://blog.csdn.net/magictong/article/details/5892209" target="_blank" rel="external">http://blog.csdn.net/magictong/article/details/5892209</a><br><a href="http://www.cnblogs.com/lhglihuagang/p/3930874.html" target="_blank" rel="external">http://www.cnblogs.com/lhglihuagang/p/3930874.html</a><br><a href="http://www.tuicool.com/articles/Ibui6bZ" target="_blank" rel="external">http://www.tuicool.com/articles/Ibui6bZ</a></p>
 
       
     </div>
