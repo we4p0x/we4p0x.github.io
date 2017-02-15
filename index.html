@@ -75,6 +75,43 @@
     <header>
       
         <div class="icon"></div>
+        <time datetime="2017-02-15T14:20:26.000Z"><a href="/2017/02/15/uaf题目解法-pwnable-kr/">2017-02-15</a></time>
+      
+      
+  
+    <h1 class="title"><a href="/2017/02/15/uaf题目解法-pwnable-kr/">uaf题目解法[pwnable.kr]</a></h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <h2 id="0x00-UAF"><a href="#0x00-UAF" class="headerlink" title="0x00 UAF"></a>0x00 UAF</h2><p>UAF(Use After Free)释放后重用，其实是一种指针未置空造成的漏洞。在操作系统中，为了加快程序运行速度，如果释放一块n字节大小的内存空间，当申请一块同样大小的内存空间时，会将刚刚释放的内存空间重新分配。如果指向这块内存空间的指针没有置空，会造成一系列的问题。</p>
+      
+    </div>
+    <footer>
+      
+        
+          <div class="alignleft">
+            <a href="/2017/02/15/uaf题目解法-pwnable-kr/#more" class="more-link">Read More</a>
+          </div>
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+
+  <article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
         <time datetime="2017-02-14T17:30:58.000Z"><a href="/2017/02/14/一些pwn题目的解题思路-pwnable-kr-II/">2017-02-14</a></time>
       
       
@@ -434,47 +471,6 @@
 
 
 
-  <article class="post">
-  
-  <div class="post-content">
-    <header>
-      
-        <div class="icon"></div>
-        <time datetime="2017-01-16T13:07:07.000Z"><a href="/2017/01/16/哈希长度扩展攻击/">2017-01-16</a></time>
-      
-      
-  
-    <h1 class="title"><a href="/2017/01/16/哈希长度扩展攻击/">哈希长度扩展攻击</a></h1>
-  
-
-    </header>
-    <div class="entry">
-      
-        <h2 id="0x00-简介"><a href="#0x00-简介" class="headerlink" title="0x00 简介"></a>0x00 简介</h2><blockquote>
-<p>Hash，一般翻译做“散列”，也有直接音译为“哈希”的，就是把任意长度的输入（又叫做预映射， pre-image），通过散列算法，变换成固定长度的输出，该输出就是散列值。这种转换是一种压缩映射，也就是，散列值的空间通常远小于输入的空间，不同的输入可能会散列成相同的输出，所以不可能从散列值来唯一的确定输入值。简单的说就是一种将任意长度的消息压缩到某一固定长度的消息摘要的函数。</p>
-</blockquote>
-<p>–摘自百度</p>
-<p>哈希长度扩展攻击简单的来讲就是：<br>1.知道一个密文(SECRET)的哈希<br>2.知道密文的长度(SECRET LENGTH)<br>在不知道密文的情况下可以推算出密文+填充+追加消息(SECRET+PADDING+EXTRA)的哈希，也就是说在只知道密文长度和密文哈希的情况下，可以预测出密文和另一消息拼接后的哈希。</p>
-      
-    </div>
-    <footer>
-      
-        
-          <div class="alignleft">
-            <a href="/2017/01/16/哈希长度扩展攻击/#more" class="more-link">Read More</a>
-          </div>
-        
-        
-      
-      <div class="clearfix"></div>
-    </footer>
-  </div>
-</article>
-
-
-
-
-
 
 <nav id="pagination">
   
@@ -496,7 +492,7 @@
   <h3 class="title">分类</h3>
   <ul class="entry">
   
-    <li><a href="/categories/tech/">技术</a><small>9</small></li>
+    <li><a href="/categories/tech/">技术</a><small>10</small></li>
   
     <li><a href="/categories/life/">生活</a><small>2</small></li>
   
@@ -513,11 +509,11 @@
   
     <li><a href="/tags/Hexo/">Hexo</a><small>4</small></li>
   
-    <li><a href="/tags/pwn/">pwn</a><small>2</small></li>
+    <li><a href="/tags/pwn/">pwn</a><small>3</small></li>
   
     <li><a href="/tags/博客/">博客</a><small>3</small></li>
   
-    <li><a href="/tags/安全/">安全</a><small>5</small></li>
+    <li><a href="/tags/安全/">安全</a><small>6</small></li>
   
     <li><a href="/tags/影评/">影评</a><small>1</small></li>
   
