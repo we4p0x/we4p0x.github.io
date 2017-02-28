@@ -75,6 +75,45 @@
     <header>
       
         <div class="icon"></div>
+        <time datetime="2017-02-28T13:52:30.000Z"><a href="/2017/02/28/unexploitable-Writeup-pwnable-kr/">2017-02-28</a></time>
+      
+      
+  
+    <h1 class="title"><a href="/2017/02/28/unexploitable-Writeup-pwnable-kr/">unexploitable Writeup[pwnable.kr]</a></h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <h2 id="0x00-unexploitable"><a href="#0x00-unexploitable" class="headerlink" title="0x00 unexploitable"></a>0x00 unexploitable</h2><p>看看源代码，很简单的程序</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span></span>&#123;</div><div class="line">    <span class="comment">// no brute forcing</span></div><div class="line">    sleep(<span class="number">3</span>);</div><div class="line">    <span class="comment">// exploit me</span></div><div class="line">    <span class="keyword">int</span> buf[<span class="number">4</span>];</div><div class="line">    read(<span class="number">0</span>, buf, <span class="number">1295</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>第一反应是用return to dl reslove，但是仔细一看没法做内存泄漏。因为64位需要把debug位置0，但是无法得到link_map的地址，所以这条路走不通。只能在题目给出的<code>syscall</code>上做文章。</p>
+      
+    </div>
+    <footer>
+      
+        
+          <div class="alignleft">
+            <a href="/2017/02/28/unexploitable-Writeup-pwnable-kr/#more" class="more-link">Read More</a>
+          </div>
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+
+  <article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
         <time datetime="2017-02-21T06:43:18.000Z"><a href="/2017/02/21/unlink-Writeup-pwnable-kr/">2017-02-21</a></time>
       
       
@@ -425,44 +464,6 @@
 
 
 
-  <article class="post">
-  
-  <div class="post-content">
-    <header>
-      
-        <div class="icon"></div>
-        <time datetime="2017-01-17T17:25:56.000Z"><a href="/2017/01/17/搭建一个Hexo博客/">2017-01-17</a></time>
-      
-      
-  
-    <h1 class="title"><a href="/2017/01/17/搭建一个Hexo博客/">搭建一个Hexo博客</a></h1>
-  
-
-    </header>
-    <div class="entry">
-      
-        <h2 id="0x00-背景"><a href="#0x00-背景" class="headerlink" title="0x00 背景"></a>0x00 背景</h2><p>一直想搭建一个自己的博客，之前在Aliyun虚拟主机上搭了一个WordPress+MySQL的个人博客。后来维护成本太大，主机和域名都没有续费被回收了。最近再看别人在写，自己也想搞一个试试水。研究了几天，发现Hexo还真不错，所以就选了这个。</p>
-<p>目前，博客搭建在coding.net上，使用万网的域名。</p>
-      
-    </div>
-    <footer>
-      
-        
-          <div class="alignleft">
-            <a href="/2017/01/17/搭建一个Hexo博客/#more" class="more-link">Read More</a>
-          </div>
-        
-        
-      
-      <div class="clearfix"></div>
-    </footer>
-  </div>
-</article>
-
-
-
-
-
 
 <nav id="pagination">
   
@@ -484,7 +485,7 @@
   <h3 class="title">分类</h3>
   <ul class="entry">
   
-    <li><a href="/categories/tech/">技术</a><small>11</small></li>
+    <li><a href="/categories/tech/">技术</a><small>12</small></li>
   
     <li><a href="/categories/life/">生活</a><small>2</small></li>
   
@@ -501,11 +502,11 @@
   
     <li><a href="/tags/Hexo/">Hexo</a><small>4</small></li>
   
-    <li><a href="/tags/pwn/">pwn</a><small>4</small></li>
+    <li><a href="/tags/pwn/">pwn</a><small>5</small></li>
   
     <li><a href="/tags/博客/">博客</a><small>3</small></li>
   
-    <li><a href="/tags/安全/">安全</a><small>7</small></li>
+    <li><a href="/tags/安全/">安全</a><small>8</small></li>
   
     <li><a href="/tags/影评/">影评</a><small>1</small></li>
   
