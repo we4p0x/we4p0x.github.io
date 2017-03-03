@@ -75,6 +75,45 @@
     <header>
       
         <div class="icon"></div>
+        <time datetime="2017-03-03T08:52:11.000Z"><a href="/2017/03/03/md5-caculator-Writeup-pwnable-kr/">2017-03-03</a></time>
+      
+      
+  
+    <h1 class="title"><a href="/2017/03/03/md5-caculator-Writeup-pwnable-kr/">md5 caculator Writeup[pwnable.kr]</a></h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <h2 id="0x00-md5-caculater"><a href="#0x00-md5-caculater" class="headerlink" title="0x00 md5 caculater"></a>0x00 md5 caculater</h2><p>下载下来直接运行，提示缺<code>libcrypto</code>库，但是我却安装过了<code>openssl</code>。于是在lib下看，确实是没有这个库。因为我的环境是<code>ubuntu x86_64</code>装的<code>openssl</code>也是64位的，所以要安装32位的库，使用这个命令:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">sudo apt-get install --reinstall libssl1.0.0:i386</div></pre></td></tr></table></figure>
+<p>安装好后反汇编一下，程序很简单。先生成一个随机数token，输入的值和随机数token相等则再输入一串base64编码后的文本，将这个文本解密后用md5加密打印。</p>
+      
+    </div>
+    <footer>
+      
+        
+          <div class="alignleft">
+            <a href="/2017/03/03/md5-caculator-Writeup-pwnable-kr/#more" class="more-link">Read More</a>
+          </div>
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+
+  <article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
         <time datetime="2017-03-02T10:37:12.000Z"><a href="/2017/03/02/tiny-easy-Writeup-pwnable-kr/">2017-03-02</a></time>
       
       
@@ -426,43 +465,6 @@
 
 
 
-  <article class="post">
-  
-  <div class="post-content">
-    <header>
-      
-        <div class="icon"></div>
-        <time datetime="2017-02-08T10:01:36.000Z"><a href="/2017/02/08/一种绕过TACACS-的思路/">2017-02-08</a></time>
-      
-      
-  
-    <h1 class="title"><a href="/2017/02/08/一种绕过TACACS-的思路/">一种绕过TACACS+的思路</a></h1>
-  
-
-    </header>
-    <div class="entry">
-      
-        <p>最近对一些交换机做口令猜测检查的时候遇到一个奇怪的现象：配置AAA认证的交换机总能扫出一些弱口令，而且每次都不一样还都不能登录，更神奇的是返回的session确实能执行命令。</p>
-      
-    </div>
-    <footer>
-      
-        
-          <div class="alignleft">
-            <a href="/2017/02/08/一种绕过TACACS-的思路/#more" class="more-link">Read More</a>
-          </div>
-        
-        
-      
-      <div class="clearfix"></div>
-    </footer>
-  </div>
-</article>
-
-
-
-
-
 
 <nav id="pagination">
   
@@ -484,7 +486,7 @@
   <h3 class="title">分类</h3>
   <ul class="entry">
   
-    <li><a href="/categories/tech/">技术</a><small>14</small></li>
+    <li><a href="/categories/tech/">技术</a><small>15</small></li>
   
     <li><a href="/categories/life/">生活</a><small>2</small></li>
   
@@ -501,13 +503,13 @@
   
     <li><a href="/tags/Hexo/">Hexo</a><small>4</small></li>
   
-    <li><a href="/tags/pwn/">pwn</a><small>6</small></li>
+    <li><a href="/tags/pwn/">pwn</a><small>7</small></li>
   
     <li><a href="/tags/python/">python</a><small>1</small></li>
   
     <li><a href="/tags/博客/">博客</a><small>3</small></li>
   
-    <li><a href="/tags/安全/">安全</a><small>10</small></li>
+    <li><a href="/tags/安全/">安全</a><small>11</small></li>
   
     <li><a href="/tags/影评/">影评</a><small>1</small></li>
   

