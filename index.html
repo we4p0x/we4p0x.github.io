@@ -75,6 +75,47 @@
     <header>
       
         <div class="icon"></div>
+        <time datetime="2017-03-13T09:54:42.000Z"><a href="/2017/03/13/mmap及linux地址空间随机化失效漏洞/">2017-03-13</a></time>
+      
+      
+  
+    <h1 class="title"><a href="/2017/03/13/mmap及linux地址空间随机化失效漏洞/">mmap及linux地址空间随机化失效漏洞</a></h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <p>nux下动态库是通过<code>mmap</code>建立起内存和文件的映射关系。其定义如下<code>void* mmap(void* start,size_t length,int prot,int flags,int fd,off_t offset);</code>，在第一个参数<code>start</code>为<code>NULL</code>的时候系统会随机分配一个地址，我们可以通过示例来看<code>mmap</code>映射地址的流程。</p>
+<p>分析一下程序加载<code>libc.so</code>的流程</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">open(<span class="string">"/lib/libc.so.6"</span>, O_RDONLY)        = 3</div><div class="line"><span class="built_in">read</span>(3, <span class="string">"\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0 n\1\0004\0\0\0"</span>..., 512) = 512</div><div class="line">fstat64(3, &#123;st_mode=S_IFREG|0755, st_size=1409436, ...&#125;) = 0</div><div class="line">mmap2(NULL, 1415560, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0xb75b1000</div><div class="line">mmap2(0xb7705000, 12288, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x154) = 0xb7705000</div><div class="line">mmap2(0xb7708000, 10632, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xb7708000</div><div class="line">close(3)</div></pre></td></tr></table></figure>
+<p>在通常情况下通过<code>mmap</code>映射的地址会被内核进行随机化处理，所以每次程序运行加载的动态库基址都不相同。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">~ $ ldd mmap</div><div class="line">    linux-gate.so.1 =&gt;  (0xb77d9000)</div><div class="line">    libc.so.6 =&gt; /lib/libc.so.6 (0xb7654000)</div><div class="line">    /lib/ld-linux.so.2 (0xb77bd000)</div><div class="line">~ $ ldd mmap</div><div class="line">    linux-gate.so.1 =&gt;  (0xb7738000)</div><div class="line">    libc.so.6 =&gt; /lib/libc.so.6 (0xb75b3000)</div><div class="line">    /lib/ld-linux.so.2 (0xb771c000)</div></pre></td></tr></table></figure>
+      
+    </div>
+    <footer>
+      
+        
+          <div class="alignleft">
+            <a href="/2017/03/13/mmap及linux地址空间随机化失效漏洞/#more" class="more-link">Read More</a>
+          </div>
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+
+  <article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
         <time datetime="2017-03-10T04:54:07.000Z"><a href="/2017/03/09/dragon-Writeup-pwnable-kr/">2017-03-09</a></time>
       
       
@@ -429,43 +470,6 @@
 
 
 
-  <article class="post">
-  
-  <div class="post-content">
-    <header>
-      
-        <div class="icon"></div>
-        <time datetime="2017-02-10T17:34:00.000Z"><a href="/2017/02/10/Windows-x64上的x86重定向/">2017-02-10</a></time>
-      
-      
-  
-    <h1 class="title"><a href="/2017/02/10/Windows-x64上的x86重定向/">Windows x64上的x86重定向</a></h1>
-  
-
-    </header>
-    <div class="entry">
-      
-        <h2 id="0x00-背景"><a href="#0x00-背景" class="headerlink" title="0x00 背景"></a>0x00 背景</h2><p>搬砖过程中遇到一个很奇怪的现象。写了一个程序利用命令<em>regedit</em>来读取注册表的某项值，出现了一个奇怪的现象：在某些电脑上能读到值，在另一些电脑上无法读取。</p>
-      
-    </div>
-    <footer>
-      
-        
-          <div class="alignleft">
-            <a href="/2017/02/10/Windows-x64上的x86重定向/#more" class="more-link">Read More</a>
-          </div>
-        
-        
-      
-      <div class="clearfix"></div>
-    </footer>
-  </div>
-</article>
-
-
-
-
-
 
 <nav id="pagination">
   
@@ -487,6 +491,8 @@
   <h3 class="title">分类</h3>
   <ul class="entry">
   
+    <li><a href="/categories/安全/">安全</a><small>1</small></li>
+  
     <li><a href="/categories/tech/">技术</a><small>16</small></li>
   
     <li><a href="/categories/life/">生活</a><small>2</small></li>
@@ -499,6 +505,8 @@
 <div class="widget tag">
   <h3 class="title">标签</h3>
   <ul class="entry">
+  
+    <li><a href="/tags/ASLR/">ASLR</a><small>1</small></li>
   
     <li><a href="/tags/Django/">Django</a><small>1</small></li>
   

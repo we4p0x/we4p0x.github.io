@@ -1,0 +1,268 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>mmap及linux地址空间随机化失效漏洞 | WeaponX&#39;s Blog</title>
+  <meta name="author" content="WeaponX">
+  
+  <meta name="description" content="Vulnerability|Security|Binary">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="mmap及linux地址空间随机化失效漏洞"/>
+  <meta property="og:site_name" content="WeaponX&#39;s Blog"/>
+
+  
+    <meta property="og:image" content="undefined"/>
+  
+
+  <link href="/favicon.png" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="WeaponX&#39;s Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?ab50f379bb6434641ee0125ce5d37f23";
+    var s = document.getElementsByTagName("script")[0]; 
+    s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+  <script>
+  (function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+      bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+   })();
+   </script>
+</head>
+
+
+<body>
+  <header id="header" class="inner"><div class="alignleft">
+  <h1><a href="/">WeaponX&#39;s Blog</a></h1>
+  <h2><a href="/">Binary</a></h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div>
+</header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2017-03-13T09:54:42.000Z"><a href="/2017/03/13/mmap及linux地址空间随机化失效漏洞/">2017-03-13</a></time>
+      
+      
+  
+    <h1 class="title">mmap及linux地址空间随机化失效漏洞</h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <p>nux下动态库是通过<code>mmap</code>建立起内存和文件的映射关系。其定义如下<code>void* mmap(void* start,size_t length,int prot,int flags,int fd,off_t offset);</code>，在第一个参数<code>start</code>为<code>NULL</code>的时候系统会随机分配一个地址，我们可以通过示例来看<code>mmap</code>映射地址的流程。</p>
+<p>分析一下程序加载<code>libc.so</code>的流程</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">open(<span class="string">"/lib/libc.so.6"</span>, O_RDONLY)        = 3</div><div class="line"><span class="built_in">read</span>(3, <span class="string">"\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0 n\1\0004\0\0\0"</span>..., 512) = 512</div><div class="line">fstat64(3, &#123;st_mode=S_IFREG|0755, st_size=1409436, ...&#125;) = 0</div><div class="line">mmap2(NULL, 1415560, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0xb75b1000</div><div class="line">mmap2(0xb7705000, 12288, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x154) = 0xb7705000</div><div class="line">mmap2(0xb7708000, 10632, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xb7708000</div><div class="line">close(3)</div></pre></td></tr></table></figure>
+<p>在通常情况下通过<code>mmap</code>映射的地址会被内核进行随机化处理，所以每次程序运行加载的动态库基址都不相同。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">~ $ ldd mmap</div><div class="line">    linux-gate.so.1 =&gt;  (0xb77d9000)</div><div class="line">    libc.so.6 =&gt; /lib/libc.so.6 (0xb7654000)</div><div class="line">    /lib/ld-linux.so.2 (0xb77bd000)</div><div class="line">~ $ ldd mmap</div><div class="line">    linux-gate.so.1 =&gt;  (0xb7738000)</div><div class="line">    libc.so.6 =&gt; /lib/libc.so.6 (0xb75b3000)</div><div class="line">    /lib/ld-linux.so.2 (0xb771c000)</div></pre></td></tr></table></figure>
+<a id="more"></a>
+<h2 id="0x01-CVE-2016-3672"><a href="#0x01-CVE-2016-3672" class="headerlink" title="0x01 CVE-2016-3672"></a>0x01 CVE-2016-3672</h2><blockquote>
+<p>Linux kernel 4.5.2之前版本，arch/x86/mm/mmap.c内函数arch_pick_mmap_layout未正确随机化遗留基址。本地用户禁用栈资源消耗限制后，可破坏ADDR_NO_RANDOMIZE标记的限制，绕过setuid或setgid程序的ASLR保护机制。</p>
+</blockquote>
+<p>这个漏洞在32位操作系统或者在64位操作系统运行32位程序时，将栈空间设置为不限制，会导致<code>mmap</code>的ASLR失效，导致动态库加载的地址固定。</p>
+<p>验证方法:</p>
+<ol>
+<li>设置栈空间为不限制大小<code>ulimit -s unlimited</code></li>
+<li>使用ldd看动态库加载的地址是否发生变化</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">~ $ ldd mmap</div><div class="line">   linux-gate.so.1 =&gt;  (0xb77d9000)</div><div class="line">   libc.so.6 =&gt; /lib/libc.so.6 (0xb7654000)</div><div class="line">   /lib/ld-linux.so.2 (0xb77bd000)</div><div class="line">~ $ ldd mmap</div><div class="line">   linux-gate.so.1 =&gt;  (0xb7738000)</div><div class="line">   libc.so.6 =&gt; /lib/libc.so.6 (0xb75b3000)</div><div class="line">   /lib/ld-linux.so.2 (0xb771c000)</div><div class="line">~ $ <span class="built_in">ulimit</span> <span class="_">-s</span> unlimited</div><div class="line">~ $ ldd mmap</div><div class="line">   linux-gate.so.1 =&gt;  (0x4001c000)</div><div class="line">   libc.so.6 =&gt; /lib/libc.so.6 (0x4002e000)</div><div class="line">   /lib/ld-linux.so.2 (0x40000000)</div><div class="line">~ $ ldd mmap</div><div class="line">   linux-gate.so.1 =&gt;  (0x4001c000)</div><div class="line">   libc.so.6 =&gt; /lib/libc.so.6 (0x4002e000)</div><div class="line">   /lib/ld-linux.so.2 (0x40000000)</div></pre></td></tr></table></figure>
+<p>可见，设置了栈空间不限制大小后，动态库的基址就固定了。</p>
+<h2 id="0x02-漏洞分析"><a href="#0x02-漏洞分析" class="headerlink" title="0x02 漏洞分析"></a>0x02 漏洞分析</h2><p>漏洞所在函数为<code>arch_pick_mmap_layout</code></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="comment">/*</span></div><div class="line"> * This function, called very early during the creation of a new</div><div class="line"> * process VM image, sets up which VM layout function to use:</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">arch_pick_mmap_layout</span><span class="params">(<span class="keyword">struct</span> mm_struct *mm)</span></span></div><div class="line">&#123;</div><div class="line">    mm-&gt;mmap_legacy_base = mmap_legacy_base();</div><div class="line">    mm-&gt;mmap_base = mmap_base();</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (mmap_is_legacy()) &#123;</div><div class="line">        mm-&gt;mmap_base = mm-&gt;mmap_legacy_base;</div><div class="line">        mm-&gt;get_unmapped_area = arch_get_unmapped_area;</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        mm-&gt;get_unmapped_area = arch_get_unmapped_area_topdown;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>如果让ASLR失效则需要让<code>mm-&gt;mmap_base</code>为固定值。看看<code>mmap_legacy_base</code></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="comment">/*</span></div><div class="line"> * Bottom-up (legacy) layout on X86_32 did not support randomization, X86_64</div><div class="line"> * does, but not when emulating X86_32</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="title">mmap_legacy_base</span><span class="params">(<span class="keyword">void</span>)</span></span></div><div class="line">&#123;</div><div class="line">    <span class="keyword">if</span> (mmap_is_ia32())</div><div class="line">        <span class="keyword">return</span> TASK_UNMAPPED_BASE;</div><div class="line">    <span class="keyword">else</span></div><div class="line">        <span class="keyword">return</span> TASK_UNMAPPED_BASE + mmap_rnd();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>可以看到<code>mmap_is_ia32()</code>为真时，返回的地址为固定值。注释更表明了影响32位机器和在64位机器上运行的32位程序。此时，只需要<code>mmap_is_legacy()</code>为真。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="comment">/*</span></div><div class="line"> * Top of mmap area (just below the process stack).</div><div class="line"> *</div><div class="line"> * Leave an at least ~128 MB hole with possible stack randomization.</div><div class="line"> */</div><div class="line"><span class="meta">#<span class="meta-keyword">define</span> MIN_GAP (128*1024*1024UL + stack_maxrandom_size())</span></div><div class="line"><span class="meta">#<span class="meta-keyword">define</span> MAX_GAP (TASK_SIZE/6*5)</span></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">mmap_is_legacy</span><span class="params">(<span class="keyword">void</span>)</span></span></div><div class="line">&#123;</div><div class="line">    <span class="keyword">if</span> (current-&gt;personality &amp; ADDR_COMPAT_LAYOUT)</div><div class="line">        <span class="keyword">return</span> <span class="number">1</span>;</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (rlimit(RLIMIT_STACK) == RLIM_INFINITY)</div><div class="line">        <span class="keyword">return</span> <span class="number">1</span>;</div><div class="line"></div><div class="line">    <span class="keyword">return</span> sysctl_legacy_va_layout;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>注意到<code>rlimit(RLIMIT_STACK) == RLIM_INFINITY</code>则返回真，这就是<code>ulimit -s unlimited</code>的原因。</p>
+<h2 id="0x03-修复方案分析"><a href="#0x03-修复方案分析" class="headerlink" title="0x03 修复方案分析"></a>0x03 修复方案分析</h2><figure class="highlight"><table><tr><td class="code"><pre><div class="line">diff --git a/arch/x86/mm/mmap.c b/arch/x86/mm/mmap.c</div><div class="line">index 96bd1e2..389939f 100644</div><div class="line">--- a/arch/x86/mm/mmap.c</div><div class="line">+++ b/arch/x86/mm/mmap.c</div><div class="line">@@ -94,18 +94,6 @@ static unsigned long mmap_base(unsigned long rnd)</div><div class="line"> &#125;</div><div class="line"></div><div class="line"> /*</div><div class="line">- * Bottom-up (legacy) layout on X86_32 did not support randomization, X86_64</div><div class="line">- * does, but not when emulating X86_32</div><div class="line">- */</div><div class="line">-static unsigned long mmap_legacy_base(unsigned long rnd)</div><div class="line">-&#123;</div><div class="line">-   if (mmap_is_ia32())</div><div class="line">-       return TASK_UNMAPPED_BASE;</div><div class="line">-   else</div><div class="line">-       return TASK_UNMAPPED_BASE + rnd;</div><div class="line">-&#125;</div><div class="line">-</div><div class="line">-/*</div><div class="line">  * This function, called very early during the creation of a new</div><div class="line">  * process VM image, sets up which VM layout function to use:</div><div class="line">  */</div><div class="line">@@ -116,7 +104,7 @@ void arch_pick_mmap_layout(struct mm_struct *mm)</div><div class="line">    if (current-&gt;flags &amp; PF_RANDOMIZE)</div><div class="line">        random_factor = arch_mmap_rnd();</div><div class="line"></div><div class="line">-   mm-&gt;mmap_legacy_base = mmap_legacy_base(random_factor);</div><div class="line">+   mm-&gt;mmap_legacy_base = TASK_UNMAPPED_BASE + random_factor;</div><div class="line"></div><div class="line">    if (mmap_is_legacy()) &#123;</div><div class="line">        mm-&gt;mmap_base = mm-&gt;mmap_legacy_base;</div></pre></td></tr></table></figure>
+<p>很简单，不管是以lagacy模式运行还是真正的32位程序，<code>mmap</code>的基址<code>mmap_base</code>均加入随即因子进行随机化</p>
+<h2 id="0x04-题外"><a href="#0x04-题外" class="headerlink" title="0x04 题外"></a>0x04 题外</h2><p>在64位机器上发现也存在ASLR失效的问题，不过<code>vDSO</code>还是有随机化保护的。留个坑有时间在看看。</p>
+<h2 id="0x05-Refer"><a href="#0x05-Refer" class="headerlink" title="0x05 Refer"></a>0x05 Refer</h2><p><a href="http://rk700.github.io/2016/11/22/mmap-aslr/" target="_blank" rel="external">http://rk700.github.io/2016/11/22/mmap-aslr/</a><br><a href="http://lists.alioth.debian.org/pipermail/kernel-svn-changes/2016-April/023114.html" target="_blank" rel="external">http://lists.alioth.debian.org/pipermail/kernel-svn-changes/2016-April/023114.html</a><br><a href="http://hmarco.org/bugs/CVE-2016-3672-Unlimiting-the-stack-not-longer-disables-ASLR.html" target="_blank" rel="external">http://hmarco.org/bugs/CVE-2016-3672-Unlimiting-the-stack-not-longer-disables-ASLR.html</a></p>
+
+      
+    </div>
+    <footer>
+      
+        
+          <p style="border-top: #e0e0e0 1px dashed; border-right: #e0e0e0 1px dashed; border-bottom: #e0e0e0 1px dashed; border-left: #e0e0e0 1px dashed; padding-top: 10px;padding-right: 10px;padding-bottom: 10px;padding-left: 110px; background: url(http://i.creativecommons.org/l/by-nc-sa/2.5/cn/88x31.png) #e5f1f4 no-repeat 1% 50%; font-family: 微软雅黑; font-size:11px;" id="PSignature">  
+作者：<a href="http://weaponx.site">WeaponX</a>
+<br>出处：<a href="http://weaponx.site/2017/03/13/mmap及linux地址空间随机化失效漏洞/">http://weaponx.site/2017/03/13/mmap及linux地址空间随机化失效漏洞/</a>           
+<br>本文采用<a href="http://creativecommons.org/licenses/by-nc-sa/2.5/cn/" rel="license">知识共享署名-非商业性使用-相同方式共享 2.5 中国大陆许可协议</a>进行许可，欢迎转载，但未经作者同意必须保留此段声明，且在文章页面明显位置给出原文连接。
+</p>
+
+        
+        
+  
+  <div class="categories">
+    <a href="/categories/安全/">安全</a>
+  </div>
+
+        
+  
+  <div class="tags">
+    <a href="/tags/ASLR/">ASLR</a>
+  </div>
+
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+  
+</section>
+
+
+</div></div>
+    <aside id="sidebar" class="alignright">
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="搜索">
+    <input type="hidden" name="q" value="site:weaponx.site">
+  </form>
+</div>
+
+  
+<div class="widget tag">
+  <h3 class="title">分类</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/安全/">安全</a><small>1</small></li>
+  
+    <li><a href="/categories/tech/">技术</a><small>16</small></li>
+  
+    <li><a href="/categories/life/">生活</a><small>2</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">标签</h3>
+  <ul class="entry">
+  
+    <li><a href="/tags/ASLR/">ASLR</a><small>1</small></li>
+  
+    <li><a href="/tags/Django/">Django</a><small>1</small></li>
+  
+    <li><a href="/tags/Hexo/">Hexo</a><small>4</small></li>
+  
+    <li><a href="/tags/UAF/">UAF</a><small>2</small></li>
+  
+    <li><a href="/tags/pwn/">pwn</a><small>8</small></li>
+  
+    <li><a href="/tags/python/">python</a><small>1</small></li>
+  
+    <li><a href="/tags/博客/">博客</a><small>3</small></li>
+  
+    <li><a href="/tags/安全/">安全</a><small>12</small></li>
+  
+    <li><a href="/tags/影评/">影评</a><small>1</small></li>
+  
+    <li><a href="/tags/整形溢出/">整形溢出</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">友情链接</h3>
+  <ul class="entry">
+  
+    <li><a href="http://www.cnblogs.com/goabout2/" title="goabout2">goabout2</a></li>
+  
+    <li><a href="http://rootkiter.com/" title="RootKiter">RootKiter</a></li>
+  
+  </ul>
+</div>
+
+
+
+  <div class="widget tag">
+  <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=270 height=86 src="//music.163.com/outchain/player?type=2&id=427542287&auto=0&height=66"></iframe>
+</div>
+
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  &copy; 2017 WeaponX
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="http://apps.bdimg.com/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+<script type="text/javascript">
+var disqus_shortname = 'weaponx';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+
+</body>
+</html>
