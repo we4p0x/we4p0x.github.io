@@ -97,11 +97,12 @@
 <h2 id="0x04-攻击方式"><a href="#0x04-攻击方式" class="headerlink" title="0x04 攻击方式"></a>0x04 攻击方式</h2><p>这种攻击方式也很简单，只需要向服务器发起大量请求认证的线程即可使AAA服务器拒绝服务，导致无需认证登录交换机。</p>
 <h2 id="0x05-缓解方法"><a href="#0x05-缓解方法" class="headerlink" title="0x05 缓解方法"></a>0x05 缓解方法</h2><p>要防止这种情况发生只需要改成如下语句即可。</p>
 <figure class="highlight crmsh"><table><tr><td class="code"><pre><div class="line">aaa authentication login default <span class="keyword">group</span> <span class="title">tacacs</span>+ local</div></pre></td></tr></table></figure>
-<p>然而，工程实施人员却认为这个是必要的，这就是安全和易用的冲突吧。</p>
+<p>意思就是，在AAA认证无法完成的情况下，使用交换机本地认证，而不是不认证直接返回命令行。</p>
+<h2 id="0x06-题外话"><a href="#0x06-题外话" class="headerlink" title="0x06 题外话"></a>0x06 题外话</h2><p>在搜索这个问题的时候在一个cisco工程实施人员的论坛中看到这样一段话，“老司机”在给新手传授“经验”</p>
 <blockquote>
 <p><code>aaa authentication login default group tacacs+ line none</code><br>这句话的意思是先使用 tacacs+认证；如果失败，则使用line认证，如果还失败，就不需要认证，这就相当于是AAA的一个后门，怕在AAA配置中把自己锁在里面出不来了，一般配AAA前先做后门，然后在配AAA。这个是实际工程中常见的一个后门，记住，做AAA一定要有后门，不然把自己锁里面就麻烦了！</p>
 </blockquote>
-<h2 id="0x06-Refer"><a href="#0x06-Refer" class="headerlink" title="0x06 Refer"></a>0x06 Refer</h2><p><a href="http://www.vuln.cn/7043" target="_blank" rel="external">http://www.vuln.cn/7043</a><br><a href="http://edwinzw.blog.sohu.com/67531824.html" target="_blank" rel="external">http://edwinzw.blog.sohu.com/67531824.html</a><br><a href="http://www.h3c.com.cn/MiniSite/Technology_Circle/Net_Reptile/The_Seven/Home/Catalog/201309/797633_97665_0.htm" target="_blank" rel="external">http://www.h3c.com.cn/MiniSite/Technology_Circle/Net_Reptile/The_Seven/Home/Catalog/201309/797633_97665_0.htm</a></p>
+<h2 id="0x07-Refer"><a href="#0x07-Refer" class="headerlink" title="0x07 Refer"></a>0x07 Refer</h2><p><a href="http://www.vuln.cn/7043" target="_blank" rel="external">http://www.vuln.cn/7043</a><br><a href="http://edwinzw.blog.sohu.com/67531824.html" target="_blank" rel="external">http://edwinzw.blog.sohu.com/67531824.html</a><br><a href="http://www.h3c.com.cn/MiniSite/Technology_Circle/Net_Reptile/The_Seven/Home/Catalog/201309/797633_97665_0.htm" target="_blank" rel="external">http://www.h3c.com.cn/MiniSite/Technology_Circle/Net_Reptile/The_Seven/Home/Catalog/201309/797633_97665_0.htm</a></p>
 
       
     </div>
