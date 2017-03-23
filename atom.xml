@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://weaponx.site/"/>
-  <updated>2017-03-13T09:56:14.618Z</updated>
+  <updated>2017-03-23T09:52:34.014Z</updated>
   <id>http://weaponx.site/</id>
   
   <author>
@@ -14,6 +14,46 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Linux如何搜索动态库</title>
+    <link href="http://weaponx.site/2017/03/23/Linux%E5%A6%82%E4%BD%95%E6%90%9C%E7%B4%A2%E5%8A%A8%E6%80%81%E5%BA%93/"/>
+    <id>http://weaponx.site/2017/03/23/Linux如何搜索动态库/</id>
+    <published>2017-03-23T09:39:36.000Z</published>
+    <updated>2017-03-23T09:52:34.014Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="0x00-背景"><a href="#0x00-背景" class="headerlink" title="0x00 背景"></a>0x00 背景</h2><p>在linux下安装一些程序，或者在做pwnable的时候经常出现没有找到动态库的情况。</p>
+<h2 id="0x01-如何链接动态库"><a href="#0x01-如何链接动态库" class="headerlink" title="0x01 如何链接动态库"></a>0x01 如何链接动态库</h2><p>链接动态库通常有五中方法：</p>
+<ol>
+<li>链接时使用静态库，gcc编译时添加参数</li>
+<li>使用<code>LD_LIBRARY_PATH</code>指定搜索路径, <code>export LD_LIBRARY_PATH=`pwd` </code></li>
+<li>编译时使用<code>-rpath</code>指定动态库的搜索路径</li>
+<li>修改<code>/etc/ld.so.conf</code>，添加动态库搜索路径</li>
+<li>复制动态库到系统默认的路径下，如<code>/lib</code>，<code>/usr/lib</code></li>
+</ol>
+<h2 id="0x02-动态库搜索路径的优先级"><a href="#0x02-动态库搜索路径的优先级" class="headerlink" title="0x02 动态库搜索路径的优先级"></a>0x02 动态库搜索路径的优先级</h2><p>动态库搜索路径优先级由高到低排列情况如下：</p>
+<ol>
+<li>编译时指定动态库搜索路径</li>
+<li>环境变量<code>LD_LIBRARY_PATH</code>中的路径</li>
+<li>配置文件<code>/etc/ld/so.conf</code>中的路径</li>
+<li>系统默认的路径<code>lib</code>等</li>
+</ol>
+<h2 id="0x03-Refer"><a href="#0x03-Refer" class="headerlink" title="0x03 Refer"></a>0x03 Refer</h2><p><a href="http://blog.csdn.net/liuxing_lanyue/article/details/20067423" target="_blank" rel="external">http://blog.csdn.net/liuxing_lanyue/article/details/20067423</a><br><a href="http://blog.csdn.net/onlyou930/article/details/6565906" target="_blank" rel="external">http://blog.csdn.net/onlyou930/article/details/6565906</a><br><a href="http://blog.chinaunix.net/uid-23069658-id-4028681.html" target="_blank" rel="external">http://blog.chinaunix.net/uid-23069658-id-4028681.html</a></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;0x00-背景&quot;&gt;&lt;a href=&quot;#0x00-背景&quot; class=&quot;headerlink&quot; title=&quot;0x00 背景&quot;&gt;&lt;/a&gt;0x00 背景&lt;/h2&gt;&lt;p&gt;在linux下安装一些程序，或者在做pwnable的时候经常出现没有找到动态库的情况。&lt;/p&gt;
+&lt;h
+    
+    </summary>
+    
+      <category term="技术" scheme="http://weaponx.site/categories/tech/"/>
+    
+    
+      <category term="Linux" scheme="http://weaponx.site/tags/Linux/"/>
+    
+  </entry>
   
   <entry>
     <title>mmap及linux地址空间随机化失效漏洞</title>
@@ -1132,33 +1172,6 @@
       <category term="博客" scheme="http://weaponx.site/tags/%E5%8D%9A%E5%AE%A2/"/>
     
       <category term="Hexo" scheme="http://weaponx.site/tags/Hexo/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Hello World</title>
-    <link href="http://weaponx.site/2017/01/11/hello-world/"/>
-    <id>http://weaponx.site/2017/01/11/hello-world/</id>
-    <published>2017-01-11T11:25:01.336Z</published>
-    <updated>2017-01-11T11:25:01.336Z</updated>
-    
-    <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="external">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="external">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="external">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">$ hexo new <span class="string">"My New Post"</span></div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="external">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">$ hexo server</div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="external">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">$ hexo generate</div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="external">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">$ hexo deploy</div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="external">Deployment</a></p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;Welcome to &lt;a href=&quot;https://hexo.io/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Hexo&lt;/a&gt;! This is your very first post. Check &lt;a href=&quot;https://hexo.
-    
-    </summary>
-    
     
   </entry>
   

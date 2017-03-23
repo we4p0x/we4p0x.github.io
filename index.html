@@ -75,6 +75,56 @@
     <header>
       
         <div class="icon"></div>
+        <time datetime="2017-03-23T09:39:36.000Z"><a href="/2017/03/23/Linux如何搜索动态库/">2017-03-23</a></time>
+      
+      
+  
+    <h1 class="title"><a href="/2017/03/23/Linux如何搜索动态库/">Linux如何搜索动态库</a></h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <h2 id="0x00-背景"><a href="#0x00-背景" class="headerlink" title="0x00 背景"></a>0x00 背景</h2><p>在linux下安装一些程序，或者在做pwnable的时候经常出现没有找到动态库的情况。</p>
+<h2 id="0x01-如何链接动态库"><a href="#0x01-如何链接动态库" class="headerlink" title="0x01 如何链接动态库"></a>0x01 如何链接动态库</h2><p>链接动态库通常有五中方法：</p>
+<ol>
+<li>链接时使用静态库，gcc编译时添加参数</li>
+<li>使用<code>LD_LIBRARY_PATH</code>指定搜索路径, <code>export LD_LIBRARY_PATH=`pwd` </code></li>
+<li>编译时使用<code>-rpath</code>指定动态库的搜索路径</li>
+<li>修改<code>/etc/ld.so.conf</code>，添加动态库搜索路径</li>
+<li>复制动态库到系统默认的路径下，如<code>/lib</code>，<code>/usr/lib</code></li>
+</ol>
+<h2 id="0x02-动态库搜索路径的优先级"><a href="#0x02-动态库搜索路径的优先级" class="headerlink" title="0x02 动态库搜索路径的优先级"></a>0x02 动态库搜索路径的优先级</h2><p>动态库搜索路径优先级由高到低排列情况如下：</p>
+<ol>
+<li>编译时指定动态库搜索路径</li>
+<li>环境变量<code>LD_LIBRARY_PATH</code>中的路径</li>
+<li>配置文件<code>/etc/ld/so.conf</code>中的路径</li>
+<li>系统默认的路径<code>lib</code>等</li>
+</ol>
+<h2 id="0x03-Refer"><a href="#0x03-Refer" class="headerlink" title="0x03 Refer"></a>0x03 Refer</h2><p><a href="http://blog.csdn.net/liuxing_lanyue/article/details/20067423" target="_blank" rel="external">http://blog.csdn.net/liuxing_lanyue/article/details/20067423</a><br><a href="http://blog.csdn.net/onlyou930/article/details/6565906" target="_blank" rel="external">http://blog.csdn.net/onlyou930/article/details/6565906</a><br><a href="http://blog.chinaunix.net/uid-23069658-id-4028681.html" target="_blank" rel="external">http://blog.chinaunix.net/uid-23069658-id-4028681.html</a></p>
+
+      
+    </div>
+    <footer>
+      
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+
+  <article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
         <time datetime="2017-03-13T09:54:42.000Z"><a href="/2017/03/13/mmap及linux地址空间随机化失效漏洞/">2017-03-13</a></time>
       
       
@@ -423,53 +473,6 @@
 
 
 
-  <article class="post">
-  
-  <div class="post-content">
-    <header>
-      
-        <div class="icon"></div>
-        <time datetime="2017-02-13T15:55:00.000Z"><a href="/2017/02/13/一些pwn题目的解题思路-pwnable-kr/">2017-02-13</a></time>
-      
-      
-  
-    <h1 class="title"><a href="/2017/02/13/一些pwn题目的解题思路-pwnable-kr/">一些pwn题目的解题思路[pwnable.kr]</a></h1>
-  
-
-    </header>
-    <div class="entry">
-      
-        <h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><p>以下是solution的目录</p>
-<ul>
-<li><a href="#fd" title="fd">#fd</a></li>
-<li><a href="#collision" title="collision">#collision</a></li>
-<li><a href="#bof" title="bof">#bof</a></li>
-<li><a href="#flag" title="flag">#flag</a></li>
-<li><a href="#passcode" title="passcode">#passcode</a></li>
-<li><a href="#random" title="random">#random</a></li>
-</ul>
-<p>Other</p>
-<p><a href="http://weaponx.site/2017/02/14/%E4%B8%80%E4%BA%9Bpwn%E9%A2%98%E7%9B%AE%E7%9A%84%E8%A7%A3%E9%A2%98%E6%80%9D%E8%B7%AF-pwnable-kr-II/" title="一些pwn题目的解题思路[pwnable.kr] II">一些pwn题目的解题思路[pwnable.kr] II</a></p>
-      
-    </div>
-    <footer>
-      
-        
-          <div class="alignleft">
-            <a href="/2017/02/13/一些pwn题目的解题思路-pwnable-kr/#more" class="more-link">Read More</a>
-          </div>
-        
-        
-      
-      <div class="clearfix"></div>
-    </footer>
-  </div>
-</article>
-
-
-
-
-
 
 <nav id="pagination">
   
@@ -493,7 +496,7 @@
   
     <li><a href="/categories/安全/">安全</a><small>1</small></li>
   
-    <li><a href="/categories/tech/">技术</a><small>16</small></li>
+    <li><a href="/categories/tech/">技术</a><small>17</small></li>
   
     <li><a href="/categories/life/">生活</a><small>2</small></li>
   
@@ -511,6 +514,8 @@
     <li><a href="/tags/Django/">Django</a><small>1</small></li>
   
     <li><a href="/tags/Hexo/">Hexo</a><small>4</small></li>
+  
+    <li><a href="/tags/Linux/">Linux</a><small>1</small></li>
   
     <li><a href="/tags/UAF/">UAF</a><small>2</small></li>
   

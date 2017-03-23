@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>UAF | WeaponX&#39;s Blog</title>
+  <title>Linux如何搜索动态库 | WeaponX&#39;s Blog</title>
   <meta name="author" content="WeaponX">
   
   <meta name="description" content="Vulnerability|Security|Binary">
@@ -11,7 +11,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-  
+  <meta property="og:title" content="Linux如何搜索动态库"/>
   <meta property="og:site_name" content="WeaponX&#39;s Blog"/>
 
   
@@ -68,37 +68,83 @@
 <div class="clearfix"></div>
 </header>
   <div id="content" class="inner">
-    <div id="main-col" class="alignleft"><div id="wrapper">
-<h2 class="archive-title tag">UAF</h2>
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2017-03-23T09:39:36.000Z"><a href="/2017/03/23/Linux如何搜索动态库/">2017-03-23</a></time>
+      
+      
+  
+    <h1 class="title">Linux如何搜索动态库</h1>
+  
 
+    </header>
+    <div class="entry">
+      
+        <h2 id="0x00-背景"><a href="#0x00-背景" class="headerlink" title="0x00 背景"></a>0x00 背景</h2><p>在linux下安装一些程序，或者在做pwnable的时候经常出现没有找到动态库的情况。</p>
+<h2 id="0x01-如何链接动态库"><a href="#0x01-如何链接动态库" class="headerlink" title="0x01 如何链接动态库"></a>0x01 如何链接动态库</h2><p>链接动态库通常有五中方法：</p>
+<ol>
+<li>链接时使用静态库，gcc编译时添加参数</li>
+<li>使用<code>LD_LIBRARY_PATH</code>指定搜索路径, <code>export LD_LIBRARY_PATH=`pwd` </code></li>
+<li>编译时使用<code>-rpath</code>指定动态库的搜索路径</li>
+<li>修改<code>/etc/ld.so.conf</code>，添加动态库搜索路径</li>
+<li>复制动态库到系统默认的路径下，如<code>/lib</code>，<code>/usr/lib</code></li>
+</ol>
+<h2 id="0x02-动态库搜索路径的优先级"><a href="#0x02-动态库搜索路径的优先级" class="headerlink" title="0x02 动态库搜索路径的优先级"></a>0x02 动态库搜索路径的优先级</h2><p>动态库搜索路径优先级由高到低排列情况如下：</p>
+<ol>
+<li>编译时指定动态库搜索路径</li>
+<li>环境变量<code>LD_LIBRARY_PATH</code>中的路径</li>
+<li>配置文件<code>/etc/ld/so.conf</code>中的路径</li>
+<li>系统默认的路径<code>lib</code>等</li>
+</ol>
+<h2 id="0x03-Refer"><a href="#0x03-Refer" class="headerlink" title="0x03 Refer"></a>0x03 Refer</h2><p><a href="http://blog.csdn.net/liuxing_lanyue/article/details/20067423" target="_blank" rel="external">http://blog.csdn.net/liuxing_lanyue/article/details/20067423</a><br><a href="http://blog.csdn.net/onlyou930/article/details/6565906" target="_blank" rel="external">http://blog.csdn.net/onlyou930/article/details/6565906</a><br><a href="http://blog.chinaunix.net/uid-23069658-id-4028681.html" target="_blank" rel="external">http://blog.chinaunix.net/uid-23069658-id-4028681.html</a></p>
 
-  <div class="archive">
-    
-      <article class="post">
-        <div class="post-content">
-          <header>
-            <div class="icon"></div>
-            <time datetime="2017-03-10T04:54:07.000Z"><a href="/2017/03/09/dragon-Writeup-pwnable-kr/">2017-03-09</a></time>
-            
-              <h1 class="title"><a href="/2017/03/09/dragon-Writeup-pwnable-kr/">dragon Writeup[pwnable.kr]</a></h1>
-            
-          </header>
-        </div>
-      </article>
-    
-      <article class="post">
-        <div class="post-content">
-          <header>
-            <div class="icon"></div>
-            <time datetime="2017-02-15T14:20:26.000Z"><a href="/2017/02/15/uaf-writeup-pwnable-kr/">2017-02-15</a></time>
-            
-              <h1 class="title"><a href="/2017/02/15/uaf-writeup-pwnable-kr/">uaf Writeup[pwnable.kr]</a></h1>
-            
-          </header>
-        </div>
-      </article>
-    
+      
+    </div>
+    <footer>
+      
+        
+          <p style="border-top: #e0e0e0 1px dashed; border-right: #e0e0e0 1px dashed; border-bottom: #e0e0e0 1px dashed; border-left: #e0e0e0 1px dashed; padding-top: 10px;padding-right: 10px;padding-bottom: 10px;padding-left: 110px; background: url(http://i.creativecommons.org/l/by-nc-sa/2.5/cn/88x31.png) #e5f1f4 no-repeat 1% 50%; font-family: 微软雅黑; font-size:11px;" id="PSignature">  
+作者：<a href="http://weaponx.site">WeaponX</a>
+<br>出处：<a href="http://weaponx.site/2017/03/23/Linux如何搜索动态库/">http://weaponx.site/2017/03/23/Linux如何搜索动态库/</a>           
+<br>本文采用<a href="http://creativecommons.org/licenses/by-nc-sa/2.5/cn/" rel="license">知识共享署名-非商业性使用-相同方式共享 2.5 中国大陆许可协议</a>进行许可，欢迎转载，但未经作者同意必须保留此段声明，且在文章页面明显位置给出原文连接。
+</p>
+
+        
+        
+  
+  <div class="categories">
+    <a href="/categories/tech/">技术</a>
   </div>
+
+        
+  
+  <div class="tags">
+    <a href="/tags/Linux/">Linux</a>
+  </div>
+
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+  
+</section>
+
+
 </div></div>
     <aside id="sidebar" class="alignright">
   <div class="search">
@@ -193,7 +239,7 @@ var disqus_shortname = 'weaponx';
   var dsq = document.createElement('script');
   dsq.type = 'text/javascript';
   dsq.async = true;
-  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
 }());
 </script>
