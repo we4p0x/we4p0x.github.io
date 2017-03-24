@@ -75,6 +75,48 @@
     <header>
       
         <div class="icon"></div>
+        <time datetime="2017-03-24T08:34:20.000Z"><a href="/2017/03/24/unexploitable-Writeup-pwnable-tw/">2017-03-24</a></time>
+      
+      
+  
+    <h1 class="title"><a href="/2017/03/24/unexploitable-Writeup-pwnable-tw/">unexploitable Writeup[pwnable.tw]</a></h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <h2 id="0x00-unexploitable"><a href="#0x00-unexploitable" class="headerlink" title="0x00 unexploitable"></a>0x00 unexploitable</h2><p>最近在刷pwnable.tw（类似pwnable.kr，不过是台湾的，个人信息 <a href="https://pwnable.tw/user/927">https://pwnable.tw/user/927</a> ）的题，看到了一个unexploitable的题目。根据题目描述:</p>
+<blockquote>
+<p>The original challenge is on pwnable.kr and it is solvable.<br>This time we fix the vulnerability and now we promise that the service is unexploitable.</p>
+</blockquote>
+<p>下载下来后丢到ida看到确实没什么变化，除了pwnable.kr那个题中最重要的一点<code>syscall</code>没有给。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">.text:0000000000400544 ; int __cdecl main(int argc, const char **argv, const char **envp)</div><div class="line">.text:0000000000400544                 public main</div><div class="line">.text:0000000000400544 main            proc near               ; DATA XREF: _start+1Do</div><div class="line">.text:0000000000400544</div><div class="line">.text:0000000000400544 buf             = byte ptr -10h</div><div class="line">.text:0000000000400544</div><div class="line">.text:0000000000400544                 push    rbp</div><div class="line">.text:0000000000400545                 mov     rbp, rsp</div><div class="line">.text:0000000000400548                 sub     rsp, 10h</div><div class="line">.text:000000000040054C                 mov     edi, 3          ; seconds</div><div class="line">.text:0000000000400551                 mov     eax, 0</div><div class="line">.text:0000000000400556                 call    _sleep</div><div class="line">.text:000000000040055B                 lea     rax, [rbp+buf]</div><div class="line">.text:000000000040055F                 mov     edx, 100h       ; nbytes</div><div class="line">.text:0000000000400564                 mov     rsi, rax        ; buf</div><div class="line">.text:0000000000400567                 mov     edi, 0          ; fd</div><div class="line">.text:000000000040056C                 mov     eax, 0</div><div class="line">.text:0000000000400571                 call    _read</div><div class="line">.text:0000000000400576                 leave</div><div class="line">.text:0000000000400577                 retn</div><div class="line">.text:0000000000400577 main            endp</div></pre></td></tr></table></figure>
+      
+    </div>
+    <footer>
+      
+        
+          <div class="alignleft">
+            <a href="/2017/03/24/unexploitable-Writeup-pwnable-tw/#more" class="more-link">Read More</a>
+          </div>
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+
+  <article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
         <time datetime="2017-03-23T09:39:36.000Z"><a href="/2017/03/23/Linux如何搜索动态库/">2017-03-23</a></time>
       
       
@@ -426,53 +468,6 @@
 
 
 
-  <article class="post">
-  
-  <div class="post-content">
-    <header>
-      
-        <div class="icon"></div>
-        <time datetime="2017-02-14T17:30:58.000Z"><a href="/2017/02/14/一些pwn题目的解题思路-pwnable-kr-II/">2017-02-14</a></time>
-      
-      
-  
-    <h1 class="title"><a href="/2017/02/14/一些pwn题目的解题思路-pwnable-kr-II/">一些pwn题目的解题思路[pwnable.kr] II</a></h1>
-  
-
-    </header>
-    <div class="entry">
-      
-        <h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><p>以下是solution的目录</p>
-<ul>
-<li><a href="#mistake" title="mistake">#mistake</a></li>
-<li><a href="#shellshock" title="shellshock">#shellshock</a></li>
-<li><a href="#coin1" title="coin1">#coin1</a></li>
-<li><a href="#blackjack" title="blackjack">#blackjack</a></li>
-<li><a href="#lotto" title="lotto">#lotto</a></li>
-<li><a href="#cmd1" title="cmd1">#cmd1</a></li>
-</ul>
-<p>Other</p>
-<p><a href="http://weaponx.site/2017/02/13/%E4%B8%80%E4%BA%9Bpwn%E9%A2%98%E7%9B%AE%E7%9A%84%E8%A7%A3%E9%A2%98%E6%80%9D%E8%B7%AF-pwnable-kr/" title="一些pwn题目的解题思路[pwnable.kr]">一些pwn题目的解题思路[pwnable.kr]</a></p>
-      
-    </div>
-    <footer>
-      
-        
-          <div class="alignleft">
-            <a href="/2017/02/14/一些pwn题目的解题思路-pwnable-kr-II/#more" class="more-link">Read More</a>
-          </div>
-        
-        
-      
-      <div class="clearfix"></div>
-    </footer>
-  </div>
-</article>
-
-
-
-
-
 
 <nav id="pagination">
   
@@ -494,7 +489,7 @@
   <h3 class="title">分类</h3>
   <ul class="entry">
   
-    <li><a href="/categories/安全/">安全</a><small>1</small></li>
+    <li><a href="/categories/安全/">安全</a><small>2</small></li>
   
     <li><a href="/categories/tech/">技术</a><small>17</small></li>
   
@@ -519,9 +514,11 @@
   
     <li><a href="/tags/UAF/">UAF</a><small>2</small></li>
   
-    <li><a href="/tags/pwn/">pwn</a><small>8</small></li>
+    <li><a href="/tags/pwn/">pwn</a><small>9</small></li>
   
     <li><a href="/tags/python/">python</a><small>1</small></li>
+  
+    <li><a href="/tags/wargame/">wargame</a><small>1</small></li>
   
     <li><a href="/tags/博客/">博客</a><small>3</small></li>
   

@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://weaponx.site/"/>
-  <updated>2017-03-23T09:52:34.014Z</updated>
+  <updated>2017-03-24T08:34:58.498Z</updated>
   <id>http://weaponx.site/</id>
   
   <author>
@@ -14,6 +14,57 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>unexploitable Writeup[pwnable.tw]</title>
+    <link href="http://weaponx.site/2017/03/24/unexploitable-Writeup-pwnable-tw/"/>
+    <id>http://weaponx.site/2017/03/24/unexploitable-Writeup-pwnable-tw/</id>
+    <published>2017-03-24T08:34:20.000Z</published>
+    <updated>2017-03-24T08:34:58.498Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="0x00-unexploitable"><a href="#0x00-unexploitable" class="headerlink" title="0x00 unexploitable"></a>0x00 unexploitable</h2><p>最近在刷pwnable.tw（类似pwnable.kr，不过是台湾的，个人信息 <a href="https://pwnable.tw/user/927" target="_blank" rel="external">https://pwnable.tw/user/927</a> ）的题，看到了一个unexploitable的题目。根据题目描述:</p>
+<blockquote>
+<p>The original challenge is on pwnable.kr and it is solvable.<br>This time we fix the vulnerability and now we promise that the service is unexploitable.</p>
+</blockquote>
+<p>下载下来后丢到ida看到确实没什么变化，除了pwnable.kr那个题中最重要的一点<code>syscall</code>没有给。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">.text:0000000000400544 ; int __cdecl main(int argc, const char **argv, const char **envp)</div><div class="line">.text:0000000000400544                 public main</div><div class="line">.text:0000000000400544 main            proc near               ; DATA XREF: _start+1Do</div><div class="line">.text:0000000000400544</div><div class="line">.text:0000000000400544 buf             = byte ptr -10h</div><div class="line">.text:0000000000400544</div><div class="line">.text:0000000000400544                 push    rbp</div><div class="line">.text:0000000000400545                 mov     rbp, rsp</div><div class="line">.text:0000000000400548                 sub     rsp, 10h</div><div class="line">.text:000000000040054C                 mov     edi, 3          ; seconds</div><div class="line">.text:0000000000400551                 mov     eax, 0</div><div class="line">.text:0000000000400556                 call    _sleep</div><div class="line">.text:000000000040055B                 lea     rax, [rbp+buf]</div><div class="line">.text:000000000040055F                 mov     edx, 100h       ; nbytes</div><div class="line">.text:0000000000400564                 mov     rsi, rax        ; buf</div><div class="line">.text:0000000000400567                 mov     edi, 0          ; fd</div><div class="line">.text:000000000040056C                 mov     eax, 0</div><div class="line">.text:0000000000400571                 call    _read</div><div class="line">.text:0000000000400576                 leave</div><div class="line">.text:0000000000400577                 retn</div><div class="line">.text:0000000000400577 main            endp</div></pre></td></tr></table></figure>
+<a id="more"></a>
+<h2 id="0x01-思路"><a href="#0x01-思路" class="headerlink" title="0x01 思路"></a>0x01 思路</h2><p>在pwnable.kr上这个题目用ROP和SROP均可以完成，不过有个重要个前提有<code>syscall</code>。这个题目删除了这个gadget，导致题目的难度上升了一个档次。pwnable.kr的writeup在<a href="http://weaponx.site/2017/02/28/unexploitable-Writeup-pwnable-kr/">http://weaponx.site/2017/02/28/unexploitable-Writeup-pwnable-kr/</a></p>
+<p>题目给出了libc，看来是让我们用内存泄漏来计算出<code>system/execve</code>等地址来执行<code>system(&quot;/bin/sh&quot;)</code>。通常内存泄漏最终需要调用类似<code>puts\write</code>等打印函数，然而程序中并没有这些函数。只能通过<code>syscall</code>和<code>syscall_id</code>来调用需要的函数，但是又回到的最初没有<code>syscall</code>的情况。</p>
+<p>所以只能寻求一个更有创造性的方法。</p>
+<h2 id="0x02-寻找syscall"><a href="#0x02-寻找syscall" class="headerlink" title="0x02 寻找syscall"></a>0x02 寻找syscall</h2><p>在libc中搜索<code>\x0f\x0f</code>–<code>syscall</code>的机器码。可以看到在<code>read</code>函数中就有两个gadget。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">gdb-peda$ find <span class="string">"\x0f\x05"</span></div><div class="line">...</div><div class="line">libc.so.6 : 0x7ffff7b0467e (&lt;<span class="built_in">read</span>+14&gt;:  syscall)</div><div class="line">libc.so.6 : 0x7ffff7b0469b (&lt;<span class="built_in">read</span>+43&gt;:  syscall)</div><div class="line">...</div><div class="line"></div><div class="line">gdb-peda$ <span class="built_in">print</span> <span class="built_in">read</span></div><div class="line"><span class="variable">$1</span> = &#123;&lt;text variable, no debug info&gt;&#125; 0x7ffff7b04670 &lt;<span class="built_in">read</span>&gt;</div></pre></td></tr></table></figure>
+<p>可以发现<code>read</code>函数中的<code>syscall</code>的距离函数入口的偏移量只有14和43，根据ASLR的原理。可以通过修改GOT表中<code>read</code>函数的LSB(<code>last significant bit</code>,最低有效位)为<code>0x7e</code>或者<code>0x9b</code>就得到了<code>syscall</code>！</p>
+<h2 id="0x03-how-to-exploit"><a href="#0x03-how-to-exploit" class="headerlink" title="0x03 how to exploit"></a>0x03 how to exploit</h2><p>第一段payload完成溢出，并调用<code>read</code>将第二段payload写入<code>bss</code>段中，然后利用<code>pop rbp;ret</code>和<code>leave;ret</code>将栈迁移到<code>bss</code>段上。</p>
+<p>第二段payload完成修改GOT表中<code>read</code>的LSB，变为<code>syscall</code>。利用<code>syscall</code>调用<code>write</code>泄漏<code>sleep</code>的地址，计算出<code>/bin/sh\x00</code>的地址<code>pop rdi;ret</code>的地址和<code>system</code>的地址。最后将栈迁移到第三段payload上。</p>
+<p>第三段payload，将<code>/bin/sh\x00</code>放入<code>rdi</code>寄存器中，完成<code>system(&quot;/bin/sh\x00&quot;)</code>。</p>
+<h2 id="0x04-syscall-to-system"><a href="#0x04-syscall-to-system" class="headerlink" title="0x04 syscall to system"></a>0x04 syscall to system</h2><p>通过<code>syscall</code>来调用函数必须要将<code>syscall_id</code>放入<code>rax</code>寄存器中，但是经过搜索并没有设置<code>rax</code>相关的gadgets。必须利用函数的返回值来设置<code>rax</code>。<code>read</code>函数的返回值是读入字符的个数，所以可以通过调用<code>read</code>函数来设置<code>rax</code>的值。</p>
+<p>通过写LSB得到<code>syscall</code>后<code>rax</code>的值为1，即可通过<code>syscall</code>调用<code>write</code>来泄漏内存，此时可以通过泄漏内存的字节数来控制<code>rax</code>。<code>sleep</code>的返回值是0，所以可以通过调用<code>sleep</code>来将<code>rax</code>置0调用<code>read</code>。</p>
+<p>所以既可以通过偏移计算<code>system</code>的地址，也可以通过<code>syscall</code>和<code>syscall_id = 59</code>来调用<code>execve</code>。</p>
+<p>写出exploit后Boom shakalaka！</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">[+] [sleep base] =&gt; [0x7fb74adbe680]</div><div class="line">[+] [system] =&gt; [0x7fb74ad14102]</div><div class="line">[+] [pop rdi ret] =&gt; [0x7fb74ad38390]</div><div class="line">FINAL!!!</div><div class="line">[*] Switching to interactive mode</div><div class="line">$ cat /home/unexploitable/flag</div><div class="line">FLAG&#123;********************************&#125;</div><div class="line">$</div><div class="line">[*] Interrupted</div><div class="line">[*] Closed connection to chall.pwnable.tw port 10403</div></pre></td></tr></table></figure>
+<h2 id="0x05-exploit"><a href="#0x05-exploit" class="headerlink" title="0x05 exploit"></a>0x05 exploit</h2><p>因为主办方不让公开高分的题目，所以exploit提交到主办方的writeup系统中了，<a href="https://pwnable.tw/writeup/20/927" target="_blank" rel="external">https://pwnable.tw/writeup/20/927</a></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;0x00-unexploitable&quot;&gt;&lt;a href=&quot;#0x00-unexploitable&quot; class=&quot;headerlink&quot; title=&quot;0x00 unexploitable&quot;&gt;&lt;/a&gt;0x00 unexploitable&lt;/h2&gt;&lt;p&gt;最近在刷pwnable.tw（类似pwnable.kr，不过是台湾的，个人信息 &lt;a href=&quot;https://pwnable.tw/user/927&quot;&gt;https://pwnable.tw/user/927&lt;/a&gt; ）的题，看到了一个unexploitable的题目。根据题目描述:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The original challenge is on pwnable.kr and it is solvable.&lt;br&gt;This time we fix the vulnerability and now we promise that the service is unexploitable.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;下载下来后丢到ida看到确实没什么变化，除了pwnable.kr那个题中最重要的一点&lt;code&gt;syscall&lt;/code&gt;没有给。&lt;/p&gt;
+&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;div class=&quot;line&quot;&gt;.text:0000000000400544 ; int __cdecl main(int argc, const char **argv, const char **envp)&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;.text:0000000000400544                 public main&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;.text:0000000000400544 main            proc near               ; DATA XREF: _start+1Do&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;.text:0000000000400544&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;.text:0000000000400544 buf             = byte ptr -10h&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;.text:0000000000400544&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;.text:0000000000400544                 push    rbp&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;.text:0000000000400545                 mov     rbp, rsp&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;.text:0000000000400548                 sub     rsp, 10h&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;.text:000000000040054C                 mov     edi, 3          ; seconds&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;.text:0000000000400551                 mov     eax, 0&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;.text:0000000000400556                 call    _sleep&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;.text:000000000040055B                 lea     rax, [rbp+buf]&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;.text:000000000040055F                 mov     edx, 100h       ; nbytes&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;.text:0000000000400564                 mov     rsi, rax        ; buf&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;.text:0000000000400567                 mov     edi, 0          ; fd&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;.text:000000000040056C                 mov     eax, 0&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;.text:0000000000400571                 call    _read&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;.text:0000000000400576                 leave&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;.text:0000000000400577                 retn&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;.text:0000000000400577 main            endp&lt;/div&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+    
+    </summary>
+    
+      <category term="安全" scheme="http://weaponx.site/categories/%E5%AE%89%E5%85%A8/"/>
+    
+    
+      <category term="pwn" scheme="http://weaponx.site/tags/pwn/"/>
+    
+      <category term="wargame" scheme="http://weaponx.site/tags/wargame/"/>
+    
+  </entry>
   
   <entry>
     <title>Linux如何搜索动态库</title>
@@ -1139,39 +1190,6 @@
     
     
       <category term="安全" scheme="http://weaponx.site/tags/%E5%AE%89%E5%85%A8/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>关于这个博客</title>
-    <link href="http://weaponx.site/2017/01/11/%E5%85%B3%E4%BA%8E%E8%BF%99%E4%B8%AA%E5%8D%9A%E5%AE%A2/"/>
-    <id>http://weaponx.site/2017/01/11/关于这个博客/</id>
-    <published>2017-01-11T18:19:32.000Z</published>
-    <updated>2017-01-17T14:34:07.713Z</updated>
-    
-    <content type="html"><![CDATA[<h2 id="迁移"><a href="#迁移" class="headerlink" title="迁移"></a>迁移</h2><p>　　之前的用wordpress + mysql在阿里云搭建了一套博客，域名是<em><a href="http://evi1code.com" target="_blank" rel="external">http://evi1code.com</a></em>。维护成本太高了，被别人扫描器扫一下直接被阿里云下线。加上后来后来也懒得去写blog，域名和主机都没续费被回收了。</p>
-<p>　　之前接触过静态博客jekyll，也懒得去研究。最近又手痒了，看到朋友都在用Hexo，跑过去研究了一下还真不错<del>据说作者是台湾同胞</del>。</p>
-<p>　　先在Github上搭一个试试水，结果Github实在是太慢，现在又迁移到了国内的代码托管网站<em><a href="https://coding.net" target="_blank" rel="external">https://coding.net</a></em>。</p>
-<p>　　嗯，就是现在这样子╮(╯▽╰)╭。</p>
-<a id="more"></a>
-<h2 id="TO-DO"><a href="#TO-DO" class="headerlink" title="TO DO"></a>TO DO</h2><p>1.用七牛云或者CloudFlare加速对图片进行cdn加速<br>2.研究一下高级用法<br>3.开始写写博客</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h2 id=&quot;迁移&quot;&gt;&lt;a href=&quot;#迁移&quot; class=&quot;headerlink&quot; title=&quot;迁移&quot;&gt;&lt;/a&gt;迁移&lt;/h2&gt;&lt;p&gt;　　之前的用wordpress + mysql在阿里云搭建了一套博客，域名是&lt;em&gt;&lt;a href=&quot;http://evi1code.com&quot;&gt;http://evi1code.com&lt;/a&gt;&lt;/em&gt;。维护成本太高了，被别人扫描器扫一下直接被阿里云下线。加上后来后来也懒得去写blog，域名和主机都没续费被回收了。&lt;/p&gt;
-&lt;p&gt;　　之前接触过静态博客jekyll，也懒得去研究。最近又手痒了，看到朋友都在用Hexo，跑过去研究了一下还真不错&lt;del&gt;据说作者是台湾同胞&lt;/del&gt;。&lt;/p&gt;
-&lt;p&gt;　　先在Github上搭一个试试水，结果Github实在是太慢，现在又迁移到了国内的代码托管网站&lt;em&gt;&lt;a href=&quot;https://coding.net&quot;&gt;https://coding.net&lt;/a&gt;&lt;/em&gt;。&lt;/p&gt;
-&lt;p&gt;　　嗯，就是现在这样子╮(╯▽╰)╭。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="生活" scheme="http://weaponx.site/categories/life/"/>
-    
-    
-      <category term="博客" scheme="http://weaponx.site/tags/%E5%8D%9A%E5%AE%A2/"/>
-    
-      <category term="Hexo" scheme="http://weaponx.site/tags/Hexo/"/>
     
   </entry>
   
