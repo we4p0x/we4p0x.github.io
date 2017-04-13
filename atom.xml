@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://weaponx.site/"/>
-  <updated>2017-04-11T06:51:42.437Z</updated>
+  <updated>2017-04-13T02:06:19.018Z</updated>
   <id>http://weaponx.site/</id>
   
   <author>
@@ -14,6 +14,51 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>python如何调用__del__及全局变量如何存储</title>
+    <link href="http://weaponx.site/2017/04/12/python%E5%A6%82%E4%BD%95%E8%B0%83%E7%94%A8-del-%E5%8F%8A%E5%85%A8%E5%B1%80%E5%8F%98%E9%87%8F%E5%A6%82%E4%BD%95%E5%AD%98%E5%82%A8/"/>
+    <id>http://weaponx.site/2017/04/12/python如何调用-del-及全局变量如何存储/</id>
+    <published>2017-04-13T02:05:28.000Z</published>
+    <updated>2017-04-13T02:06:19.018Z</updated>
+    
+    <content type="html"><![CDATA[<p>在处理一个bug的时候发现程序一直报错，<code>Exception exceptions.NameError: &quot;global name &#39;TEST&#39; is not defined&quot;</code>。仔细审查了下源码，发现这个<code>TEST</code>变量是个全局变量，已经定义了。只不过在类的析构函数<code>__del__()</code>中解引用了<code>del TEST</code>。</p>
+<p>这引出了两个问题：</p>
+<ol>
+<li>一个类的对象，什么时候调用析构函数？</li>
+<li>为什么一个对象把<code>TEST</code>解引用了其他对象也无法访问？</li>
+</ol>
+<a id="more"></a>
+<h2 id="Q1"><a href="#Q1" class="headerlink" title="Q1"></a>Q1</h2><p>在C/C++中，需要程序员自己完成垃圾回收。而在python中，是python自己完成垃圾回收工作的。在python中每个变量都有一个引用计数器来表示这个变量被引用的次数。当这个计数器为0的时候，python就会对这个变量进行垃圾回收（也就是调用类中的析构函数<code>__del__()</code>）。</p>
+<p>下面有一个示例</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Test</span><span class="params">()</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">print</span> <span class="string">"This is Init Function"</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__del__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">print</span> <span class="string">"This is Del Function"</span></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">test</span><span class="params">()</span>:</span></div><div class="line">    t = Test()</div><div class="line">    <span class="keyword">print</span> <span class="string">"Boom shakalaka"</span></div><div class="line"></div><div class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</div><div class="line">    <span class="keyword">print</span> <span class="string">"Before run test()"</span></div><div class="line">    test()</div><div class="line">    <span class="keyword">print</span> <span class="string">"After run test()"</span></div><div class="line"></div><div class="line">    <span class="keyword">print</span> <span class="string">"Before Create Object"</span></div><div class="line">    t1 = Test()</div><div class="line">    <span class="keyword">print</span> <span class="string">"After Create Object"</span></div></pre></td></tr></table></figure>
+<p>我们看看执行后的结果</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">Before run <span class="built_in">test</span>()</div><div class="line">This is Init Function</div><div class="line">Boom shakalaka</div><div class="line">This is Del Function</div><div class="line">After run <span class="built_in">test</span>()</div><div class="line">Before Create Object</div><div class="line">This is Init Function</div><div class="line">After Create Object</div><div class="line">This is Del Function</div></pre></td></tr></table></figure>
+<p>在执行<code>test()</code>函数的时候执行完成后，Test()的对象t被回收，调用析构函数<code>__del__</code>打印<code>This is Del Function</code>。</p>
+<h2 id="Q2"><a href="#Q2" class="headerlink" title="Q2"></a>Q2</h2><p>在python中，全局变量使用共享内存的方式实现的。若一个对象解引用后，其他所有对象均无法访问。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Test</span><span class="params">()</span>:</span></div><div class="line">    name = <span class="string">"test"</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__del__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">del</span> Test.name</div><div class="line">        <span class="keyword">print</span> <span class="string">"This is Del Function"</span></div><div class="line"></div><div class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</div><div class="line">    t1 = Test()</div><div class="line">    t2 = Test()</div></pre></td></tr></table></figure>
+<p>执行后会报错</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">This is Del Function</div><div class="line">Exception AttributeError: <span class="string">"'NoneType' object has no attribute 'name'"</span> <span class="keyword">in</span> &lt;bound method Test.__del__ of &lt;__main__.Test instance at 0x7f4dde73fd40&gt;&gt; ignored</div></pre></td></tr></table></figure>
+<p>原因是在清除t1的时候对全局变量name解引用，导致t2调用析构函数时候访问异常。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;在处理一个bug的时候发现程序一直报错，&lt;code&gt;Exception exceptions.NameError: &amp;quot;global name &amp;#39;TEST&amp;#39; is not defined&amp;quot;&lt;/code&gt;。仔细审查了下源码，发现这个&lt;code&gt;TEST&lt;/code&gt;变量是个全局变量，已经定义了。只不过在类的析构函数&lt;code&gt;__del__()&lt;/code&gt;中解引用了&lt;code&gt;del TEST&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;这引出了两个问题：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;一个类的对象，什么时候调用析构函数？&lt;/li&gt;
+&lt;li&gt;为什么一个对象把&lt;code&gt;TEST&lt;/code&gt;解引用了其他对象也无法访问？&lt;/li&gt;
+&lt;/ol&gt;
+    
+    </summary>
+    
+      <category term="技术" scheme="http://weaponx.site/categories/tech/"/>
+    
+    
+      <category term="python" scheme="http://weaponx.site/tags/python/"/>
+    
+  </entry>
   
   <entry>
     <title>Exploit-Exercises Protostar writeup PART I</title>
@@ -1004,91 +1049,6 @@
     
     
       <category term="影评" scheme="http://weaponx.site/tags/%E5%BD%B1%E8%AF%84/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>搭建一个Hexo博客</title>
-    <link href="http://weaponx.site/2017/01/17/%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AAHexo%E5%8D%9A%E5%AE%A2/"/>
-    <id>http://weaponx.site/2017/01/17/搭建一个Hexo博客/</id>
-    <published>2017-01-17T17:25:56.000Z</published>
-    <updated>2017-01-18T16:51:50.104Z</updated>
-    
-    <content type="html"><![CDATA[<h2 id="0x00-背景"><a href="#0x00-背景" class="headerlink" title="0x00 背景"></a>0x00 背景</h2><p>一直想搭建一个自己的博客，之前在Aliyun虚拟主机上搭了一个WordPress+MySQL的个人博客。后来维护成本太大，主机和域名都没有续费被回收了。最近再看别人在写，自己也想搞一个试试水。研究了几天，发现Hexo还真不错，所以就选了这个。</p>
-<p>目前，博客搭建在coding.net上，使用万网的域名。</p>
-<a id="more"></a>
-<h3 id="Hexo介绍"><a href="#Hexo介绍" class="headerlink" title="Hexo介绍"></a>Hexo介绍</h3><p>Hexo是一款基于Node.js的博客框架，可以将Markdown格式的文本渲染为HTML代码。所以，博客基本就是纯静态，维护相对方便。但是缺点也很明显——经常换编写环境使用不便，因为它的所有渲染代码都是在本地存储的。</p>
-<h2 id="0x01-选择域名和代码托管服务提供商"><a href="#0x01-选择域名和代码托管服务提供商" class="headerlink" title="0x01 选择域名和代码托管服务提供商"></a>0x01 选择域名和代码托管服务提供商</h2><blockquote>
-<p>域名提供商是负责域名注册的服务机构，简称注册商，主要负责域名向域名管理局申请批准、域名维护更新、域名续费、域名解析等服务支持，选购域名需要找信誉比较好的服务商如卓汇互联，查询域名可以直接进入卓汇互联域名注册页面进行操作，域名种类较多，域名名称可选空间也较大。</p>
-</blockquote>
-<p>主要的域名提供商，国外有Godaddy、NameCheap等；国内的主要就是万网(Aliyun)，百度等。选择国外的域名提供商的好处在不用进行国内备案相关的手续，但是就是贵。Godaddy注册的域名首年优惠力度很大，但是续费的时候基本没有什么优惠了，基本100多一年。国内的万网基本首年几块到几十块的都有，续费基本在40以下；但是国内的政策还不明朗，有可能需要繁琐的备案手续。</p>
-<p>代码托管服务提供上国外基本就是大家熟知的Github，国内就是coding.net(原Gitcafe)。选择国内的coding.net很简单，就是快。由于Github在国内没有服务器，所以同步代码和访问速度感人。</p>
-<h2 id="0x02-下载Hexo"><a href="#0x02-下载Hexo" class="headerlink" title="0x02 下载Hexo"></a>0x02 下载Hexo</h2><p>Hexo是基于Node.js编写的，所以首先需要下载Node.js。使用命令<br><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">sudo apt-get install nodejs</div></pre></td></tr></table></figure></p>
-<p>Node.js默认使用的是国外的源，速度非常感人，所以需要我们切换到国内的源，这里我使用taobao的源。<br><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">npm config <span class="built_in">set</span> registry http://registry.npm.taobao.org/</div></pre></td></tr></table></figure></p>
-<p>使用npm来下载Hexo<br><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">sudo npm install -g hexo-cli</div></pre></td></tr></table></figure></p>
-<p>输入hexo，如果出现下列提示，则说明安装成功了。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">Usage: hexo &lt;<span class="built_in">command</span>&gt;</div><div class="line"></div><div class="line">Commands:</div><div class="line">  clean     Removed generated files and cache.</div><div class="line">  config    Get or <span class="built_in">set</span> configurations.</div><div class="line">  deploy    Deploy your website.</div><div class="line">  generate  Generate static files.</div><div class="line">  <span class="built_in">help</span>      Get <span class="built_in">help</span> on a command.</div><div class="line">  init      Create a new Hexo folder.</div><div class="line">  list      List the information of the site</div><div class="line">  migrate   Migrate your site from other system to Hexo.</div><div class="line">  new       Create a new post.</div><div class="line">  publish   Moves a draft post from _drafts to _posts folder.</div><div class="line">  render    Render files with renderer plugins.</div><div class="line">  server    Start the server.</div><div class="line">  version   Display version information.</div><div class="line"></div><div class="line">Global Options:</div><div class="line">  --config  Specify config file instead of using _config.yml</div><div class="line">  --cwd     Specify the CWD</div><div class="line">  --debug   Display all verbose messages <span class="keyword">in</span> the terminal</div><div class="line">  --draft   Display draft posts</div><div class="line">  --safe    Disable all plugins and scripts</div><div class="line">  --silent  Hide output on console</div><div class="line"></div><div class="line">For more <span class="built_in">help</span>, you can use <span class="string">'hexo help [command]'</span> <span class="keyword">for</span> the detailed information</div><div class="line">or you can check the docs: http://hexo.io/docs/</div></pre></td></tr></table></figure>
-<p>如果显示缺少模块</p>
-<h2 id="0x03-创建Blog"><a href="#0x03-创建Blog" class="headerlink" title="0x03 创建Blog"></a>0x03 创建Blog</h2><p>使用命令创建一个博客环境</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">hexo init <span class="string">"名字"</span></div></pre></td></tr></table></figure>
-<p>cd进入这个目录，可以看到相关文件</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">~ ls</div><div class="line">_config.yml  db.json  node_modules  package.json  scaffolds  <span class="built_in">source</span>  themes</div></pre></td></tr></table></figure>
-<p>博客的配置文件为<em>_config.yml</em>，配置文件的相关说明<em><a href="https://hexo.io/zh-cn/docs/configuration.html" target="_blank" rel="external">https://hexo.io/zh-cn/docs/configuration.html</a></em>。</p>
-<p>运行测试环境</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">hexo server</div></pre></td></tr></table></figure>
-<p>默认端口是4000，访问4000端口可以看博客的效果</p>
-<p><img src="http://i.imgur.com/r4zSv7Z.png" alt=""></p>
-<p>虽然Hexo的默认主题也算好看，但是功能等其他方面可能不尽如人意。好在Hexo提供的很多第三方主题<em><a href="https://hexo.io/themes/" target="_blank" rel="external">https://hexo.io/themes/</a></em>。关于主题的安装方法按照作者提供的方法就好了。</p>
-<h2 id="0x04-部署到代码托管平台"><a href="#0x04-部署到代码托管平台" class="headerlink" title="0x04 部署到代码托管平台"></a>0x04 部署到代码托管平台</h2><p>在代码托管平台注册就不再详细阐述，主要说明如何创建一个项目。</p>
-<h3 id="1-Github上创建项目"><a href="#1-Github上创建项目" class="headerlink" title="1.Github上创建项目"></a>1.Github上创建项目</h3><p>首先选择<em>New repository</em>，然后在<em>Repositiry Name</em>中填写<em>YourID.github.io</em>，例如我的id是weaponx，则需要在<em>Respository Name</em>中填写<em>weaponx.github.io</em>。</p>
-<h3 id="2-Coding-net上创建项目"><a href="#2-Coding-net上创建项目" class="headerlink" title="2.Coding.net上创建项目"></a>2.Coding.net上创建项目</h3><p><img src="http://i.imgur.com/WriZm02.png" alt=""></p>
-<p>项目名称可以任意填写，一定选择<em>公开</em>不要选成<em>私有</em>了。</p>
-<h3 id="3-配置Hexo"><a href="#3-配置Hexo" class="headerlink" title="3.配置Hexo"></a>3.配置Hexo</h3><p>修改Hexo的配置文件</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">deploy:</div><div class="line">  <span class="built_in">type</span>: git</div><div class="line">  repo:</div><div class="line">      coding: https://git.coding.net/YOURID/YOURRESPOSIROTY.git,master</div><div class="line">      github: https://github.com/YOURID/YOURRESPOSITORY.github.io.git,master</div></pre></td></tr></table></figure>
-<p>然后使用命令同步上去即可</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">hexo deploy -g</div></pre></td></tr></table></figure>
-<h2 id="0x05-将域名解析到代码托管平台"><a href="#0x05-将域名解析到代码托管平台" class="headerlink" title="0x05 将域名解析到代码托管平台"></a>0x05 将域名解析到代码托管平台</h2><p>DNS服务提供商这里选择DNSPod。因为域名是在万网注册的，默认使用万网的DNS，所以需要切换到DNSPod。</p>
-<p><img src="http://i.imgur.com/VvAHTu1.png" alt=""></p>
-<p>在修改为非万网DNS中填写DNSPod提供的dns服务器。然后进入DNSPod管理页面添加网址，并添加CNAME解析。</p>
-<h3 id="1-解析到Github"><a href="#1-解析到Github" class="headerlink" title="1.解析到Github"></a>1.解析到Github</h3><p>在Github上添加域名解析，首先要在项目中创建一个文件<em>CNAME</em>，文件的内容为域名，以我的域名为例文件内容为</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">weaponx.site</div></pre></td></tr></table></figure>
-<p>然后在DNSPod中创建解析，记录类型选择<em>CNAME</em>，记录值选择<em>YOURID.github.io</em>，主机记录输入@。再添加一样的条目，主机记录输入<strong>*</strong>。<br>在这里解释一下<strong>@</strong>记录，意思就是空。用我的域名为例，<strong>@</strong>记录指的是<em>weaponx.site</em>。<strong>*</strong>记录是任意，可以把xxx.weaponx.site解析到我的Github Pages上。</p>
-<p>到这，域名就可以正确的解析到Github pages上了。</p>
-<h3 id="2-解析到Coding-net"><a href="#2-解析到Coding-net" class="headerlink" title="2.解析到Coding.net"></a>2.解析到Coding.net</h3><p>解析到Coding.net上就比较简单，只需要做一个简单的设置即可。</p>
-<p><img src="http://i.imgur.com/kNnGIM2.png" alt=""></p>
-<h2 id="0x06-使用评论插件"><a href="#0x06-使用评论插件" class="headerlink" title="0x06 使用评论插件"></a>0x06 使用评论插件</h2><p>因为我们的Hexo博客是纯静态的，所以评论需要依赖与评论服务提供商。主流的服务提供商有Disqus(国外)，duoshuo(多说，国内)。因为一些大家知道的原因，Disqus已经访问不了了。其实这也是一种优势，可以过滤掉一些垃圾评论内容(广告)，提高评论质量。</p>
-<p>多说由于是国内的厂商，速度很快。但是经常大姨妈，而且没有有效的反垃圾措施。所以我暂时使用Disqus作为我的评论插件。</p>
-<h2 id="过程中踩过的坑"><a href="#过程中踩过的坑" class="headerlink" title="过程中踩过的坑"></a>过程中踩过的坑</h2><ul>
-<li>文章的摘要，在文章摘要上加一行代码</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">&lt;!-- more --&gt;</div></pre></td></tr></table></figure>
-<ul>
-<li>多个Tag需要这样表示</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">tags:</div><div class="line">- tag1</div><div class="line">- tag2</div><div class="line">- tag3</div></pre></td></tr></table></figure>
-<p>而不是<br><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">tags: tag1, tag2, tag3</div></pre></td></tr></table></figure></p>
-<ul>
-<li>代码高亮：通常在Markdown语法中代码高亮是使用Tab或者四个空格来表示，但是经过测试Hexo无法识别这种高亮方式，只能使用</li>
-</ul>
-<figure class="highlight python"><table><tr><td class="code"><pre><div class="line">```python</div><div class="line"><span class="keyword">import</span> os</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">()</span>:</span></div><div class="line">    <span class="keyword">print</span> <span class="string">"Code Highlight test"</span></div><div class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</div><div class="line">    run()</div><div class="line">```</div></pre></td></tr></table></figure>
-<ul>
-<li>每次提交会删除CNAME文件，在source文件夹下创建一个CNAME文件就好，404.html同理。</li>
-</ul>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h2 id=&quot;0x00-背景&quot;&gt;&lt;a href=&quot;#0x00-背景&quot; class=&quot;headerlink&quot; title=&quot;0x00 背景&quot;&gt;&lt;/a&gt;0x00 背景&lt;/h2&gt;&lt;p&gt;一直想搭建一个自己的博客，之前在Aliyun虚拟主机上搭了一个WordPress+MySQL的个人博客。后来维护成本太大，主机和域名都没有续费被回收了。最近再看别人在写，自己也想搞一个试试水。研究了几天，发现Hexo还真不错，所以就选了这个。&lt;/p&gt;
-&lt;p&gt;目前，博客搭建在coding.net上，使用万网的域名。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="技术" scheme="http://weaponx.site/categories/tech/"/>
-    
-    
-      <category term="博客" scheme="http://weaponx.site/tags/%E5%8D%9A%E5%AE%A2/"/>
-    
-      <category term="Hexo" scheme="http://weaponx.site/tags/Hexo/"/>
     
   </entry>
   
