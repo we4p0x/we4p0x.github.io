@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://weaponx.site/"/>
-  <updated>2017-04-13T02:06:19.018Z</updated>
+  <updated>2017-04-13T06:28:36.157Z</updated>
   <id>http://weaponx.site/</id>
   
   <author>
@@ -14,6 +14,32 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>评论系统切换至网易云跟帖</title>
+    <link href="http://weaponx.site/2017/04/13/%E8%AF%84%E8%AE%BA%E7%B3%BB%E7%BB%9F%E5%88%87%E6%8D%A2%E8%87%B3%E7%BD%91%E6%98%93%E4%BA%91%E8%B7%9F%E5%B8%96/"/>
+    <id>http://weaponx.site/2017/04/13/评论系统切换至网易云跟帖/</id>
+    <published>2017-04-13T06:25:28.000Z</published>
+    <updated>2017-04-13T06:28:36.157Z</updated>
+    
+    <content type="html"><![CDATA[<p>用了一阵多说，disqus。多说的问题在于经常大姨妈，而且即将关站。disqus被墙，对国内用户访问不友好。</p>
+<p>对比了下友言和网易云跟帖，友言还需要备案号。当然最后选择的网易云跟帖。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;用了一阵多说，disqus。多说的问题在于经常大姨妈，而且即将关站。disqus被墙，对国内用户访问不友好。&lt;/p&gt;
+&lt;p&gt;对比了下友言和网易云跟帖，友言还需要备案号。当然最后选择的网易云跟帖。&lt;/p&gt;
+
+    
+    </summary>
+    
+      <category term="生活" scheme="http://weaponx.site/categories/life/"/>
+    
+    
+      <category term="博客" scheme="http://weaponx.site/tags/%E5%8D%9A%E5%AE%A2/"/>
+    
+  </entry>
   
   <entry>
     <title>python如何调用__del__及全局变量如何存储</title>
@@ -1006,49 +1032,6 @@
     
     
       <category term="Hexo" scheme="http://weaponx.site/tags/Hexo/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>一个外星人来地球教书法的故事</title>
-    <link href="http://weaponx.site/2017/01/22/%E4%B8%80%E4%B8%AA%E5%A4%96%E6%98%9F%E4%BA%BA%E6%9D%A5%E5%9C%B0%E7%90%83%E6%95%99%E4%B9%A6%E6%B3%95%E7%9A%84%E6%95%85%E4%BA%8B/"/>
-    <id>http://weaponx.site/2017/01/22/一个外星人来地球教书法的故事/</id>
-    <published>2017-01-22T09:27:18.000Z</published>
-    <updated>2017-02-11T12:59:30.420Z</updated>
-    
-    <content type="html"><![CDATA[<p>电影《降临》主要讲了一个外星人来地球教书法的故事，然后电影就结束了。</p>
-<p><img src="http://i.imgur.com/wWI355X.jpg" alt=""></p>
-<a id="more"></a>
-<h2 id="上映前的轶事"><a href="#上映前的轶事" class="headerlink" title="上映前的轶事"></a>上映前的轶事</h2><p>这部电影中外星的飞船有十二艘，分别落在了世界上十二个不同是城市。所以，这部电影有十二个海报。</p>
-<p><img src="http://i.imgur.com/Rm1BhBG.jpg" alt=""></p>
-<p>这部电影在发布海报的时候闹了一个小乌龙，发布海报的时候将东方明珠“安”在了香港。引发了很大的舆论，后来片方实力甩锅给外包商，然后将背景替换成了上海。</p>
-<p><img src="http://i.imgur.com/dsXra7T.jpg" alt=""><br>错版的海报</p>
-<p><img src="http://i.imgur.com/xUe8AXY.jpg" alt=""><br>修改后的海报</p>
-<h2 id="电影的内容"><a href="#电影的内容" class="headerlink" title="电影的内容"></a>电影的内容</h2><p>目前人与UFO的接触共分六类：</p>
-<ul>
-<li>零类接触：遥远的目击。 </li>
-<li>第一类接触：近距离目击。</li>
-<li>第二类接触：人体的某一部分触及UFO上某一东西；或目击触击遗留痕迹。</li>
-<li>第三类接触：与外星人进行直接接触，看清了UFO，特别是看清了其中载的类人高级生命体。</li>
-<li>第四类接触：通过心电感应与外星人沟通，是大多数研究者所不承认的。</li>
-<li>第五类接触：人类用友好信息与外星文明交流。</li>
-</ul>
-<p>电影中提到的第一类接触，就是远距离目击。</p>
-<p>这部电影总的来说是一步比较好的科幻电影，从语言学切入。人类和外星人接触后都不懂双方的语言，文字。只能通过“书法”象形来理解双方的意思，如何不误解对方的语言这确实是一个比较难的问题。在影片中，中国竟然被拍成主导世界格局的国家，这个估计是好莱坞电影中第一次吧。影片从女儿的死开头，以女儿出生结尾，抛给了我们一个问题。如果你能预知未来，知道未来不尽如人意，还会选择拥抱吗？</p>
-<p>当然，这部电影也有一点美中不足的地方。就是既然外星人科技能够超越光速，飞来地球。飞船的样子缺不是很有科技感，表面粗糙而且没有所谓的高科技设备。在《X战警：天启》中，天启在醒来后首先阅读了所有人类的电视和新闻学习地球的现状和人类的语言文字。而“七肢怪”却只能做简单的肢体交流。</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;电影《降临》主要讲了一个外星人来地球教书法的故事，然后电影就结束了。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;http://i.imgur.com/wWI355X.jpg&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="生活" scheme="http://weaponx.site/categories/life/"/>
-    
-    
-      <category term="影评" scheme="http://weaponx.site/tags/%E5%BD%B1%E8%AF%84/"/>
     
   </entry>
   
