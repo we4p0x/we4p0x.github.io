@@ -75,6 +75,48 @@
     <header>
       
         <div class="icon"></div>
+        <time datetime="2017-05-16T06:48:51.000Z"><a href="/2017/05/16/勒索软件WannaCry的FAQ/">2017-05-16</a></time>
+      
+      
+  
+    <h1 class="title"><a href="/2017/05/16/勒索软件WannaCry的FAQ/">勒索软件WannaCry的FAQ</a></h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <h2 id="什么是勒索软件"><a href="#什么是勒索软件" class="headerlink" title="什么是勒索软件"></a>什么是勒索软件</h2><p>勒索软件就是利用加密手段，加密感染机器上的特定文件。要求用户支付赎金（通常为比特币）后，黑客会解密被加密的文件。</p>
+<h2 id="什么是比特币"><a href="#什么是比特币" class="headerlink" title="什么是比特币"></a>什么是比特币</h2><p>比特币利用区块链(Block chain)技术，通过计算产生，总量趋于一个固定值，可以兑换成一些现实货币。</p>
+<h2 id="WannaCry勒索软件为什么会这么火"><a href="#WannaCry勒索软件为什么会这么火" class="headerlink" title="WannaCry勒索软件为什么会这么火"></a>WannaCry勒索软件为什么会这么火</h2><p>勒索软件流程时间比较长，但是WannaCry作为勒索软件中的一员，利用了NSA方程式组织的SMB漏洞利用工具EternalBlue来远程执行任意代码，这个漏洞在2017年3月微软补丁日被修复，补丁编号MS17-010。因为修复时间比较近，而且由于某些原因，国内打补丁的习惯并没有养成。</p>
+<h2 id="WannaCry是怎么加密的"><a href="#WannaCry是怎么加密的" class="headerlink" title="WannaCry是怎么加密的"></a>WannaCry是怎么加密的</h2><p>简要的说WannaCry是通过AES和RSA共同加密。其中AES是对称加密（加密密钥和解密密钥是同一个），RSA是非对称加密（加密密钥和解密密钥不同，公钥用来加密私钥用来解密反之也可）。<br>WannaCry对每个文件随机生成一个AES密钥，然后用这个密钥来加密对应的文件。随后，用内置的RSA公钥来加密这个AES密钥。</p>
+<h2 id="WannaCry支付赎金后黑客是否可以解开被加密的文件"><a href="#WannaCry支付赎金后黑客是否可以解开被加密的文件" class="headerlink" title="WannaCry支付赎金后黑客是否可以解开被加密的文件"></a>WannaCry支付赎金后黑客是否可以解开被加密的文件</h2><p>可以。解密流程是这样的，支付赎金后将Transaction id和每个文件被加密的AES密钥发给黑客。黑客验证通过即可用RSA私钥解开被加密的AES密钥，然后用户就可以用被解密的AES密钥恢复被加密的文件。</p>
+<h2 id="网上说的各种数据恢复工具可以恢复数据吗"><a href="#网上说的各种数据恢复工具可以恢复数据吗" class="headerlink" title="网上说的各种数据恢复工具可以恢复数据吗"></a>网上说的各种数据恢复工具可以恢复数据吗</h2><p>网上的一些号称解密程序基本都是基于删除的文件恢复，删除文件恢复的原理是当系统删除文件的时候并不会真正的删除文件，而是标记这块区域没有占用，只要这块内容没有被覆盖则很有可能恢复。但是WannaCry是一边删除一边写文件，而且会向源文件写入随机内容。所以基于误删恢复的基本不太可能。</p>
+<h2 id="不交赎金是否有办法恢复加密后的文件"><a href="#不交赎金是否有办法恢复加密后的文件" class="headerlink" title="不交赎金是否有办法恢复加密后的文件"></a>不交赎金是否有办法恢复加密后的文件</h2><p>基本不可能。</p>
+<h2 id="更新微软补丁能否方式勒索软件"><a href="#更新微软补丁能否方式勒索软件" class="headerlink" title="更新微软补丁能否方式勒索软件"></a>更新微软补丁能否方式勒索软件</h2><p>微软补丁只是防止勒索软件利用远程代码执行的漏洞进行传播，如果在电脑上运行了勒索软件还是会被勒索。</p>
+<h2 id="以后如何防止类似的事情发生"><a href="#以后如何防止类似的事情发生" class="headerlink" title="以后如何防止类似的事情发生"></a>以后如何防止类似的事情发生</h2><p>安装一线厂商的杀毒软件，如卡巴斯基，BitDefender等。</p>
+
+      
+    </div>
+    <footer>
+      
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+
+  <article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
         <time datetime="2017-05-08T08:37:33.000Z"><a href="/2017/05/08/CVE-2010-3333分析-漏洞战争/">2017-05-08</a></time>
       
       
@@ -452,45 +494,6 @@
 
 
 
-  <article class="post">
-  
-  <div class="post-content">
-    <header>
-      
-        <div class="icon"></div>
-        <time datetime="2017-03-03T08:52:11.000Z"><a href="/2017/03/03/md5-caculator-Writeup-pwnable-kr/">2017-03-03</a></time>
-      
-      
-  
-    <h1 class="title"><a href="/2017/03/03/md5-caculator-Writeup-pwnable-kr/">md5 caculator Writeup[pwnable.kr]</a></h1>
-  
-
-    </header>
-    <div class="entry">
-      
-        <h2 id="0x00-md5-caculater"><a href="#0x00-md5-caculater" class="headerlink" title="0x00 md5 caculater"></a>0x00 md5 caculater</h2><p>下载下来直接运行，提示缺<code>libcrypto</code>库，但是我却安装过了<code>openssl</code>。于是在lib下看，确实是没有这个库。因为我的环境是<code>ubuntu x86_64</code>装的<code>openssl</code>也是64位的，所以要安装32位的库，使用这个命令:</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">sudo apt-get install --reinstall libssl1.0.0:i386</div></pre></td></tr></table></figure>
-<p>安装好后反汇编一下，程序很简单。先生成一个随机数token，输入的值和随机数token相等则再输入一串base64编码后的文本，将这个文本解密后用md5加密打印。</p>
-      
-    </div>
-    <footer>
-      
-        
-          <div class="alignleft">
-            <a href="/2017/03/03/md5-caculator-Writeup-pwnable-kr/#more" class="more-link">Read More</a>
-          </div>
-        
-        
-      
-      <div class="clearfix"></div>
-    </footer>
-  </div>
-</article>
-
-
-
-
-
 
 <nav id="pagination">
   
@@ -512,7 +515,7 @@
   <h3 class="title">分类</h3>
   <ul class="entry">
   
-    <li><a href="/categories/安全/">安全</a><small>4</small></li>
+    <li><a href="/categories/安全/">安全</a><small>5</small></li>
   
     <li><a href="/categories/tech/">技术</a><small>19</small></li>
   
@@ -545,7 +548,7 @@
   
     <li><a href="/tags/博客/">博客</a><small>4</small></li>
   
-    <li><a href="/tags/安全/">安全</a><small>13</small></li>
+    <li><a href="/tags/安全/">安全</a><small>14</small></li>
   
     <li><a href="/tags/影评/">影评</a><small>1</small></li>
   

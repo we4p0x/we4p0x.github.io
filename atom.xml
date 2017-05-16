@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://weaponx.site/"/>
-  <updated>2017-05-08T08:42:20.758Z</updated>
+  <updated>2017-05-16T07:27:11.265Z</updated>
   <id>http://weaponx.site/</id>
   
   <author>
@@ -14,6 +14,37 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>勒索软件WannaCry的FAQ</title>
+    <link href="http://weaponx.site/2017/05/16/%E5%8B%92%E7%B4%A2%E8%BD%AF%E4%BB%B6WannaCry%E7%9A%84FAQ/"/>
+    <id>http://weaponx.site/2017/05/16/勒索软件WannaCry的FAQ/</id>
+    <published>2017-05-16T06:48:51.000Z</published>
+    <updated>2017-05-16T07:27:11.265Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="什么是勒索软件"><a href="#什么是勒索软件" class="headerlink" title="什么是勒索软件"></a>什么是勒索软件</h2><p>勒索软件就是利用加密手段，加密感染机器上的特定文件。要求用户支付赎金（通常为比特币）后，黑客会解密被加密的文件。</p>
+<h2 id="什么是比特币"><a href="#什么是比特币" class="headerlink" title="什么是比特币"></a>什么是比特币</h2><p>比特币利用区块链(Block chain)技术，通过计算产生，总量趋于一个固定值，可以兑换成一些现实货币。</p>
+<h2 id="WannaCry勒索软件为什么会这么火"><a href="#WannaCry勒索软件为什么会这么火" class="headerlink" title="WannaCry勒索软件为什么会这么火"></a>WannaCry勒索软件为什么会这么火</h2><p>勒索软件流程时间比较长，但是WannaCry作为勒索软件中的一员，利用了NSA方程式组织的SMB漏洞利用工具EternalBlue来远程执行任意代码，这个漏洞在2017年3月微软补丁日被修复，补丁编号MS17-010。因为修复时间比较近，而且由于某些原因，国内打补丁的习惯并没有养成。</p>
+<h2 id="WannaCry是怎么加密的"><a href="#WannaCry是怎么加密的" class="headerlink" title="WannaCry是怎么加密的"></a>WannaCry是怎么加密的</h2><p>简要的说WannaCry是通过AES和RSA共同加密。其中AES是对称加密（加密密钥和解密密钥是同一个），RSA是非对称加密（加密密钥和解密密钥不同，公钥用来加密私钥用来解密反之也可）。<br>WannaCry对每个文件随机生成一个AES密钥，然后用这个密钥来加密对应的文件。随后，用内置的RSA公钥来加密这个AES密钥。</p>
+<h2 id="WannaCry支付赎金后黑客是否可以解开被加密的文件"><a href="#WannaCry支付赎金后黑客是否可以解开被加密的文件" class="headerlink" title="WannaCry支付赎金后黑客是否可以解开被加密的文件"></a>WannaCry支付赎金后黑客是否可以解开被加密的文件</h2><p>可以。解密流程是这样的，支付赎金后将Transaction id和每个文件被加密的AES密钥发给黑客。黑客验证通过即可用RSA私钥解开被加密的AES密钥，然后用户就可以用被解密的AES密钥恢复被加密的文件。</p>
+<h2 id="网上说的各种数据恢复工具可以恢复数据吗"><a href="#网上说的各种数据恢复工具可以恢复数据吗" class="headerlink" title="网上说的各种数据恢复工具可以恢复数据吗"></a>网上说的各种数据恢复工具可以恢复数据吗</h2><p>网上的一些号称解密程序基本都是基于删除的文件恢复，删除文件恢复的原理是当系统删除文件的时候并不会真正的删除文件，而是标记这块区域没有占用，只要这块内容没有被覆盖则很有可能恢复。但是WannaCry是一边删除一边写文件，而且会向源文件写入随机内容。所以基于误删恢复的基本不太可能。</p>
+<h2 id="不交赎金是否有办法恢复加密后的文件"><a href="#不交赎金是否有办法恢复加密后的文件" class="headerlink" title="不交赎金是否有办法恢复加密后的文件"></a>不交赎金是否有办法恢复加密后的文件</h2><p>基本不可能。</p>
+<h2 id="更新微软补丁能否方式勒索软件"><a href="#更新微软补丁能否方式勒索软件" class="headerlink" title="更新微软补丁能否方式勒索软件"></a>更新微软补丁能否方式勒索软件</h2><p>微软补丁只是防止勒索软件利用远程代码执行的漏洞进行传播，如果在电脑上运行了勒索软件还是会被勒索。</p>
+<h2 id="以后如何防止类似的事情发生"><a href="#以后如何防止类似的事情发生" class="headerlink" title="以后如何防止类似的事情发生"></a>以后如何防止类似的事情发生</h2><p>安装一线厂商的杀毒软件，如卡巴斯基，BitDefender等。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;什么是勒索软件&quot;&gt;&lt;a href=&quot;#什么是勒索软件&quot; class=&quot;headerlink&quot; title=&quot;什么是勒索软件&quot;&gt;&lt;/a&gt;什么是勒索软件&lt;/h2&gt;&lt;p&gt;勒索软件就是利用加密手段，加密感染机器上的特定文件。要求用户支付赎金（通常为比特币）后，黑客会解密被
+    
+    </summary>
+    
+      <category term="安全" scheme="http://weaponx.site/categories/%E5%AE%89%E5%85%A8/"/>
+    
+    
+      <category term="安全" scheme="http://weaponx.site/tags/%E5%AE%89%E5%85%A8/"/>
+    
+  </entry>
   
   <entry>
     <title>CVE-2010-3333分析[漏洞战争]</title>
@@ -1004,47 +1035,6 @@
     
     
       <category term="Django" scheme="http://weaponx.site/tags/Django/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>一种绕过TACACS+的思路</title>
-    <link href="http://weaponx.site/2017/02/08/%E4%B8%80%E7%A7%8D%E7%BB%95%E8%BF%87TACACS-%E7%9A%84%E6%80%9D%E8%B7%AF/"/>
-    <id>http://weaponx.site/2017/02/08/一种绕过TACACS-的思路/</id>
-    <published>2017-02-08T10:01:36.000Z</published>
-    <updated>2017-03-13T02:48:20.571Z</updated>
-    
-    <content type="html"><![CDATA[<p>最近对一些交换机做口令猜测检查的时候遇到一个奇怪的现象：配置AAA认证的交换机总能扫出一些弱口令，而且每次都不一样还都不能登录，更神奇的是返回的session确实能执行命令。</p>
-<a id="more"></a>
-<h2 id="0x00-什么是AAA认证"><a href="#0x00-什么是AAA认证" class="headerlink" title="0x00 什么是AAA认证"></a>0x00 什么是AAA认证</h2><p>AAA是指用使用<em>Authentication</em>、<em>Authorization</em>、<em>Accounting</em>三种功能对要管理交换机的用户做控制。<br>Authentication(认证)：对用户的身份进行认证，决定是否允许此用户访问网络设备。Authorization（授权）:针对用户的不同身份，分配不同的权限，限制每个用户的操作Accounting（计费）：对每个用户的操作进行审计和计费</p>
-<h2 id="0x01-什么是TACACS"><a href="#0x01-什么是TACACS" class="headerlink" title="0x01 什么是TACACS+"></a>0x01 什么是TACACS+</h2><p>TACACS+（Terminal Access Controller Access Control System，终端访问控制器控制系统协议）是在TACACS协议的基础上进行了功能增强的安全协议。该协议与RADIUS协议的功能类似，采用客户端/服务器模式实现NAS与TACACS+服务器之间的通信。</p>
-<h2 id="0x02-TACACS-的用途"><a href="#0x02-TACACS-的用途" class="headerlink" title="0x02 TACACS+的用途"></a>0x02 TACACS+的用途</h2><p>TACACS+协议主要用于PPP和VPDN（Virtual Private Dial-up Network，虚拟私有拨号网络）接入用户及终端用户的AAA。</p>
-<h2 id="0x03-排查过程"><a href="#0x03-排查过程" class="headerlink" title="0x03 排查过程"></a>0x03 排查过程</h2><p>说白了，AAA认证是一种集中认证的模式。所有的认证都是在AAA服务器上完成的，交换机只能得到认证结果。猜测可能是AAA认证服务器出问题了，不过不太了解AAA认证服务器。看了同事发的一篇文章(<a href="http://www.vuln.cn/7043" title="绕过 Cisco TACACS+ 的三种攻击方式" target="_blank" rel="external">http://www.vuln.cn/7043</a>)。</p>
-<p>然后看了下交换机的配置文件，找AAA认证相关的配置。发现了以下配置。</p>
-<figure class="highlight crmsh"><table><tr><td class="code"><pre><div class="line">aaa authentication login default <span class="keyword">group</span> <span class="title">tacacs</span>+ local line none</div></pre></td></tr></table></figure>
-<p>网上搜了一下，这个配置的意思就是AAA认证使用TACACS+完成。当AAA认证<strong>无法认证</strong>时使用local认证，当前面都<strong>无法认证</strong>则不需要认证（注意，不是认证失败，是无法认证。因为认证失败的话会直接返回）即可登录。</p>
-<p>现在原因已经比较清晰了，多线程口令猜测导致AAA认证服务器压力过大拒绝服务，然而本机交换机也因处理认证线程过多拒绝服务。导致最终无需认证登录交换机。</p>
-<h2 id="0x04-攻击方式"><a href="#0x04-攻击方式" class="headerlink" title="0x04 攻击方式"></a>0x04 攻击方式</h2><p>这种攻击方式也很简单，只需要向服务器发起大量请求认证的线程即可使AAA服务器拒绝服务，导致无需认证登录交换机。</p>
-<h2 id="0x05-缓解方法"><a href="#0x05-缓解方法" class="headerlink" title="0x05 缓解方法"></a>0x05 缓解方法</h2><p>要防止这种情况发生只需要改成如下语句即可。</p>
-<figure class="highlight crmsh"><table><tr><td class="code"><pre><div class="line">aaa authentication login default <span class="keyword">group</span> <span class="title">tacacs</span>+ local</div></pre></td></tr></table></figure>
-<p>意思就是，在AAA认证无法完成的情况下，使用交换机本地认证，而不是不认证直接返回命令行。</p>
-<h2 id="0x06-题外话"><a href="#0x06-题外话" class="headerlink" title="0x06 题外话"></a>0x06 题外话</h2><p>在搜索这个问题的时候在一个cisco工程实施人员的论坛中看到这样一段话，“老司机”在给新手传授“经验”</p>
-<blockquote>
-<p><code>aaa authentication login default group tacacs+ line none</code><br>这句话的意思是先使用 tacacs+认证；如果失败，则使用line认证，如果还失败，就不需要认证，这就相当于是AAA的一个后门，怕在AAA配置中把自己锁在里面出不来了，一般配AAA前先做后门，然后在配AAA。这个是实际工程中常见的一个后门，记住，做AAA一定要有后门，不然把自己锁里面就麻烦了！</p>
-</blockquote>
-<h2 id="0x07-Refer"><a href="#0x07-Refer" class="headerlink" title="0x07 Refer"></a>0x07 Refer</h2><p><a href="http://www.vuln.cn/7043" target="_blank" rel="external">http://www.vuln.cn/7043</a><br><a href="http://edwinzw.blog.sohu.com/67531824.html" target="_blank" rel="external">http://edwinzw.blog.sohu.com/67531824.html</a><br><a href="http://www.h3c.com.cn/MiniSite/Technology_Circle/Net_Reptile/The_Seven/Home/Catalog/201309/797633_97665_0.htm" target="_blank" rel="external">http://www.h3c.com.cn/MiniSite/Technology_Circle/Net_Reptile/The_Seven/Home/Catalog/201309/797633_97665_0.htm</a></p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;最近对一些交换机做口令猜测检查的时候遇到一个奇怪的现象：配置AAA认证的交换机总能扫出一些弱口令，而且每次都不一样还都不能登录，更神奇的是返回的session确实能执行命令。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="技术" scheme="http://weaponx.site/categories/tech/"/>
-    
-    
-      <category term="安全" scheme="http://weaponx.site/tags/%E5%AE%89%E5%85%A8/"/>
     
   </entry>
   
