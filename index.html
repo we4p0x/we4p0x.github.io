@@ -86,21 +86,14 @@
     <div class="entry">
       
         <h2 id="0x00-背景"><a href="#0x00-背景" class="headerlink" title="0x00 背景"></a>0x00 背景</h2><p>最近有个需求，需要源码调试glibc。由于系统的glibc没有调试符号，所以也算费了一番周折。不过ubuntu还是比较人性化的。</p>
-<h2 id="0x01-方法"><a href="#0x01-方法" class="headerlink" title="0x01 方法"></a>0x01 方法</h2><p>首先在ubuntu上安装带调试符号的libc</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">sudo apt-get install libc-dbg</div></pre></td></tr></table></figure>
-<p>在32位下命令如下:</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">sudo apt-get install libc-dbg:i386</div></pre></td></tr></table></figure>
-<p>其次，需要通过apt来下载源码。Ubuntu的源码是基于GNU libc做了修改，随意最好通过Ubuntu的源来下载。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">sudo apt-get install <span class="built_in">source</span> libc-dev</div></pre></td></tr></table></figure>
-<p>命令执行完成后会在当前目录多一个<code>eglibc-版本</code>的文件夹，比如我的机器是<code>glibc-2.19</code>，则下载的目录为<code>eglibc-2.19</code></p>
-<h2 id="0x02-使用"><a href="#0x02-使用" class="headerlink" title="0x02 使用"></a>0x02 使用</h2><p>在gdb中需要设置源码搜索路径</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">directory /home/user/eglibc-2.19/nptl</div></pre></td></tr></table></figure>
-<p>再跟进libc中就会有源码了。</p>
-
       
     </div>
     <footer>
       
+        
+          <div class="alignleft">
+            <a href="/2017/05/19/Ubuntu上源码调试glibc/#more" class="more-link">Read More</a>
+          </div>
         
         
       

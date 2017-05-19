@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://weaponx.site/"/>
-  <updated>2017-05-19T08:13:07.335Z</updated>
+  <updated>2017-05-19T08:13:46.072Z</updated>
   <id>http://weaponx.site/</id>
   
   <author>
@@ -20,9 +20,10 @@
     <link href="http://weaponx.site/2017/05/19/Ubuntu%E4%B8%8A%E6%BA%90%E7%A0%81%E8%B0%83%E8%AF%95glibc/"/>
     <id>http://weaponx.site/2017/05/19/Ubuntu上源码调试glibc/</id>
     <published>2017-05-19T08:02:47.000Z</published>
-    <updated>2017-05-19T08:13:07.335Z</updated>
+    <updated>2017-05-19T08:13:46.072Z</updated>
     
     <content type="html"><![CDATA[<h2 id="0x00-背景"><a href="#0x00-背景" class="headerlink" title="0x00 背景"></a>0x00 背景</h2><p>最近有个需求，需要源码调试glibc。由于系统的glibc没有调试符号，所以也算费了一番周折。不过ubuntu还是比较人性化的。</p>
+<a id="more"></a>
 <h2 id="0x01-方法"><a href="#0x01-方法" class="headerlink" title="0x01 方法"></a>0x01 方法</h2><p>首先在ubuntu上安装带调试符号的libc</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">sudo apt-get install libc-dbg</div></pre></td></tr></table></figure>
 <p>在32位下命令如下:</p>
@@ -37,7 +38,7 @@
     
     <summary type="html">
     
-      &lt;h2 id=&quot;0x00-背景&quot;&gt;&lt;a href=&quot;#0x00-背景&quot; class=&quot;headerlink&quot; title=&quot;0x00 背景&quot;&gt;&lt;/a&gt;0x00 背景&lt;/h2&gt;&lt;p&gt;最近有个需求，需要源码调试glibc。由于系统的glibc没有调试符号，所以也算费了一番周折。不过u
+      &lt;h2 id=&quot;0x00-背景&quot;&gt;&lt;a href=&quot;#0x00-背景&quot; class=&quot;headerlink&quot; title=&quot;0x00 背景&quot;&gt;&lt;/a&gt;0x00 背景&lt;/h2&gt;&lt;p&gt;最近有个需求，需要源码调试glibc。由于系统的glibc没有调试符号，所以也算费了一番周折。不过ubuntu还是比较人性化的。&lt;/p&gt;
     
     </summary>
     
