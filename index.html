@@ -75,6 +75,50 @@
     <header>
       
         <div class="icon"></div>
+        <time datetime="2017-05-19T08:02:47.000Z"><a href="/2017/05/19/Ubuntu上源码调试glibc/">2017-05-19</a></time>
+      
+      
+  
+    <h1 class="title"><a href="/2017/05/19/Ubuntu上源码调试glibc/">Ubuntu上源码调试glibc</a></h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <h2 id="0x00-背景"><a href="#0x00-背景" class="headerlink" title="0x00 背景"></a>0x00 背景</h2><p>最近有个需求，需要源码调试glibc。由于系统的glibc没有调试符号，所以也算费了一番周折。不过ubuntu还是比较人性化的。</p>
+<h2 id="0x01-方法"><a href="#0x01-方法" class="headerlink" title="0x01 方法"></a>0x01 方法</h2><p>首先在ubuntu上安装带调试符号的libc</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">sudo apt-get install libc-dbg</div></pre></td></tr></table></figure>
+<p>在32位下命令如下:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">sudo apt-get install libc-dbg:i386</div></pre></td></tr></table></figure>
+<p>其次，需要通过apt来下载源码。Ubuntu的源码是基于GNU libc做了修改，随意最好通过Ubuntu的源来下载。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">sudo apt-get install <span class="built_in">source</span> libc-dev</div></pre></td></tr></table></figure>
+<p>命令执行完成后会在当前目录多一个<code>eglibc-版本</code>的文件夹，比如我的机器是<code>glibc-2.19</code>，则下载的目录为<code>eglibc-2.19</code></p>
+<h2 id="0x02-使用"><a href="#0x02-使用" class="headerlink" title="0x02 使用"></a>0x02 使用</h2><p>在gdb中需要设置源码搜索路径</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">directory /home/user/eglibc-2.19/nptl</div></pre></td></tr></table></figure>
+<p>再跟进libc中就会有源码了。</p>
+
+      
+    </div>
+    <footer>
+      
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+
+  <article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
         <time datetime="2017-05-16T06:48:51.000Z"><a href="/2017/05/16/勒索软件WannaCry的FAQ/">2017-05-16</a></time>
       
       
@@ -454,46 +498,6 @@
 
 
 
-  <article class="post">
-  
-  <div class="post-content">
-    <header>
-      
-        <div class="icon"></div>
-        <time datetime="2017-03-10T04:54:07.000Z"><a href="/2017/03/09/dragon-Writeup-pwnable-kr/">2017-03-09</a></time>
-      
-      
-  
-    <h1 class="title"><a href="/2017/03/09/dragon-Writeup-pwnable-kr/">dragon Writeup[pwnable.kr]</a></h1>
-  
-
-    </header>
-    <div class="entry">
-      
-        <h2 id="0x00-dragon"><a href="#0x00-dragon" class="headerlink" title="0x00 dragon"></a>0x00 dragon</h2><p>一个小游戏，我方可以选择牧师或者骑士(死亡骑士DK,23333)，牧师的技能有<br><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">[ Priest ] 12 HP / 0 MP</div><div class="line">    [ 1 ] Holy Bolt [ Cost : 10 MP ]</div><div class="line">        Deals 20 Damage.</div><div class="line">    [ 2 ] Clarity [ Cost : 0 MP ]</div><div class="line">        Refreshes All Mana.</div><div class="line">    [ 3 ] HolyShield [ Cost: 25 MP ]</div><div class="line">        You Become Temporarily Invincible.</div></pre></td></tr></table></figure></p>
-<p>骑士的技能有</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">[ Knight ] 50 HP / 0 Mana</div><div class="line">    [ 1 ] Crash</div><div class="line">        Deals 20 Damage.</div><div class="line">    [ 2 ] Frenzy</div><div class="line">        Deals 40 Damage, But You Lose 20 HP.</div></pre></td></tr></table></figure>
-<p>然后对手是个怪兽，按照怪兽儿子，怪兽妈妈这样的顺序，然后正常打是打不过的。</p>
-      
-    </div>
-    <footer>
-      
-        
-          <div class="alignleft">
-            <a href="/2017/03/09/dragon-Writeup-pwnable-kr/#more" class="more-link">Read More</a>
-          </div>
-        
-        
-      
-      <div class="clearfix"></div>
-    </footer>
-  </div>
-</article>
-
-
-
-
-
 
 <nav id="pagination">
   
@@ -517,7 +521,7 @@
   
     <li><a href="/categories/安全/">安全</a><small>5</small></li>
   
-    <li><a href="/categories/tech/">技术</a><small>19</small></li>
+    <li><a href="/categories/tech/">技术</a><small>20</small></li>
   
     <li><a href="/categories/life/">生活</a><small>3</small></li>
   
@@ -540,7 +544,7 @@
   
     <li><a href="/tags/UAF/">UAF</a><small>2</small></li>
   
-    <li><a href="/tags/pwn/">pwn</a><small>11</small></li>
+    <li><a href="/tags/pwn/">pwn</a><small>12</small></li>
   
     <li><a href="/tags/python/">python</a><small>2</small></li>
   
@@ -555,6 +559,8 @@
     <li><a href="/tags/整形溢出/">整形溢出</a><small>1</small></li>
   
     <li><a href="/tags/漏洞分析/">漏洞分析</a><small>1</small></li>
+  
+    <li><a href="/tags/调试/">调试</a><small>1</small></li>
   
   </ul>
 </div>

@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://weaponx.site/"/>
-  <updated>2017-05-19T03:21:25.831Z</updated>
+  <updated>2017-05-19T08:13:07.335Z</updated>
   <id>http://weaponx.site/</id>
   
   <author>
@@ -14,6 +14,41 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Ubuntu上源码调试glibc</title>
+    <link href="http://weaponx.site/2017/05/19/Ubuntu%E4%B8%8A%E6%BA%90%E7%A0%81%E8%B0%83%E8%AF%95glibc/"/>
+    <id>http://weaponx.site/2017/05/19/Ubuntu上源码调试glibc/</id>
+    <published>2017-05-19T08:02:47.000Z</published>
+    <updated>2017-05-19T08:13:07.335Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="0x00-背景"><a href="#0x00-背景" class="headerlink" title="0x00 背景"></a>0x00 背景</h2><p>最近有个需求，需要源码调试glibc。由于系统的glibc没有调试符号，所以也算费了一番周折。不过ubuntu还是比较人性化的。</p>
+<h2 id="0x01-方法"><a href="#0x01-方法" class="headerlink" title="0x01 方法"></a>0x01 方法</h2><p>首先在ubuntu上安装带调试符号的libc</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">sudo apt-get install libc-dbg</div></pre></td></tr></table></figure>
+<p>在32位下命令如下:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">sudo apt-get install libc-dbg:i386</div></pre></td></tr></table></figure>
+<p>其次，需要通过apt来下载源码。Ubuntu的源码是基于GNU libc做了修改，随意最好通过Ubuntu的源来下载。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">sudo apt-get install <span class="built_in">source</span> libc-dev</div></pre></td></tr></table></figure>
+<p>命令执行完成后会在当前目录多一个<code>eglibc-版本</code>的文件夹，比如我的机器是<code>glibc-2.19</code>，则下载的目录为<code>eglibc-2.19</code></p>
+<h2 id="0x02-使用"><a href="#0x02-使用" class="headerlink" title="0x02 使用"></a>0x02 使用</h2><p>在gdb中需要设置源码搜索路径</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">directory /home/user/eglibc-2.19/nptl</div></pre></td></tr></table></figure>
+<p>再跟进libc中就会有源码了。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;0x00-背景&quot;&gt;&lt;a href=&quot;#0x00-背景&quot; class=&quot;headerlink&quot; title=&quot;0x00 背景&quot;&gt;&lt;/a&gt;0x00 背景&lt;/h2&gt;&lt;p&gt;最近有个需求，需要源码调试glibc。由于系统的glibc没有调试符号，所以也算费了一番周折。不过u
+    
+    </summary>
+    
+      <category term="技术" scheme="http://weaponx.site/categories/tech/"/>
+    
+    
+      <category term="pwn" scheme="http://weaponx.site/tags/pwn/"/>
+    
+      <category term="调试" scheme="http://weaponx.site/tags/%E8%B0%83%E8%AF%95/"/>
+    
+  </entry>
   
   <entry>
     <title>勒索软件WannaCry的FAQ</title>
@@ -1000,41 +1035,6 @@
     
     
       <category term="安全" scheme="http://weaponx.site/tags/%E5%AE%89%E5%85%A8/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Django运行时报错</title>
-    <link href="http://weaponx.site/2017/02/08/Django%E8%BF%90%E8%A1%8C%E6%97%B6%E6%8A%A5%E9%94%99/"/>
-    <id>http://weaponx.site/2017/02/08/Django运行时报错/</id>
-    <published>2017-02-08T17:05:03.000Z</published>
-    <updated>2017-02-08T17:11:41.467Z</updated>
-    
-    <content type="html"><![CDATA[<p>年前为了偷懒，做了一个自动化的web程序，用Django写的。春节放假回来发现竟然跑不起来了。<br>报如下错误：</p>
-<figure class="highlight livecodeserver"><table><tr><td class="code"><pre><div class="line">TypeError: view must be <span class="keyword">a</span> callable <span class="keyword">or</span> <span class="keyword">a</span> list/tuple <span class="keyword">in</span> <span class="keyword">the</span> <span class="keyword">case</span> <span class="keyword">of</span> <span class="built_in">include</span>()</div></pre></td></tr></table></figure>
-<p>顺手搜了一下，原来是手贱给Django升级了，最新版本的不支持原来的urls的写法了。</p>
-<a id="more"></a>
-<p>在django最新版本1.10的写法：</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><div class="line"><span class="keyword">from</span> django.conf.urls <span class="keyword">import</span> url</div><div class="line"><span class="keyword">from</span> django.conf.urls <span class="keyword">import</span> include</div><div class="line"><span class="keyword">from</span> django.contrib <span class="keyword">import</span> admin</div><div class="line"><span class="keyword">from</span> app.views <span class="keyword">import</span> index</div><div class="line">urlpatterns = [</div><div class="line">    url(<span class="string">r'^admin/'</span>, admin.site.urls),</div><div class="line">    url(<span class="string">r'^index/$'</span>,index),</div><div class="line">]</div></pre></td></tr></table></figure>
-<p>在django 1.10以下版本的写法</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><div class="line"><span class="keyword">from</span> django.conf.urls <span class="keyword">import</span> url</div><div class="line"><span class="keyword">from</span> django.conf.urls <span class="keyword">import</span> include</div><div class="line"><span class="keyword">from</span> django.contrib <span class="keyword">import</span> admin</div><div class="line"></div><div class="line">urlpatterns = [</div><div class="line">    url(<span class="string">r'^admin/'</span>, admin.site.urls),</div><div class="line">    url(<span class="string">r'^index/$'</span>,<span class="string">"app.views.index"</span>),</div><div class="line">]</div></pre></td></tr></table></figure>
-<p>改完之后，又报了一个错</p>
-<figure class="highlight stylus"><table><tr><td class="code"><pre><div class="line">AttributeError: <span class="string">'tuple'</span> <span class="selector-tag">object</span> has no attribute <span class="string">'resolve'</span></div></pre></td></tr></table></figure>
-<p>原来是urls里小括号之前的url没写，记录一下。</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;年前为了偷懒，做了一个自动化的web程序，用Django写的。春节放假回来发现竟然跑不起来了。&lt;br&gt;报如下错误：&lt;/p&gt;
-&lt;figure class=&quot;highlight livecodeserver&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;div class=&quot;line&quot;&gt;TypeError: view must be &lt;span class=&quot;keyword&quot;&gt;a&lt;/span&gt; callable &lt;span class=&quot;keyword&quot;&gt;or&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;a&lt;/span&gt; list/tuple &lt;span class=&quot;keyword&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;the&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;of&lt;/span&gt; &lt;span class=&quot;built_in&quot;&gt;include&lt;/span&gt;()&lt;/div&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-&lt;p&gt;顺手搜了一下，原来是手贱给Django升级了，最新版本的不支持原来的urls的写法了。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="技术" scheme="http://weaponx.site/categories/tech/"/>
-    
-    
-      <category term="Django" scheme="http://weaponx.site/tags/Django/"/>
     
   </entry>
   
