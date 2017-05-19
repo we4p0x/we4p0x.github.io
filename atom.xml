@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://weaponx.site/"/>
-  <updated>2017-05-19T08:13:46.072Z</updated>
+  <updated>2017-05-19T08:17:05.219Z</updated>
   <id>http://weaponx.site/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="http://weaponx.site/2017/05/19/Ubuntu%E4%B8%8A%E6%BA%90%E7%A0%81%E8%B0%83%E8%AF%95glibc/"/>
     <id>http://weaponx.site/2017/05/19/Ubuntu上源码调试glibc/</id>
     <published>2017-05-19T08:02:47.000Z</published>
-    <updated>2017-05-19T08:13:46.072Z</updated>
+    <updated>2017-05-19T08:17:05.219Z</updated>
     
     <content type="html"><![CDATA[<h2 id="0x00-背景"><a href="#0x00-背景" class="headerlink" title="0x00 背景"></a>0x00 背景</h2><p>最近有个需求，需要源码调试glibc。由于系统的glibc没有调试符号，所以也算费了一番周折。不过ubuntu还是比较人性化的。</p>
 <a id="more"></a>
@@ -30,6 +30,7 @@
 <figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">sudo apt-get install libc-dbg:i386</div></pre></td></tr></table></figure>
 <p>其次，需要通过apt来下载源码。Ubuntu的源码是基于GNU libc做了修改，随意最好通过Ubuntu的源来下载。</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">sudo apt-get install <span class="built_in">source</span> libc-dev</div></pre></td></tr></table></figure>
+<p>执行这条命令可能会报错。因为在替换国内源的时候，没有加上deb-src的源。在<code>source.list</code>中查看是否有deb-src，如果没有，添加这个源即可。</p>
 <p>命令执行完成后会在当前目录多一个<code>eglibc-版本</code>的文件夹，比如我的机器是<code>glibc-2.19</code>，则下载的目录为<code>eglibc-2.19</code></p>
 <h2 id="0x02-使用"><a href="#0x02-使用" class="headerlink" title="0x02 使用"></a>0x02 使用</h2><p>在gdb中需要设置源码搜索路径</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">directory /home/user/eglibc-2.19/nptl</div></pre></td></tr></table></figure>
