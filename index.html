@@ -75,21 +75,27 @@
     <header>
       
         <div class="icon"></div>
-        <time datetime="2017-05-19T09:17:24.000Z"><a href="/2017/05/19/ISCC中pwn200-shell无法启动原因详解/">2017-05-19</a></time>
+        <time datetime="2017-05-24T01:31:40.000Z"><a href="/2017/05/23/CVE-2010-2553分析-漏洞战争/">2017-05-23</a></time>
       
       
   
-    <h1 class="title"><a href="/2017/05/19/ISCC中pwn200-shell无法启动原因详解/">ISCC中pwn200 shell无法启动原因详解</a></h1>
+    <h1 class="title"><a href="/2017/05/23/CVE-2010-2553分析-漏洞战争/">CVE-2010-2553分析[漏洞战争]</a></h1>
   
 
     </header>
     <div class="entry">
       
-        
+        <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>CVE 2010-2553漏洞，也称为MicrosoftWindows Cinepak 编码解码器解压缩漏洞，影响的操作系统版本有：Microsoft Windows XP SP2和SP3，WindowsVista SP1和SP2，以及Windows 7。</p>
+<p>漏洞原因在于Cinepak 编码解码器对媒体文件解压缩时代码控制不恰当，可导致远程代码执行。如果用户打开特制的媒体文件，此漏洞可能允许执行代码。如果用户使用管理用户权限登录，成功利用此漏洞的攻击者便可完全控制受影响的系统。</p>
+<p>漏洞利用wmplay.exe，而wmplay.exe这个播放器在国内很少有人使用，如果被攻击者使用了第三方的视频播放软件，很难攻击成功，这可能也是这一漏洞不被分析重视的一大原因。</p>
       
     </div>
     <footer>
       
+        
+          <div class="alignleft">
+            <a href="/2017/05/23/CVE-2010-2553分析-漏洞战争/#more" class="more-link">Read More</a>
+          </div>
         
         
       
@@ -504,7 +510,7 @@
   <h3 class="title">分类</h3>
   <ul class="entry">
   
-    <li><a href="/categories/安全/">安全</a><small>5</small></li>
+    <li><a href="/categories/安全/">安全</a><small>6</small></li>
   
     <li><a href="/categories/tech/">技术</a><small>20</small></li>
   
@@ -537,15 +543,13 @@
   
     <li><a href="/tags/博客/">博客</a><small>4</small></li>
   
-    <li><a href="/tags/安全/">安全</a><small>14</small></li>
+    <li><a href="/tags/安全/">安全</a><small>15</small></li>
   
     <li><a href="/tags/影评/">影评</a><small>1</small></li>
   
     <li><a href="/tags/整形溢出/">整形溢出</a><small>1</small></li>
   
-    <li><a href="/tags/漏洞/">漏洞</a><small>0</small></li>
-  
-    <li><a href="/tags/漏洞分析/">漏洞分析</a><small>1</small></li>
+    <li><a href="/tags/漏洞分析/">漏洞分析</a><small>2</small></li>
   
     <li><a href="/tags/调试/">调试</a><small>1</small></li>
   
