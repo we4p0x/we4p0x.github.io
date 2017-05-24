@@ -75,6 +75,78 @@
     <header>
       
         <div class="icon"></div>
+        <time datetime="2017-05-24T01:31:40.000Z"><a href="/2017/05/23/CVE-2010-2553分析-漏洞战争/">2017-05-23</a></time>
+      
+      
+  
+    <h1 class="title"><a href="/2017/05/23/CVE-2010-2553分析-漏洞战争/">CVE-2010-2553分析[漏洞战争]</a></h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>CVE 2010-2553漏洞，也称为MicrosoftWindows Cinepak 编码解码器解压缩漏洞，影响的操作系统版本有：Microsoft Windows XP SP2和SP3，WindowsVista SP1和SP2，以及Windows 7。</p>
+<p>漏洞原因在于Cinepak 编码解码器对媒体文件解压缩时代码控制不恰当，可导致远程代码执行。如果用户打开特制的媒体文件，此漏洞可能允许执行代码。如果用户使用管理用户权限登录，成功利用此漏洞的攻击者便可完全控制受影响的系统。</p>
+<p>漏洞利用wmplay.exe，而wmplay.exe这个播放器在国内很少有人使用，如果被攻击者使用了第三方的视频播放软件，很难攻击成功，这可能也是这一漏洞不被分析重视的一大原因。</p>
+      
+    </div>
+    <footer>
+      
+        
+          <div class="alignleft">
+            <a href="/2017/05/23/CVE-2010-2553分析-漏洞战争/#more" class="more-link">Read More</a>
+          </div>
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+
+  <article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2017-05-19T09:17:24.000Z"><a href="/2017/05/19/ISCC中pwn200-shell无法启动原因详解/">2017-05-19</a></time>
+      
+      
+  
+    <h1 class="title"><a href="/2017/05/19/ISCC中pwn200-shell无法启动原因详解/">ISCC中pwn200 shell无法启动原因详解</a></h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        
+      
+    </div>
+    <footer>
+      
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+
+  <article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
         <time datetime="2017-05-19T08:02:47.000Z"><a href="/2017/05/19/Ubuntu上源码调试glibc/">2017-05-19</a></time>
       
       
@@ -400,97 +472,6 @@
 
 
 
-  <article class="post">
-  
-  <div class="post-content">
-    <header>
-      
-        <div class="icon"></div>
-        <time datetime="2017-03-23T09:39:36.000Z"><a href="/2017/03/23/Linux如何搜索动态库/">2017-03-23</a></time>
-      
-      
-  
-    <h1 class="title"><a href="/2017/03/23/Linux如何搜索动态库/">Linux如何搜索动态库</a></h1>
-  
-
-    </header>
-    <div class="entry">
-      
-        <h2 id="0x00-背景"><a href="#0x00-背景" class="headerlink" title="0x00 背景"></a>0x00 背景</h2><p>在linux下安装一些程序，或者在做pwnable的时候经常出现没有找到动态库的情况。</p>
-<h2 id="0x01-如何链接动态库"><a href="#0x01-如何链接动态库" class="headerlink" title="0x01 如何链接动态库"></a>0x01 如何链接动态库</h2><p>链接动态库通常有五中方法：</p>
-<ol>
-<li>链接时使用静态库，gcc编译时添加参数</li>
-<li>使用<code>LD_LIBRARY_PATH</code>指定搜索路径, <code>export LD_LIBRARY_PATH=`pwd` </code></li>
-<li>编译时使用<code>-rpath</code>指定动态库的搜索路径</li>
-<li>修改<code>/etc/ld.so.conf</code>，添加动态库搜索路径</li>
-<li>复制动态库到系统默认的路径下，如<code>/lib</code>，<code>/usr/lib</code></li>
-</ol>
-<h2 id="0x02-动态库搜索路径的优先级"><a href="#0x02-动态库搜索路径的优先级" class="headerlink" title="0x02 动态库搜索路径的优先级"></a>0x02 动态库搜索路径的优先级</h2><p>动态库搜索路径优先级由高到低排列情况如下：</p>
-<ol>
-<li>编译时指定动态库搜索路径</li>
-<li>环境变量<code>LD_LIBRARY_PATH</code>中的路径</li>
-<li>配置文件<code>/etc/ld/so.conf</code>中的路径</li>
-<li>系统默认的路径<code>lib</code>等</li>
-</ol>
-<h2 id="0x03-Refer"><a href="#0x03-Refer" class="headerlink" title="0x03 Refer"></a>0x03 Refer</h2><p><a href="http://blog.csdn.net/liuxing_lanyue/article/details/20067423" target="_blank" rel="external">http://blog.csdn.net/liuxing_lanyue/article/details/20067423</a><br><a href="http://blog.csdn.net/onlyou930/article/details/6565906" target="_blank" rel="external">http://blog.csdn.net/onlyou930/article/details/6565906</a><br><a href="http://blog.chinaunix.net/uid-23069658-id-4028681.html" target="_blank" rel="external">http://blog.chinaunix.net/uid-23069658-id-4028681.html</a></p>
-
-      
-    </div>
-    <footer>
-      
-        
-        
-      
-      <div class="clearfix"></div>
-    </footer>
-  </div>
-</article>
-
-
-
-
-
-  <article class="post">
-  
-  <div class="post-content">
-    <header>
-      
-        <div class="icon"></div>
-        <time datetime="2017-03-13T09:54:42.000Z"><a href="/2017/03/13/mmap及linux地址空间随机化失效漏洞/">2017-03-13</a></time>
-      
-      
-  
-    <h1 class="title"><a href="/2017/03/13/mmap及linux地址空间随机化失效漏洞/">mmap及linux地址空间随机化失效漏洞</a></h1>
-  
-
-    </header>
-    <div class="entry">
-      
-        <p>Linux下动态库是通过<code>mmap</code>建立起内存和文件的映射关系。其定义如下<code>void* mmap(void* start,size_t length,int prot,int flags,int fd,off_t offset);</code>，在第一个参数<code>start</code>为<code>NULL</code>的时候系统会随机分配一个地址，我们可以通过示例来看<code>mmap</code>映射地址的流程。</p>
-<p>分析一下程序加载<code>libc.so</code>的流程</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">open(<span class="string">"/lib/libc.so.6"</span>, O_RDONLY)        = 3</div><div class="line"><span class="built_in">read</span>(3, <span class="string">"\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0 n\1\0004\0\0\0"</span>..., 512) = 512</div><div class="line">fstat64(3, &#123;st_mode=S_IFREG|0755, st_size=1409436, ...&#125;) = 0</div><div class="line">mmap2(NULL, 1415560, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0xb75b1000</div><div class="line">mmap2(0xb7705000, 12288, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x154) = 0xb7705000</div><div class="line">mmap2(0xb7708000, 10632, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xb7708000</div><div class="line">close(3)</div></pre></td></tr></table></figure>
-<p>在通常情况下通过<code>mmap</code>映射的地址会被内核进行随机化处理，所以每次程序运行加载的动态库基址都不相同。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">~ $ ldd mmap</div><div class="line">    linux-gate.so.1 =&gt;  (0xb77d9000)</div><div class="line">    libc.so.6 =&gt; /lib/libc.so.6 (0xb7654000)</div><div class="line">    /lib/ld-linux.so.2 (0xb77bd000)</div><div class="line">~ $ ldd mmap</div><div class="line">    linux-gate.so.1 =&gt;  (0xb7738000)</div><div class="line">    libc.so.6 =&gt; /lib/libc.so.6 (0xb75b3000)</div><div class="line">    /lib/ld-linux.so.2 (0xb771c000)</div></pre></td></tr></table></figure>
-      
-    </div>
-    <footer>
-      
-        
-          <div class="alignleft">
-            <a href="/2017/03/13/mmap及linux地址空间随机化失效漏洞/#more" class="more-link">Read More</a>
-          </div>
-        
-        
-      
-      <div class="clearfix"></div>
-    </footer>
-  </div>
-</article>
-
-
-
-
-
 
 <nav id="pagination">
   
@@ -512,7 +493,7 @@
   <h3 class="title">分类</h3>
   <ul class="entry">
   
-    <li><a href="/categories/安全/">安全</a><small>5</small></li>
+    <li><a href="/categories/安全/">安全</a><small>6</small></li>
   
     <li><a href="/categories/tech/">技术</a><small>20</small></li>
   
@@ -545,11 +526,13 @@
   
     <li><a href="/tags/博客/">博客</a><small>4</small></li>
   
-    <li><a href="/tags/安全/">安全</a><small>14</small></li>
+    <li><a href="/tags/安全/">安全</a><small>15</small></li>
   
     <li><a href="/tags/影评/">影评</a><small>1</small></li>
   
     <li><a href="/tags/整形溢出/">整形溢出</a><small>1</small></li>
+  
+    <li><a href="/tags/漏洞/">漏洞</a><small>1</small></li>
   
     <li><a href="/tags/漏洞分析/">漏洞分析</a><small>1</small></li>
   
