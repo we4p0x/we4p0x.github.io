@@ -114,6 +114,43 @@
     <header>
       
         <div class="icon"></div>
+        <time datetime="2017-05-19T09:17:24.000Z"><a href="/2017/05/19/ISCC中pwn200-shell无法启动原因详解/">2017-05-19</a></time>
+      
+      
+  
+    <h1 class="title"><a href="/2017/05/19/ISCC中pwn200-shell无法启动原因详解/">ISCC中pwn200 shell无法启动原因详解</a></h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <h2 id="0x00-背景"><a href="#0x00-背景" class="headerlink" title="0x00 背景"></a>0x00 背景</h2><p>一朋友问到在pwn中，gdb调试看到了<code>systemm(&quot;/bin/sh&quot;)</code>了，但是shell确无法启动。于是我详细看了一下这个题目，发现自己的exploit绝大多数情况下也无法启动shell。</p>
+      
+    </div>
+    <footer>
+      
+        
+          <div class="alignleft">
+            <a href="/2017/05/19/ISCC中pwn200-shell无法启动原因详解/#more" class="more-link">Read More</a>
+          </div>
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+
+  <article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
         <time datetime="2017-05-19T08:02:47.000Z"><a href="/2017/05/19/Ubuntu上源码调试glibc/">2017-05-19</a></time>
       
       
@@ -439,56 +476,6 @@
 
 
 
-  <article class="post">
-  
-  <div class="post-content">
-    <header>
-      
-        <div class="icon"></div>
-        <time datetime="2017-03-23T09:39:36.000Z"><a href="/2017/03/23/Linux如何搜索动态库/">2017-03-23</a></time>
-      
-      
-  
-    <h1 class="title"><a href="/2017/03/23/Linux如何搜索动态库/">Linux如何搜索动态库</a></h1>
-  
-
-    </header>
-    <div class="entry">
-      
-        <h2 id="0x00-背景"><a href="#0x00-背景" class="headerlink" title="0x00 背景"></a>0x00 背景</h2><p>在linux下安装一些程序，或者在做pwnable的时候经常出现没有找到动态库的情况。</p>
-<h2 id="0x01-如何链接动态库"><a href="#0x01-如何链接动态库" class="headerlink" title="0x01 如何链接动态库"></a>0x01 如何链接动态库</h2><p>链接动态库通常有五中方法：</p>
-<ol>
-<li>链接时使用静态库，gcc编译时添加参数</li>
-<li>使用<code>LD_LIBRARY_PATH</code>指定搜索路径, <code>export LD_LIBRARY_PATH=`pwd` </code></li>
-<li>编译时使用<code>-rpath</code>指定动态库的搜索路径</li>
-<li>修改<code>/etc/ld.so.conf</code>，添加动态库搜索路径</li>
-<li>复制动态库到系统默认的路径下，如<code>/lib</code>，<code>/usr/lib</code></li>
-</ol>
-<h2 id="0x02-动态库搜索路径的优先级"><a href="#0x02-动态库搜索路径的优先级" class="headerlink" title="0x02 动态库搜索路径的优先级"></a>0x02 动态库搜索路径的优先级</h2><p>动态库搜索路径优先级由高到低排列情况如下：</p>
-<ol>
-<li>编译时指定动态库搜索路径</li>
-<li>环境变量<code>LD_LIBRARY_PATH</code>中的路径</li>
-<li>配置文件<code>/etc/ld/so.conf</code>中的路径</li>
-<li>系统默认的路径<code>lib</code>等</li>
-</ol>
-<h2 id="0x03-Refer"><a href="#0x03-Refer" class="headerlink" title="0x03 Refer"></a>0x03 Refer</h2><p><a href="http://blog.csdn.net/liuxing_lanyue/article/details/20067423" target="_blank" rel="external">http://blog.csdn.net/liuxing_lanyue/article/details/20067423</a><br><a href="http://blog.csdn.net/onlyou930/article/details/6565906" target="_blank" rel="external">http://blog.csdn.net/onlyou930/article/details/6565906</a><br><a href="http://blog.chinaunix.net/uid-23069658-id-4028681.html" target="_blank" rel="external">http://blog.chinaunix.net/uid-23069658-id-4028681.html</a></p>
-
-      
-    </div>
-    <footer>
-      
-        
-        
-      
-      <div class="clearfix"></div>
-    </footer>
-  </div>
-</article>
-
-
-
-
-
 
 <nav id="pagination">
   
@@ -510,7 +497,7 @@
   <h3 class="title">分类</h3>
   <ul class="entry">
   
-    <li><a href="/categories/安全/">安全</a><small>6</small></li>
+    <li><a href="/categories/安全/">安全</a><small>7</small></li>
   
     <li><a href="/categories/tech/">技术</a><small>20</small></li>
   
@@ -535,7 +522,7 @@
   
     <li><a href="/tags/UAF/">UAF</a><small>2</small></li>
   
-    <li><a href="/tags/pwn/">pwn</a><small>12</small></li>
+    <li><a href="/tags/pwn/">pwn</a><small>13</small></li>
   
     <li><a href="/tags/python/">python</a><small>2</small></li>
   
@@ -543,7 +530,7 @@
   
     <li><a href="/tags/博客/">博客</a><small>4</small></li>
   
-    <li><a href="/tags/安全/">安全</a><small>15</small></li>
+    <li><a href="/tags/安全/">安全</a><small>16</small></li>
   
     <li><a href="/tags/影评/">影评</a><small>1</small></li>
   

@@ -1,0 +1,266 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>ISCC中pwn200 shell无法启动原因详解 | WeaponX&#39;s Blog</title>
+  <meta name="author" content="WeaponX">
+  
+  <meta name="description" content="Vulnerability|Security|Binary">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="ISCC中pwn200 shell无法启动原因详解"/>
+  <meta property="og:site_name" content="WeaponX&#39;s Blog"/>
+
+  
+    <meta property="og:image" content="undefined"/>
+  
+
+  <link href="/favicon.png" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="WeaponX&#39;s Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?ab50f379bb6434641ee0125ce5d37f23";
+    var s = document.getElementsByTagName("script")[0]; 
+    s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+  <script>
+  (function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+      bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+   })();
+   </script>
+</head>
+
+
+<body>
+  <header id="header" class="inner"><div class="alignleft">
+  <h1><a href="/">WeaponX&#39;s Blog</a></h1>
+  <h2><a href="/">Binary</a></h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div>
+</header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2017-05-19T09:17:24.000Z"><a href="/2017/05/19/ISCC中pwn200-shell无法启动原因详解/">2017-05-19</a></time>
+      
+      
+  
+    <h1 class="title">ISCC中pwn200 shell无法启动原因详解</h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <h2 id="0x00-背景"><a href="#0x00-背景" class="headerlink" title="0x00 背景"></a>0x00 背景</h2><p>一朋友问到在pwn中，gdb调试看到了<code>systemm(&quot;/bin/sh&quot;)</code>了，但是shell确无法启动。于是我详细看了一下这个题目，发现自己的exploit绝大多数情况下也无法启动shell。</p>
+<a id="more"></a>
+<h2 id="0x01-题目解答"><a href="#0x01-题目解答" class="headerlink" title="0x01 题目解答"></a>0x01 题目解答</h2><p>用IDA逆了一下，程序很简单，printf的参数可以控制。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="keyword">int</span> __cdecl __<span class="function">noreturn <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> **argv, <span class="keyword">const</span> <span class="keyword">char</span> **envp)</span></span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">int</span> v3; <span class="comment">// [sp+14h] [bp-6Ch]@3</span></div><div class="line">  <span class="keyword">int</span> v4; <span class="comment">// [sp+18h] [bp-68h]@5</span></div><div class="line">  <span class="keyword">int</span> v5; <span class="comment">// [sp+7Ch] [bp-4h]@1</span></div><div class="line"></div><div class="line">  v5 = *MK_FP(__GS__, <span class="number">20</span>);</div><div class="line">  setbuf(<span class="built_in">stdout</span>, <span class="number">0</span>);</div><div class="line">  <span class="keyword">while</span> ( <span class="number">1</span> )</div><div class="line">  &#123;</div><div class="line">    introduce();</div><div class="line">    <span class="keyword">do</span></div><div class="line">      __isoc99_scanf(<span class="string">"%d"</span>, &amp;v3);</div><div class="line">    <span class="keyword">while</span> ( (<span class="keyword">char</span> *)(<span class="keyword">char</span>)getchar() == <span class="string">"\n"</span> );</div><div class="line">    <span class="keyword">if</span> ( v3 == <span class="number">1</span> )</div><div class="line">    &#123;</div><div class="line">      <span class="built_in">puts</span>(<span class="string">"please input your name:"</span>);</div><div class="line">      gets((<span class="keyword">char</span> *)&amp;v4);</div><div class="line">      <span class="built_in">printf</span>((<span class="keyword">const</span> <span class="keyword">char</span> *)&amp;v4);</div><div class="line">      <span class="built_in">puts</span>(<span class="string">",you are welcome!"</span>);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">else</span> <span class="keyword">if</span> ( v3 == <span class="number">2</span> )</div><div class="line">    &#123;</div><div class="line">      <span class="built_in">puts</span>(<span class="string">"nothing!!!!lol"</span>);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">else</span></div><div class="line">    &#123;</div><div class="line">      <span class="built_in">puts</span>(<span class="string">"please,don't trick me"</span>);</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>程序是一个循环，所以可以无限次的利于格式化字符串漏洞。</p>
+<p>我们可以通过第一次利用，泄漏任意一个函数的地址，通过libc计算偏移从而计算出system函数的地址。<br>通过第二次利用可以通过printf来覆盖gets的GOT表中的地址的前三位（小端存储），即可将gets的GOT中的地址换成system的地址。<br>有了system的地址，还需要一个<code>sh</code>的地址。然而由于gets的参数就是指针，所以需要v4指向的值为<code>sh</code>。于是可以在第二次利用payload中加上字符<code>sh</code>，此时有个技巧，因为没法控制<code>sh</code>后面是0x00，所以需要在sh后面加一个分号，这样就将这个长字符串当成<code>sh</code>和未知命令来执行。</p>
+<p>写GOT表还有个小技巧，因为通过printf来写内存的时候是将printf打印出来字符的数量写入内存。因此，当写一个很大的值时屏幕会打印很多字符导致程序崩掉。</p>
+<p>所以，在这里我们使用一字节写<code>%hhn</code>,按字节顺序写gets函数GOT表中的三个字节（一次完成）。</p>
+<p>system -&gt; __libc_system -&gt; do_system -&gt; execve</p>
+<p>do_system</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> FORK</span></div><div class="line">  pid = FORK ();</div><div class="line"><span class="meta">#<span class="meta-keyword">else</span></span></div><div class="line">  pid = __fork ();</div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></div><div class="line">  <span class="keyword">if</span> (pid == (<span class="keyword">pid_t</span>) <span class="number">0</span>)</div><div class="line">    &#123;</div><div class="line">      <span class="comment">/* Child side.  */</span></div><div class="line">      <span class="keyword">const</span> <span class="keyword">char</span> *new_argv[<span class="number">4</span>];</div><div class="line">      new_argv[<span class="number">0</span>] = SHELL_NAME;</div><div class="line">      new_argv[<span class="number">1</span>] = <span class="string">"-c"</span>;</div><div class="line">      new_argv[<span class="number">2</span>] = line;</div><div class="line">      new_argv[<span class="number">3</span>] = <span class="literal">NULL</span>;</div><div class="line"></div><div class="line">      <span class="comment">/* Restore the signals.  */</span></div><div class="line">      (<span class="keyword">void</span>) __sigaction (SIGINT, &amp;intr, (<span class="keyword">struct</span> sigaction *) <span class="literal">NULL</span>);</div><div class="line">      (<span class="keyword">void</span>) __sigaction (SIGQUIT, &amp;quit, (<span class="keyword">struct</span> sigaction *) <span class="literal">NULL</span>);</div><div class="line">      (<span class="keyword">void</span>) __sigprocmask (SIG_SETMASK, &amp;omask, (<span class="keyword">sigset_t</span> *) <span class="literal">NULL</span>);</div><div class="line">      INIT_LOCK ();</div><div class="line"></div><div class="line">      <span class="comment">/* Exec the shell.  */</span></div><div class="line">      (<span class="keyword">void</span>) __execve (SHELL_PATH, (<span class="keyword">char</span> *<span class="keyword">const</span> *) new_argv, __environ);</div><div class="line">      _exit (<span class="number">127</span>);</div><div class="line">    &#125;</div><div class="line">  <span class="keyword">else</span> <span class="keyword">if</span> (pid &lt; (<span class="keyword">pid_t</span>) <span class="number">0</span>)</div><div class="line">    <span class="comment">/* The fork failed.  */</span></div><div class="line">    status = <span class="number">-1</span>;</div><div class="line">  <span class="keyword">else</span></div><div class="line">    <span class="comment">/* Parent side.  */</span></div><div class="line">    &#123;</div><div class="line">      <span class="comment">/* Note the system() is a cancellation point.  But since we call</span></div><div class="line">     waitpid() which itself is a cancellation point we do not</div><div class="line">     have to do anything here.  */</div><div class="line">      <span class="keyword">if</span> (TEMP_FAILURE_RETRY (__waitpid (pid, &amp;status, <span class="number">0</span>)) != pid)</div><div class="line">    status = <span class="number">-1</span>;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>可以看出do_system的流程是这样的，先fork一个进程。子进程去执行execve。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><div class="line">Legend: code, data, rodata, value</div><div class="line"><span class="number">136</span>       (<span class="keyword">void</span>) __execve (SHELL_PATH, (<span class="keyword">char</span> *<span class="keyword">const</span> *) new_argv, __environ);</div><div class="line">gdb-peda$ p new_argv</div><div class="line">$<span class="number">3</span> = &#123;<span class="number">0xf7732bb1</span> <span class="string">"sh"</span>, <span class="number">0xf7732ba9</span> <span class="string">"-c"</span>,</div><div class="line">  <span class="number">0xffb4b4d8</span> <span class="string">"sh;a\024\240\004\b\025\240\004\b\026\240\004\b%7$hhn"</span>, <span class="string">'b'</span> &lt;repeats <span class="number">178</span> times&gt;..., <span class="number">0x0</span>&#125;</div><div class="line">gdb-peda$ p __environ</div><div class="line">$<span class="number">4</span> = (<span class="keyword">char</span> **) <span class="number">0xffb4b5ec</span></div><div class="line">gdb-peda$ x/wx <span class="number">0xffb4b5ec</span></div><div class="line"><span class="number">0xffb4b5ec</span>: <span class="number">0x63636363</span>  =&gt; not Accessable</div><div class="line">gdb-peda$</div></pre></td></tr></table></figure>
+<p>可以看出<code>__environ</code>与<code>new_argv</code>中的第三个元素只差0x114 = 276个字符，所以直接被payload覆盖了。</p>
+<p>execve有三个参数，第一个参数是，第二个参数是argv，第三个参数是envp。其中第二个参数和第三个参数都是char **类型的，也就是说都是字符串数组。然而，我们可以通过调试看出由于argv中的第三个元素，也就是我们system的参数过长，导致覆盖掉了<code>__environ</code>，也就是覆盖了<code>__environ</code>中的指针，此时程序会访问这个指针指向的地址，当然这个地址是不可访问的。程序fork出来的进程就会crash。所以shell并没有启动起来。</p>
+<p>那么还有一个问题，有时候shell却能起成功。原因是：人品好！因为payload是根据system地址动态变化的，所以当地址差值刚好变小的时候payload无法覆盖__environ。这时候shell便可以成功启动。</p>
+<h2 id="0x03-解决方法"><a href="#0x03-解决方法" class="headerlink" title="0x03 解决方法"></a>0x03 解决方法</h2><p>在printf修改GOT表的时候，同时将payload用0x00截断即可。</p>
+
+      
+    </div>
+    <footer>
+      
+        
+          <p style="border-top: #e0e0e0 1px dashed; border-right: #e0e0e0 1px dashed; border-bottom: #e0e0e0 1px dashed; border-left: #e0e0e0 1px dashed; padding-top: 10px;padding-right: 10px;padding-bottom: 10px;padding-left: 110px; background: url(http://i.creativecommons.org/l/by-nc-sa/2.5/cn/88x31.png) #e5f1f4 no-repeat 1% 50%; font-family: 微软雅黑; font-size:11px;" id="PSignature">  
+作者：<a href="http://weaponx.site">WeaponX</a>
+<br>出处：<a href="http://weaponx.site/2017/05/19/ISCC中pwn200-shell无法启动原因详解/">http://weaponx.site/2017/05/19/ISCC中pwn200-shell无法启动原因详解/</a>           
+<br>本文采用<a href="http://creativecommons.org/licenses/by-nc-sa/2.5/cn/" rel="license">知识共享署名-非商业性使用-相同方式共享 2.5 中国大陆许可协议</a>进行许可，欢迎转载，但未经作者同意必须保留此段声明，且在文章页面明显位置给出原文连接。
+</p>
+
+        
+        
+  
+  <div class="categories">
+    <a href="/categories/安全/">安全</a>
+  </div>
+
+        
+  
+  <div class="tags">
+    <a href="/tags/安全/">安全</a>, <a href="/tags/pwn/">pwn</a>
+  </div>
+
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  
+  
+  
+    <div id="cloud-tie-wrapper" class="cloud-tie-wrapper"></div>
+    <script src="https://img1.cache.netease.com/f2e/tie/yun/sdk/loader.js"></script>
+    <script>
+    var cloudTieConfig = {
+        url: document.location.href, 
+        sourceId: "",
+        productKey: "0d4cadd44ae547119479fb84d9f5260e",
+        target: "cloud-tie-wrapper"
+    };
+    var yunManualLoad = true;
+    Tie.loader("aHR0cHM6Ly9hcGkuZ2VudGllLjE2My5jb20vcGMvbGl2ZXNjcmlwdC5odG1s", true);
+    </script>
+  
+</section>
+
+
+</div></div>
+    <aside id="sidebar" class="alignright">
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="搜索">
+    <input type="hidden" name="q" value="site:weaponx.site">
+  </form>
+</div>
+
+  
+<div class="widget tag">
+  <h3 class="title">分类</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/安全/">安全</a><small>7</small></li>
+  
+    <li><a href="/categories/tech/">技术</a><small>20</small></li>
+  
+    <li><a href="/categories/life/">生活</a><small>3</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">标签</h3>
+  <ul class="entry">
+  
+    <li><a href="/tags/ASLR/">ASLR</a><small>1</small></li>
+  
+    <li><a href="/tags/Django/">Django</a><small>1</small></li>
+  
+    <li><a href="/tags/Hexo/">Hexo</a><small>4</small></li>
+  
+    <li><a href="/tags/Linux/">Linux</a><small>1</small></li>
+  
+    <li><a href="/tags/UAF/">UAF</a><small>2</small></li>
+  
+    <li><a href="/tags/pwn/">pwn</a><small>13</small></li>
+  
+    <li><a href="/tags/python/">python</a><small>2</small></li>
+  
+    <li><a href="/tags/wargame/">wargame</a><small>3</small></li>
+  
+    <li><a href="/tags/博客/">博客</a><small>4</small></li>
+  
+    <li><a href="/tags/安全/">安全</a><small>16</small></li>
+  
+    <li><a href="/tags/影评/">影评</a><small>1</small></li>
+  
+    <li><a href="/tags/整形溢出/">整形溢出</a><small>1</small></li>
+  
+    <li><a href="/tags/漏洞分析/">漏洞分析</a><small>2</small></li>
+  
+    <li><a href="/tags/调试/">调试</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">友情链接</h3>
+  <ul class="entry">
+  
+    <li><a href="http://www.cnblogs.com/goabout2/" title="goabout2">goabout2</a></li>
+  
+    <li><a href="http://rootkiter.com/" title="RootKiter">RootKiter</a></li>
+  
+    <li><a href="http://reverse-tcp.xyz/" title="Urahara">Urahara</a></li>
+  
+    <li><a href="https://www.leavesongs.com/" title="phith0n牛的离别歌">phith0n</a></li>
+  
+  </ul>
+</div>
+
+
+
+  <div class="widget tag">
+  <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=270 height=86 src="//music.163.com/outchain/player?type=2&id=427542287&auto=0&height=66"></iframe>
+</div>
+
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  &copy; 2017 WeaponX
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="http://apps.bdimg.com/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+
+</body>
+</html>
