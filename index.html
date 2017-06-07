@@ -75,6 +75,43 @@
     <header>
       
         <div class="icon"></div>
+        <time datetime="2017-06-07T10:03:55.000Z"><a href="/2017/06/07/NETBIOS主机名编码算法/">2017-06-07</a></time>
+      
+      
+  
+    <h1 class="title"><a href="/2017/06/07/NETBIOS主机名编码算法/">NETBIOS主机名编码算法</a></h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <p>最近在看SMB协议，在自己构造数据包的时候发现了一个问题。</p>
+      
+    </div>
+    <footer>
+      
+        
+          <div class="alignleft">
+            <a href="/2017/06/07/NETBIOS主机名编码算法/#more" class="more-link">Read More</a>
+          </div>
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+
+  <article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
         <time datetime="2017-05-24T01:31:40.000Z"><a href="/2017/05/23/CVE-2010-2553分析-漏洞战争/">2017-05-23</a></time>
       
       
@@ -434,48 +471,6 @@
 
 
 
-  <article class="post">
-  
-  <div class="post-content">
-    <header>
-      
-        <div class="icon"></div>
-        <time datetime="2017-03-24T08:34:20.000Z"><a href="/2017/03/24/unexploitable-Writeup-pwnable-tw/">2017-03-24</a></time>
-      
-      
-  
-    <h1 class="title"><a href="/2017/03/24/unexploitable-Writeup-pwnable-tw/">unexploitable Writeup[pwnable.tw]</a></h1>
-  
-
-    </header>
-    <div class="entry">
-      
-        <h2 id="0x00-unexploitable"><a href="#0x00-unexploitable" class="headerlink" title="0x00 unexploitable"></a>0x00 unexploitable</h2><p>最近在刷pwnable.tw（类似pwnable.kr，不过是台湾的）的题，看到了一个unexploitable的题目。根据题目描述:</p>
-<blockquote>
-<p>The original challenge is on pwnable.kr and it is solvable.<br>This time we fix the vulnerability and now we promise that the service is unexploitable.</p>
-</blockquote>
-<p>下载下来后丢到ida看到确实没什么变化，除了pwnable.kr那个题中最重要的一点<code>syscall</code>没有给。</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">.text:0000000000400544 ; int __cdecl main(int argc, const char **argv, const char **envp)</div><div class="line">.text:0000000000400544                 public main</div><div class="line">.text:0000000000400544 main            proc near               ; DATA XREF: _start+1Do</div><div class="line">.text:0000000000400544</div><div class="line">.text:0000000000400544 buf             = byte ptr -10h</div><div class="line">.text:0000000000400544</div><div class="line">.text:0000000000400544                 push    rbp</div><div class="line">.text:0000000000400545                 mov     rbp, rsp</div><div class="line">.text:0000000000400548                 sub     rsp, 10h</div><div class="line">.text:000000000040054C                 mov     edi, 3          ; seconds</div><div class="line">.text:0000000000400551                 mov     eax, 0</div><div class="line">.text:0000000000400556                 call    _sleep</div><div class="line">.text:000000000040055B                 lea     rax, [rbp+buf]</div><div class="line">.text:000000000040055F                 mov     edx, 100h       ; nbytes</div><div class="line">.text:0000000000400564                 mov     rsi, rax        ; buf</div><div class="line">.text:0000000000400567                 mov     edi, 0          ; fd</div><div class="line">.text:000000000040056C                 mov     eax, 0</div><div class="line">.text:0000000000400571                 call    _read</div><div class="line">.text:0000000000400576                 leave</div><div class="line">.text:0000000000400577                 retn</div><div class="line">.text:0000000000400577 main            endp</div></pre></td></tr></table></figure>
-      
-    </div>
-    <footer>
-      
-        
-          <div class="alignleft">
-            <a href="/2017/03/24/unexploitable-Writeup-pwnable-tw/#more" class="more-link">Read More</a>
-          </div>
-        
-        
-      
-      <div class="clearfix"></div>
-    </footer>
-  </div>
-</article>
-
-
-
-
-
 
 <nav id="pagination">
   
@@ -499,7 +494,7 @@
   
     <li><a href="/categories/安全/">安全</a><small>7</small></li>
   
-    <li><a href="/categories/tech/">技术</a><small>20</small></li>
+    <li><a href="/categories/tech/">技术</a><small>21</small></li>
   
     <li><a href="/categories/life/">生活</a><small>3</small></li>
   
@@ -530,7 +525,7 @@
   
     <li><a href="/tags/博客/">博客</a><small>4</small></li>
   
-    <li><a href="/tags/安全/">安全</a><small>16</small></li>
+    <li><a href="/tags/安全/">安全</a><small>17</small></li>
   
     <li><a href="/tags/影评/">影评</a><small>1</small></li>
   

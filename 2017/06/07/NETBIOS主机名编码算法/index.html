@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>一种绕过TACACS+的思路 | WeaponX&#39;s Blog</title>
+  <title>NETBIOS主机名编码算法 | WeaponX&#39;s Blog</title>
   <meta name="author" content="WeaponX">
   
   <meta name="description" content="Vulnerability|Security|Binary">
@@ -11,7 +11,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-  <meta property="og:title" content="一种绕过TACACS+的思路"/>
+  <meta property="og:title" content="NETBIOS主机名编码算法"/>
   <meta property="og:site_name" content="WeaponX&#39;s Blog"/>
 
   
@@ -74,35 +74,29 @@
     <header>
       
         <div class="icon"></div>
-        <time datetime="2017-02-08T10:01:36.000Z"><a href="/2017/02/08/一种绕过TACACS-的思路/">2017-02-08</a></time>
+        <time datetime="2017-06-07T10:03:55.000Z"><a href="/2017/06/07/NETBIOS主机名编码算法/">2017-06-07</a></time>
       
       
   
-    <h1 class="title">一种绕过TACACS+的思路</h1>
+    <h1 class="title">NETBIOS主机名编码算法</h1>
   
 
     </header>
     <div class="entry">
       
-        <p>最近对一些交换机做口令猜测检查的时候遇到一个奇怪的现象：配置AAA认证的交换机总能扫出一些弱口令，而且每次都不一样还都不能登录，更神奇的是返回的session确实能执行命令。</p>
+        <p>最近在看SMB协议，在自己构造数据包的时候发现了一个问题。</p>
 <a id="more"></a>
-<h2 id="0x00-什么是AAA认证"><a href="#0x00-什么是AAA认证" class="headerlink" title="0x00 什么是AAA认证"></a>0x00 什么是AAA认证</h2><p>AAA是指用使用<em>Authentication</em>、<em>Authorization</em>、<em>Accounting</em>三种功能对要管理交换机的用户做控制。<br>Authentication(认证)：对用户的身份进行认证，决定是否允许此用户访问网络设备。Authorization（授权）:针对用户的不同身份，分配不同的权限，限制每个用户的操作Accounting（计费）：对每个用户的操作进行审计和计费</p>
-<h2 id="0x01-什么是TACACS"><a href="#0x01-什么是TACACS" class="headerlink" title="0x01 什么是TACACS+"></a>0x01 什么是TACACS+</h2><p>TACACS+（Terminal Access Controller Access Control System，终端访问控制器控制系统协议）是在TACACS协议的基础上进行了功能增强的安全协议。该协议与RADIUS协议的功能类似，采用客户端/服务器模式实现NAS与TACACS+服务器之间的通信。</p>
-<h2 id="0x02-TACACS-的用途"><a href="#0x02-TACACS-的用途" class="headerlink" title="0x02 TACACS+的用途"></a>0x02 TACACS+的用途</h2><p>TACACS+协议主要用于PPP和VPDN（Virtual Private Dial-up Network，虚拟私有拨号网络）接入用户及终端用户的AAA。</p>
-<h2 id="0x03-排查过程"><a href="#0x03-排查过程" class="headerlink" title="0x03 排查过程"></a>0x03 排查过程</h2><p>说白了，AAA认证是一种集中认证的模式。所有的认证都是在AAA服务器上完成的，交换机只能得到认证结果。猜测可能是AAA认证服务器出问题了，不过不太了解AAA认证服务器。看了同事发的一篇文章(<a href="http://www.vuln.cn/7043" title="绕过 Cisco TACACS+ 的三种攻击方式" target="_blank" rel="external">http://www.vuln.cn/7043</a>)。</p>
-<p>然后看了下交换机的配置文件，找AAA认证相关的配置。发现了以下配置。</p>
-<figure class="highlight crmsh"><table><tr><td class="code"><pre><div class="line">aaa authentication login default <span class="keyword">group</span> <span class="title">tacacs</span>+ local line none</div></pre></td></tr></table></figure>
-<p>网上搜了一下，这个配置的意思就是AAA认证使用TACACS+完成。当AAA认证<strong>无法认证</strong>时使用local认证，当前面都<strong>无法认证</strong>则不需要认证（注意，不是认证失败，是无法认证。因为认证失败的话会直接返回）即可登录。</p>
-<p>现在原因已经比较清晰了，多线程口令猜测导致AAA认证服务器压力过大拒绝服务，然而本机交换机也因处理认证线程过多拒绝服务。导致最终无需认证登录交换机。</p>
-<h2 id="0x04-攻击方式"><a href="#0x04-攻击方式" class="headerlink" title="0x04 攻击方式"></a>0x04 攻击方式</h2><p>这种攻击方式也很简单，只需要向服务器发起大量请求认证的线程即可使AAA服务器拒绝服务，导致无需认证登录交换机。</p>
-<h2 id="0x05-缓解方法"><a href="#0x05-缓解方法" class="headerlink" title="0x05 缓解方法"></a>0x05 缓解方法</h2><p>要防止这种情况发生只需要改成如下语句即可。</p>
-<figure class="highlight crmsh"><table><tr><td class="code"><pre><div class="line">aaa authentication login default <span class="keyword">group</span> <span class="title">tacacs</span>+ local</div></pre></td></tr></table></figure>
-<p>意思就是，在AAA认证无法完成的情况下，使用交换机本地认证，而不是不认证直接返回命令行。</p>
-<h2 id="0x06-题外话"><a href="#0x06-题外话" class="headerlink" title="0x06 题外话"></a>0x06 题外话</h2><p>在搜索这个问题的时候在一个cisco工程实施人员的论坛中看到这样一段话，“老司机”在给新手传授“经验”</p>
-<blockquote>
-<p><code>aaa authentication login default group tacacs+ line none</code><br>这句话的意思是先使用 tacacs+认证；如果失败，则使用line认证，如果还失败，就不需要认证，这就相当于是AAA的一个后门，怕在AAA配置中把自己锁在里面出不来了，一般配AAA前先做后门，然后在配AAA。这个是实际工程中常见的一个后门，记住，做AAA一定要有后门，不然把自己锁里面就麻烦了！</p>
-</blockquote>
-<h2 id="0x07-Refer"><a href="#0x07-Refer" class="headerlink" title="0x07 Refer"></a>0x07 Refer</h2><p><a href="http://www.vuln.cn/7043" target="_blank" rel="external">http://www.vuln.cn/7043</a><br><a href="http://edwinzw.blog.sohu.com/67531824.html" target="_blank" rel="external">http://edwinzw.blog.sohu.com/67531824.html</a><br><a href="http://www.h3c.com.cn/MiniSite/Technology_Circle/Net_Reptile/The_Seven/Home/Catalog/201309/797633_97665_0.htm" target="_blank" rel="external">http://www.h3c.com.cn/MiniSite/Technology_Circle/Net_Reptile/The_Seven/Home/Catalog/201309/797633_97665_0.htm</a></p>
+<p><img src="1.png" alt=""></p>
+<p>经过查阅资料发现NETBIOS对主机名的编码方式如下：</p>
+<p>1.将字符补齐到16字节，不够的用空格补<br>2.将每个字符拆成高4bit和低4bit<br>3.再用0x41就是A加上这个值</p>
+<p>举个例子<code>abcd</code>的编码流程：<br>1.补空格到16字节</p>
+<figure class="highlight 1c"><table><tr><td class="code"><pre><div class="line"><span class="string">"abcd                "</span></div></pre></td></tr></table></figure>
+<p>2.将每个字符拆开</p>
+<figure class="highlight lsl"><table><tr><td class="code"><pre><div class="line">拆分前</div><div class="line"><span class="number">0x61</span> <span class="number">0x62</span> <span class="number">0x63</span> <span class="number">0x64</span> <span class="number">0x20</span> <span class="number">0x20</span> <span class="number">0x20</span> <span class="number">0x20</span> <span class="number">0x20</span> ...</div><div class="line"></div><div class="line">拆分后</div><div class="line"><span class="number">0x6</span> <span class="number">0x1</span> <span class="number">0x6</span> <span class="number">0x2</span> <span class="number">0x6</span> <span class="number">0x3</span> <span class="number">0x6</span> <span class="number">0x4</span> <span class="number">0x2</span> <span class="number">0x0</span> <span class="number">0x2</span> <span class="number">0x0</span></div></pre></td></tr></table></figure>
+<p>3.用0x41加上这个值</p>
+<figure class="highlight lsl"><table><tr><td class="code"><pre><div class="line"><span class="number">0x47</span> <span class="number">0x42</span> <span class="number">0x47</span> <span class="number">0x43</span> <span class="number">0x47</span> <span class="number">0x44</span> <span class="number">0x47</span> <span class="number">0x45</span> <span class="number">0x43</span> <span class="number">0x41</span> ...</div><div class="line"></div><div class="line">GBGCGDGECA</div></pre></td></tr></table></figure>
+<p>自己用python实现了一下</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">encode</span><span class="params">(src)</span>:</span></div><div class="line">    src = src.ljust(<span class="number">16</span>,<span class="string">"\x20"</span>)</div><div class="line">    names = []</div><div class="line">    <span class="keyword">for</span> c <span class="keyword">in</span> src:</div><div class="line">        char_ord = ord(c)</div><div class="line">        high_4_bits = char_ord &gt;&gt; <span class="number">4</span></div><div class="line">        low_4_bits = char_ord &amp; <span class="number">0x0f</span></div><div class="line">        names.append(high_4_bits)</div><div class="line">        names.append(low_4_bits)</div><div class="line">    </div><div class="line">    res = <span class="string">""</span></div><div class="line">    <span class="keyword">for</span> name <span class="keyword">in</span> names:</div><div class="line">        res += chr(<span class="number">0x41</span>+name)</div><div class="line">    <span class="keyword">return</span> res</div></pre></td></tr></table></figure>
 
       
     </div>
@@ -111,7 +105,7 @@
         
           <p style="border-top: #e0e0e0 1px dashed; border-right: #e0e0e0 1px dashed; border-bottom: #e0e0e0 1px dashed; border-left: #e0e0e0 1px dashed; padding-top: 10px;padding-right: 10px;padding-bottom: 10px;padding-left: 110px; background: url(http://i.creativecommons.org/l/by-nc-sa/2.5/cn/88x31.png) #e5f1f4 no-repeat 1% 50%; font-family: 微软雅黑; font-size:11px;" id="PSignature">  
 作者：<a href="http://weaponx.site">WeaponX</a>
-<br>出处：<a href="http://weaponx.site/2017/02/08/一种绕过TACACS-的思路/">http://weaponx.site/2017/02/08/一种绕过TACACS-的思路/</a>           
+<br>出处：<a href="http://weaponx.site/2017/06/07/NETBIOS主机名编码算法/">http://weaponx.site/2017/06/07/NETBIOS主机名编码算法/</a>           
 <br>本文采用<a href="http://creativecommons.org/licenses/by-nc-sa/2.5/cn/" rel="license">知识共享署名-非商业性使用-相同方式共享 2.5 中国大陆许可协议</a>进行许可，欢迎转载，但未经作者同意必须保留此段声明，且在文章页面明显位置给出原文连接。
 </p>
 
