@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://weaponx.site/"/>
-  <updated>2017-09-14T08:42:34.425Z</updated>
+  <updated>2017-09-14T08:45:23.291Z</updated>
   <id>http://weaponx.site/</id>
   
   <author>
@@ -20,9 +20,9 @@
     <link href="http://weaponx.site/2017/09/14/%E4%BB%8EXshell%E5%90%8E%E9%97%A8%E7%9C%8BDLL%E5%8A%A0%E8%BD%BD%E6%B5%81%E7%A8%8B/"/>
     <id>http://weaponx.site/2017/09/14/从Xshell后门看DLL加载流程/</id>
     <published>2017-09-14T08:41:51.000Z</published>
-    <updated>2017-09-14T08:42:34.425Z</updated>
+    <updated>2017-09-14T08:45:23.291Z</updated>
     
-    <content type="html"><![CDATA[<h2 id="从Xshell后门看DLL的加载流程"><a href="#从Xshell后门看DLL的加载流程" class="headerlink" title="从Xshell后门看DLL的加载流程"></a>从Xshell后门看DLL的加载流程</h2><h2 id="0x01-编译DLL项目"><a href="#0x01-编译DLL项目" class="headerlink" title="0x01 编译DLL项目"></a>0x01 编译DLL项目</h2><p>打开VS 在<code>文件-&gt;新建-&gt;项目</code>选择<code>Win32项目</code>，在应用程序中设置</p>
+    <content type="html"><![CDATA[<h2 id="0x01-编译DLL项目"><a href="#0x01-编译DLL项目" class="headerlink" title="0x01 编译DLL项目"></a>0x01 编译DLL项目</h2><p>打开VS 在<code>文件-&gt;新建-&gt;项目</code>选择<code>Win32项目</code>，在应用程序中设置</p>
 <p><img src="1.png" alt=""></p>
 <p>写一个函数</p>
 <figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="function">VOID <span class="title">AlertMessage</span><span class="params">()</span></span></div><div class="line">&#123;</div><div class="line">    MessageBox(<span class="literal">NULL</span>, <span class="string">L"My Dll"</span>, <span class="string">L"Success"</span>, MB_OK);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
@@ -95,7 +95,7 @@
     
     <summary type="html">
     
-      &lt;h2 id=&quot;从Xshell后门看DLL的加载流程&quot;&gt;&lt;a href=&quot;#从Xshell后门看DLL的加载流程&quot; class=&quot;headerlink&quot; title=&quot;从Xshell后门看DLL的加载流程&quot;&gt;&lt;/a&gt;从Xshell后门看DLL的加载流程&lt;/h2&gt;&lt;h2 id=&quot;0
+      &lt;h2 id=&quot;0x01-编译DLL项目&quot;&gt;&lt;a href=&quot;#0x01-编译DLL项目&quot; class=&quot;headerlink&quot; title=&quot;0x01 编译DLL项目&quot;&gt;&lt;/a&gt;0x01 编译DLL项目&lt;/h2&gt;&lt;p&gt;打开VS 在&lt;code&gt;文件-&amp;gt;新建-&amp;gt;项目&lt;/
     
     </summary>
     
