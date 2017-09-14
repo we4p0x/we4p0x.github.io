@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://weaponx.site/"/>
-  <updated>2017-08-29T06:14:20.908Z</updated>
+  <updated>2017-09-14T08:42:34.425Z</updated>
   <id>http://weaponx.site/</id>
   
   <author>
@@ -14,6 +14,99 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>从Xshell后门看DLL加载流程</title>
+    <link href="http://weaponx.site/2017/09/14/%E4%BB%8EXshell%E5%90%8E%E9%97%A8%E7%9C%8BDLL%E5%8A%A0%E8%BD%BD%E6%B5%81%E7%A8%8B/"/>
+    <id>http://weaponx.site/2017/09/14/从Xshell后门看DLL加载流程/</id>
+    <published>2017-09-14T08:41:51.000Z</published>
+    <updated>2017-09-14T08:42:34.425Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="从Xshell后门看DLL的加载流程"><a href="#从Xshell后门看DLL的加载流程" class="headerlink" title="从Xshell后门看DLL的加载流程"></a>从Xshell后门看DLL的加载流程</h2><h2 id="0x01-编译DLL项目"><a href="#0x01-编译DLL项目" class="headerlink" title="0x01 编译DLL项目"></a>0x01 编译DLL项目</h2><p>打开VS 在<code>文件-&gt;新建-&gt;项目</code>选择<code>Win32项目</code>，在应用程序中设置</p>
+<p><img src="1.png" alt=""></p>
+<p>写一个函数</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="function">VOID <span class="title">AlertMessage</span><span class="params">()</span></span></div><div class="line">&#123;</div><div class="line">    MessageBox(<span class="literal">NULL</span>, <span class="string">L"My Dll"</span>, <span class="string">L"Success"</span>, MB_OK);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>将函数使用C的方式导出，如果不使用C的方式导出CRT会填上@@等其他的符号。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="keyword">extern</span> <span class="string">"C"</span> _declspec(dllexport) <span class="function">VOID <span class="title">AlertMessage</span><span class="params">()</span></span>;</div></pre></td></tr></table></figure>
+<p>随后生成DLL。</p>
+<p>使用rundll32.exe调用DLL中的函数来测试是否成功，rundll32.exe调用DLL中的函数有两种方式：</p>
+<ul>
+<li><code>rundll32.exe MyDll.dll,AlertMessage</code> ，调用名称为AlertMessage的导出函数</li>
+<li><code>rundll32.exe MyDll.dll,#1</code> ，调用一号导出函数</li>
+</ul>
+<p><img src="2.png" alt=""></p>
+<h2 id="0x02-调用DLL程序的流程"><a href="#0x02-调用DLL程序的流程" class="headerlink" title="0x02 调用DLL程序的流程"></a>0x02 调用DLL程序的流程</h2><p>DLL程序的调用入口其实并不是DllMain，而是DllEntryPoint其实也就是_DllMainCRTStartup，这个是微软的VS默认的入口函数，不过可以使用 /ENTRY: 链接器选项指定其他入口点函数，不过这个微软并不推荐。</p>
+<p>所谓的DllEntryPoint是CRT（C Runtime）自动生成的，在调用一个函数之前，完成了变量初始化、线程剥离等工作。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><div class="line">BOOL __stdcall _DllMainCRTStartup(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)</div><div class="line">&#123;</div><div class="line">  <span class="keyword">if</span> ( fdwReason == <span class="number">1</span> )</div><div class="line">    __security_init_cookie();</div><div class="line">  <span class="keyword">return</span> dllmain_dispatch(hinstDLL, fdwReason, lpReserved);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>程序首先会初始化<code>security_cookie</code>，接着进入<code>dllmain_dispatch</code>，此时<code>fdwReason = 1</code></p>
+<table>
+<thead>
+<tr>
+<th>fdwReason</th>
+<th>操作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>DLL_PROCESS_DETACH</td>
+</tr>
+<tr>
+<td>1</td>
+<td>DLL_PROCESS_ATTACH</td>
+</tr>
+<tr>
+<td>2</td>
+<td>DLL_THREAD_ATTACH</td>
+</tr>
+<tr>
+<td>3</td>
+<td>DLL_THREAD_DETACH</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="keyword">int</span> __<span class="function">cdecl <span class="title">dllmain_dispatch</span><span class="params">(HINSTANCE__ *<span class="keyword">const</span> instance, <span class="keyword">const</span> <span class="keyword">unsigned</span> <span class="keyword">int</span> reason, <span class="keyword">void</span> *<span class="keyword">const</span> reserved)</span></span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">void</span> *v4; <span class="comment">// ebx@6</span></div><div class="line">  <span class="keyword">int</span> v5; <span class="comment">// esi@7</span></div><div class="line">  <span class="keyword">int</span> v6; <span class="comment">// eax@9</span></div><div class="line"></div><div class="line">  <span class="keyword">if</span> ( !reason &amp;&amp; _proc_attached &lt;= <span class="number">0</span> )</div><div class="line">    <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">  <span class="keyword">if</span> ( reason != <span class="number">1</span> &amp;&amp; reason != <span class="number">2</span> )</div><div class="line">  &#123;</div><div class="line">    v4 = reserved;</div><div class="line">LABEL_9:</div><div class="line">    v6 = DllMain(instance, reason, v4);</div><div class="line">    v5 = v6;</div><div class="line">    <span class="keyword">if</span> ( reason == <span class="number">1</span> &amp;&amp; !v6 )</div><div class="line">    &#123;</div><div class="line">      DllMain(instance, <span class="number">0</span>, v4);</div><div class="line">      dllmain_crt_dispatch(instance, <span class="number">0</span>, v4);</div><div class="line">      dllmain_raw(instance, <span class="number">0</span>, v4);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">if</span> ( !reason || reason == <span class="number">3</span> )</div><div class="line">    &#123;</div><div class="line">      v5 = dllmain_crt_dispatch(instance, reason, v4);</div><div class="line">      <span class="keyword">if</span> ( v5 )</div><div class="line">        v5 = dllmain_raw(instance, reason, v4);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> v5;</div><div class="line">  &#125;</div><div class="line">  v4 = reserved;</div><div class="line">  v5 = dllmain_raw(instance, reason, reserved);</div><div class="line">  <span class="keyword">if</span> ( v5 )</div><div class="line">  &#123;</div><div class="line">    v5 = dllmain_crt_dispatch(instance, reason, reserved);</div><div class="line">    <span class="keyword">if</span> ( v5 )</div><div class="line">      <span class="keyword">goto</span> LABEL_9;</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">return</span> v5;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>接着程序会进入<code>dllmain_crt_dispatch</code>函数，我们继续看看这个函数</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="keyword">int</span> __userpurge dllmain_crt_dispatch@&lt;eax&gt;(<span class="keyword">int</span> a1@&lt;edi&gt;, HINSTANCE__ *<span class="keyword">const</span> instance, <span class="keyword">const</span> <span class="keyword">unsigned</span> <span class="keyword">int</span> reason, <span class="keyword">void</span> *<span class="keyword">const</span> reserved)</div><div class="line">&#123;</div><div class="line">  <span class="keyword">int</span> result; <span class="comment">// eax@5</span></div><div class="line"></div><div class="line">  <span class="keyword">if</span> ( reason )</div><div class="line">  &#123;</div><div class="line">    <span class="keyword">if</span> ( reason == <span class="number">1</span> )</div><div class="line">    &#123;</div><div class="line">      result = dllmain_crt_process_attach(a1);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">else</span></div><div class="line">    &#123;</div><div class="line">      <span class="keyword">if</span> ( reason == <span class="number">2</span> )</div><div class="line">      &#123;</div><div class="line">        LOBYTE(result) = __scrt_dllmain_crt_thread_attach();</div><div class="line">      &#125;</div><div class="line">      <span class="keyword">else</span></div><div class="line">      &#123;</div><div class="line">        <span class="keyword">if</span> ( reason != <span class="number">3</span> )</div><div class="line">          <span class="keyword">return</span> <span class="number">1</span>;</div><div class="line">        LOBYTE(result) = __scrt_dllmain_crt_thread_detach();</div><div class="line">      &#125;</div><div class="line">      result = (<span class="keyword">unsigned</span> __int8)result;</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">else</span></div><div class="line">  &#123;</div><div class="line">    result = dllmain_crt_process_detach();</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">return</span> result;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这个函数会调用<code>dllmain_crt_process_attach</code>，看看这个函数</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="keyword">int</span> __usercall dllmain_crt_process_attach@&lt;eax&gt;(<span class="keyword">int</span> a1@&lt;edi&gt;)</div><div class="line">&#123;</div><div class="line">  <span class="keyword">if</span> ( __scrt_initialize_crt(<span class="number">0</span>) )</div><div class="line">  &#123;</div><div class="line">    __scrt_acquire_startup_lock();</div><div class="line">    <span class="keyword">if</span> ( __scrt_current_native_startup_state )</div><div class="line">      __scrt_fastfail(<span class="number">1</span>, a1, <span class="number">7u</span>);</div><div class="line">    __scrt_current_native_startup_state = <span class="number">1</span>;</div><div class="line">    <span class="keyword">if</span> ( __scrt_dllmain_before_initialize_c() )</div><div class="line">    &#123;</div><div class="line">      _RTC_Initialize();</div><div class="line">      atexit(_RTC_Terminate);</div><div class="line">      __scrt_initialize_type_info();</div><div class="line">      atexit(__scrt_uninitialize_type_info);</div><div class="line">      __scrt_initialize_default_local_stdio_options();</div><div class="line">      <span class="keyword">if</span> ( !_initterm_e((<span class="keyword">int</span>)&amp;__xi_a, (<span class="keyword">int</span>)&amp;__xi_z) )</div><div class="line">      &#123;</div><div class="line">        <span class="keyword">if</span> ( __scrt_dllmain_after_initialize_c() )</div><div class="line">        &#123;</div><div class="line">          _initterm((<span class="keyword">int</span>)&amp;__xc_a, (<span class="keyword">int</span>)&amp;__xc_z);</div><div class="line">          __scrt_current_native_startup_state = <span class="number">2</span>;</div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line">    JUMPOUT(&amp;_LN14);</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这里有两个比较重要的函数<code>_initterm_e</code>和<code>_initterm</code>。这两个函数会从<code>[__xi_a, __xi_z]</code>遍历到<code>[__xc_a, __xc_z]</code>如果函数指针存在，则去执行这个函数。</p>
+<h2 id="0x03-回顾Xshell的nssock2-dll"><a href="#0x03-回顾Xshell的nssock2-dll" class="headerlink" title="0x03 回顾Xshell的nssock2.dll"></a>0x03 回顾Xshell的nssock2.dll</h2><p>Xshell的入口点是DllEntryPoint</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><div class="line">BOOL __<span class="function">stdcall <span class="title">DllEntryPoint</span><span class="params">(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)</span></span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">if</span> ( fdwReason == <span class="number">1</span> )</div><div class="line">    __security_init_cookie();</div><div class="line">  <span class="keyword">return</span> __DllMainCRTStartup(hinstDLL, fdwReason, lpReserved);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>继续看<code>__DllMainCRTStartup</code></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="keyword">int</span> __cdecl __DllMainCRTStartup(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)</div><div class="line">&#123;</div><div class="line">  <span class="keyword">signed</span> <span class="keyword">int</span> v3; <span class="comment">// esi@1</span></div><div class="line">  BOOL v4; <span class="comment">// eax@9</span></div><div class="line"></div><div class="line">  v3 = <span class="number">1</span>;</div><div class="line">  dword_100180B0 = fdwReason;</div><div class="line">  <span class="keyword">if</span> ( fdwReason || dword_100188D8 )</div><div class="line">  &#123;</div><div class="line">    <span class="keyword">if</span> ( fdwReason != <span class="number">1</span> &amp;&amp; fdwReason != <span class="number">2</span> )</div><div class="line">      <span class="keyword">goto</span> LABEL_22;</div><div class="line">    <span class="keyword">if</span> ( _RawDllMainProxy )</div><div class="line">      v3 = _RawDllMainProxy(hinstDLL, fdwReason, lpvReserved);</div><div class="line">    <span class="keyword">if</span> ( v3 )</div><div class="line">    &#123;</div><div class="line">      v3 = _CRT_INIT((<span class="keyword">int</span>)hinstDLL, fdwReason, (<span class="keyword">int</span>)lpvReserved);</div><div class="line">      <span class="keyword">if</span> ( v3 )</div><div class="line">      &#123;</div><div class="line">LABEL_22:</div><div class="line">        v4 = DllMain(hinstDLL, fdwReason, lpvReserved);</div><div class="line">        v3 = v4;</div><div class="line">        <span class="keyword">if</span> ( fdwReason == <span class="number">1</span> &amp;&amp; !v4 )</div><div class="line">        &#123;</div><div class="line">          DllMain(hinstDLL, <span class="number">0</span>, lpvReserved);</div><div class="line">          _CRT_INIT((<span class="keyword">int</span>)hinstDLL, <span class="number">0</span>, (<span class="keyword">int</span>)lpvReserved);</div><div class="line">          <span class="keyword">if</span> ( _RawDllMainProxy )</div><div class="line">            _RawDllMainProxy(hinstDLL, <span class="number">0</span>, lpvReserved);</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">if</span> ( !fdwReason || fdwReason == <span class="number">3</span> )</div><div class="line">        &#123;</div><div class="line">          v3 = _CRT_INIT((<span class="keyword">int</span>)hinstDLL, fdwReason, (<span class="keyword">int</span>)lpvReserved) != <span class="number">0</span> ? v3 : <span class="number">0</span>;</div><div class="line">          <span class="keyword">if</span> ( v3 &amp;&amp; _RawDllMainProxy )</div><div class="line">            v3 = _RawDllMainProxy(hinstDLL, fdwReason, lpvReserved);</div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">else</span></div><div class="line">  &#123;</div><div class="line">    v3 = <span class="number">0</span>;</div><div class="line">  &#125;</div><div class="line">  dword_100180B0 = <span class="number">-1</span>;</div><div class="line">  <span class="keyword">return</span> v3;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>之后会继续通过<code>_CRT_INIT</code>初始化。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">.text:1000D2CE</div><div class="line">.text:1000D2CE loc_1000D2CE:                           ; CODE XREF: _CRT_INIT(x,x,x)+177j</div><div class="line">.text:1000D2CE                 push    offset unk_1000F6D0</div><div class="line">.text:1000D2D3                 push    offset unk_1000F6C4</div><div class="line">.text:1000D2D8                 mov     dword_10018A80, 1</div><div class="line">.text:1000D2E2                 call    _initterm_e</div><div class="line">.text:1000D2E7                 pop     ecx</div><div class="line">.text:1000D2E8                 pop     ecx</div><div class="line">.text:1000D2E9                 test    eax, eax</div><div class="line">.text:1000D2EB                 jnz     short loc_1000D280</div><div class="line">.text:1000D2ED                 push    offset unk_1000F6C0</div><div class="line">.text:1000D2F2                 push    offset unk_1000F690</div><div class="line">.text:1000D2F7                 call    _initterm</div><div class="line">.text:1000D2FC                 pop     ecx</div><div class="line">.text:1000D2FD                 mov     dword_10018A80, edi</div></pre></td></tr></table></figure>
+<p>看看<code>unk_1000F690</code></p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">.rdata:1000F690 _rdata          segment para public &apos;DATA&apos; use32</div><div class="line">.rdata:1000F690                 assume cs:_rdata</div><div class="line">.rdata:1000F690                 ;org 1000F690h</div><div class="line">.rdata:1000F690 unk_1000F690    db    0                 ; DATA XREF: _CRT_INIT(x,x,x)+1A6o</div><div class="line">.rdata:1000F691                 db    0</div><div class="line">.rdata:1000F692                 db    0</div><div class="line">.rdata:1000F693                 db    0</div><div class="line">.rdata:1000F694                 dd offset ??__EafxModuleState@@YAXXZ ; `dynamic initializer for &apos;afxModuleState&apos;&apos;(void)</div><div class="line">.rdata:1000F698                 dd offset sub_1000E450</div><div class="line">.rdata:1000F69C                 dd offset sub_1000E470</div><div class="line">.rdata:1000F6A0                 dd offset sub_1000E490</div><div class="line">.rdata:1000F6A4                 dd offset sub_1000E4B0</div><div class="line">.rdata:1000F6A8                 dd offset sub_1000E4D0</div><div class="line">.rdata:1000F6AC                 dd offset sub_1000E4F0</div><div class="line">.rdata:1000F6B0                 dd offset sub_1000E500</div><div class="line">.rdata:1000F6B4                 dd offset sub_1000E510</div><div class="line">.rdata:1000F6B8                 dd offset sub_1000E520</div><div class="line">.rdata:1000F6BC                 dd offset sub_1000E530</div></pre></td></tr></table></figure>
+<p>其中有一个函数的指针指向的恶意代码。所以Xshell的nssock2.dll执行恶意代码的流程就是通过加载DLL后，通过CRT初始化执行了恶意代码。</p>
+<h2 id="0x04-如何使用IDA调试DLL"><a href="#0x04-如何使用IDA调试DLL" class="headerlink" title="0x04 如何使用IDA调试DLL"></a>0x04 如何使用IDA调试DLL</h2><p>使用IDA调试dll，dll必须要又一个宿主程序来执行。在windows上可以使用rundll32.exe来执行所以，在IDA中可以这样设置</p>
+<p><img src="3.png" alt=""></p>
+<h2 id="0x05-总结"><a href="#0x05-总结" class="headerlink" title="0x05 总结"></a>0x05 总结</h2><p>使用MSVC编译DLL会默认加上CRT初始化，只需要分析一下CRT初始化流程就能很好的了解DLL的调用过程了。本文是个人拙劣的分析，如果有错误的地方还请大佬指正，谢谢！</p>
+<h2 id="0x06-引用"><a href="#0x06-引用" class="headerlink" title="0x06 引用"></a>0x06 引用</h2><p><a href="http://driftcloudy.iteye.com/blog/1048750" target="_blank" rel="external">http://driftcloudy.iteye.com/blog/1048750</a></p>
+<p><a href="http://driftcloudy.iteye.com/blog/1049404" target="_blank" rel="external">http://driftcloudy.iteye.com/blog/1049404</a></p>
+<p><a href="http://driftcloudy.iteye.com/blog/1050271" target="_blank" rel="external">http://driftcloudy.iteye.com/blog/1050271</a></p>
+<p><a href="http://driftcloudy.iteye.com/blog/1052971" target="_blank" rel="external">http://driftcloudy.iteye.com/blog/1052971</a></p>
+<p><a href="http://driftcloudy.iteye.com/blog/1061569" target="_blank" rel="external">http://driftcloudy.iteye.com/blog/1061569</a></p>
+<p><a href="http://driftcloudy.iteye.com/blog/1063275" target="_blank" rel="external">http://driftcloudy.iteye.com/blog/1063275</a></p>
+<p><a href="http://www.cnblogs.com/panweishadow/p/3390615.html" target="_blank" rel="external">http://www.cnblogs.com/panweishadow/p/3390615.html</a></p>
+<p><a href="https://msdn.microsoft.com/zh-cn/library/988ye33t.aspx" target="_blank" rel="external">https://msdn.microsoft.com/zh-cn/library/988ye33t.aspx</a></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;从Xshell后门看DLL的加载流程&quot;&gt;&lt;a href=&quot;#从Xshell后门看DLL的加载流程&quot; class=&quot;headerlink&quot; title=&quot;从Xshell后门看DLL的加载流程&quot;&gt;&lt;/a&gt;从Xshell后门看DLL的加载流程&lt;/h2&gt;&lt;h2 id=&quot;0
+    
+    </summary>
+    
+      <category term="安全" scheme="http://weaponx.site/categories/%E5%AE%89%E5%85%A8/"/>
+    
+    
+      <category term="安全" scheme="http://weaponx.site/tags/%E5%AE%89%E5%85%A8/"/>
+    
+      <category term="逆向" scheme="http://weaponx.site/tags/%E9%80%86%E5%90%91/"/>
+    
+  </entry>
   
   <entry>
     <title>如何在python中定义有序字典</title>
@@ -853,44 +946,6 @@
       <category term="安全" scheme="http://weaponx.site/tags/%E5%AE%89%E5%85%A8/"/>
     
       <category term="pwn" scheme="http://weaponx.site/tags/pwn/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>python中Random的坑</title>
-    <link href="http://weaponx.site/2017/03/01/python%E4%B8%ADRandom%E7%9A%84%E5%9D%91/"/>
-    <id>http://weaponx.site/2017/03/01/python中Random的坑/</id>
-    <published>2017-03-01T10:58:44.000Z</published>
-    <updated>2017-03-01T11:25:12.458Z</updated>
-    
-    <content type="html"><![CDATA[<h2 id="0x00-前景提要"><a href="#0x00-前景提要" class="headerlink" title="0x00 前景提要"></a>0x00 前景提要</h2><p>在搬砖过程中遇到一个巨坑，有一个python模块实现了一个本地监听多个端口的功能，为了防止监听端口冲突端口使用了python中的<code>random</code>模块中的<code>randint</code>函数来实现随机端口的生成。然而两次调用后却发现一直报<code>error: [Errno 98] Address already in use</code>，明显就是端口被占用。这个就比较奇怪了，因为该模块一次监听5个端口。怎么可能5个端口都会有冲突。</p>
-<a id="more"></a>
-<h2 id="0x01-排查"><a href="#0x01-排查" class="headerlink" title="0x01 排查"></a>0x01 排查</h2><p>首先想到的就是<code>random</code>是否为伪随机，在查阅了以后发现</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">Warning The pseudo-random generators of this module should not be used <span class="keyword">for</span> security purposes. Use os.urandom() or SystemRandom <span class="keyword">if</span> you require a cryptographically secure pseudo-random number generator.</div></pre></td></tr></table></figure>
-<p>确实是伪随机，但是默认随机数生成种子是从<code>/dev/urandom</code>或者是系统时间戳获取的。两次调用也不会是同时调用的，所以种子肯定不会是一样的。</p>
-<p>后来经大神提醒有了点眉目，因为两个进程的父进程是同一个进程。进程在导入random模块的时候种子已经选好了。所以不同子进程生成的随机数序列肯定是一样的。</p>
-<p>下面写个python验证下</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><div class="line"><span class="keyword">import</span> random</div><div class="line"><span class="keyword">import</span> os</div><div class="line"></div><div class="line"><span class="keyword">if</span> os.fork() == <span class="number">0</span>:</div><div class="line">    <span class="keyword">print</span> <span class="string">"[rand 1] %d"</span> % random.randint(<span class="number">1</span>,<span class="number">100</span>)</div><div class="line">    <span class="keyword">print</span> <span class="string">"[rand 1] %d"</span> % random.randint(<span class="number">1</span>,<span class="number">100</span>)</div><div class="line">    <span class="keyword">print</span> <span class="string">"[rand 1] %d"</span> % random.randint(<span class="number">1</span>,<span class="number">100</span>)</div><div class="line"><span class="keyword">else</span>:</div><div class="line">    <span class="keyword">print</span> <span class="string">"[rand 2] %d"</span> % random.randint(<span class="number">1</span>,<span class="number">100</span>)</div><div class="line">    <span class="keyword">print</span> <span class="string">"[rand 2] %d"</span> % random.randint(<span class="number">1</span>,<span class="number">100</span>)</div><div class="line">    <span class="keyword">print</span> <span class="string">"[rand 2] %d"</span> % random.randint(<span class="number">1</span>,<span class="number">100</span>)</div></pre></td></tr></table></figure>
-<p>通过执行结果可以发现，确实证实了猜测</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">~ » python test.py</div><div class="line">[rand 2] 51</div><div class="line">[rand 2] 58</div><div class="line">[rand 2] 31</div><div class="line">[rand 1] 51</div><div class="line">[rand 1] 58</div><div class="line">[rand 1] 31</div></pre></td></tr></table></figure>
-<h2 id="0x02-解决"><a href="#0x02-解决" class="headerlink" title="0x02 解决"></a>0x02 解决</h2><p>知道了原因，要解决就很简单了。只要在生成随即数的时候重置种子就可以了。</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><div class="line"><span class="keyword">import</span> random</div><div class="line"><span class="keyword">import</span> os</div><div class="line"></div><div class="line"><span class="keyword">if</span> os.fork() == <span class="number">0</span>:</div><div class="line">    random.seed()</div><div class="line">    <span class="keyword">print</span> <span class="string">"[rand 1] %d"</span> % random.randint(<span class="number">1</span>,<span class="number">100</span>)</div><div class="line">    <span class="keyword">print</span> <span class="string">"[rand 1] %d"</span> % random.randint(<span class="number">1</span>,<span class="number">100</span>)</div><div class="line">    <span class="keyword">print</span> <span class="string">"[rand 1] %d"</span> % random.randint(<span class="number">1</span>,<span class="number">100</span>)</div><div class="line"><span class="keyword">else</span>:</div><div class="line">    random.seed()</div><div class="line">    <span class="keyword">print</span> <span class="string">"[rand 2] %d"</span> % random.randint(<span class="number">1</span>,<span class="number">100</span>)</div><div class="line">    <span class="keyword">print</span> <span class="string">"[rand 2] %d"</span> % random.randint(<span class="number">1</span>,<span class="number">100</span>)</div><div class="line">    <span class="keyword">print</span> <span class="string">"[rand 2] %d"</span> % random.randint(<span class="number">1</span>,<span class="number">100</span>)</div></pre></td></tr></table></figure>
-<p>结果也证实了这种解决方案可行</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">~ » python test.py</div><div class="line">[rand 2] 7</div><div class="line">[rand 2] 52</div><div class="line">[rand 2] 43</div><div class="line">[rand 1] 16</div><div class="line">[rand 1] 70</div><div class="line">[rand 1] 97</div></pre></td></tr></table></figure>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h2 id=&quot;0x00-前景提要&quot;&gt;&lt;a href=&quot;#0x00-前景提要&quot; class=&quot;headerlink&quot; title=&quot;0x00 前景提要&quot;&gt;&lt;/a&gt;0x00 前景提要&lt;/h2&gt;&lt;p&gt;在搬砖过程中遇到一个巨坑，有一个python模块实现了一个本地监听多个端口的功能，为了防止监听端口冲突端口使用了python中的&lt;code&gt;random&lt;/code&gt;模块中的&lt;code&gt;randint&lt;/code&gt;函数来实现随机端口的生成。然而两次调用后却发现一直报&lt;code&gt;error: [Errno 98] Address already in use&lt;/code&gt;，明显就是端口被占用。这个就比较奇怪了，因为该模块一次监听5个端口。怎么可能5个端口都会有冲突。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="技术" scheme="http://weaponx.site/categories/tech/"/>
-    
-    
-      <category term="安全" scheme="http://weaponx.site/tags/%E5%AE%89%E5%85%A8/"/>
-    
-      <category term="python" scheme="http://weaponx.site/tags/python/"/>
     
   </entry>
   
