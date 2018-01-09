@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://weaponx.site/"/>
-  <updated>2018-01-09T14:18:59.888Z</updated>
+  <updated>2018-01-09T14:23:16.358Z</updated>
   <id>http://weaponx.site/</id>
   
   <author>
@@ -20,9 +20,9 @@
     <link href="http://weaponx.site/2018/01/09/%E4%BB%8ECPU%E6%BC%8F%E6%B4%9EMeltdown-Spectre%EF%BC%88CVE-2017-5754-CVE-2017-5715-CVE-2017-5753%EF%BC%89%E7%9C%8B%E4%BE%A7%E4%BF%A1%E9%81%93%E6%94%BB%E5%87%BB/"/>
     <id>http://weaponx.site/2018/01/09/从CPU漏洞Meltdown-Spectre（CVE-2017-5754-CVE-2017-5715-CVE-2017-5753）看侧信道攻击/</id>
     <published>2018-01-09T14:16:55.000Z</published>
-    <updated>2018-01-09T14:18:59.888Z</updated>
+    <updated>2018-01-09T14:23:16.358Z</updated>
     
-    <content type="html"><![CDATA[<h2 id="从CPU漏洞Meltdown-amp-Spectre（CVE-2017-5754-CVE-2017-5715-CVE-2017-5753）看侧信道攻击"><a href="#从CPU漏洞Meltdown-amp-Spectre（CVE-2017-5754-CVE-2017-5715-CVE-2017-5753）看侧信道攻击" class="headerlink" title="从CPU漏洞Meltdown&amp;Spectre（CVE-2017-5754,CVE-2017-5715,CVE-2017-5753）看侧信道攻击"></a>从CPU漏洞Meltdown&amp;Spectre（CVE-2017-5754,CVE-2017-5715,CVE-2017-5753）看侧信道攻击</h2><h2 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言"></a>0x00 前言</h2><p>2018伊始，两个芯片级漏洞<code>Meltdown</code>（熔断）、<code>Spectre</code>（幽灵）漏洞震惊的安全界。受影响的CPU包括<code>Intel</code>、<code>AMD</code>和<code>ARM</code>，基本囊括的消费级CPU市场的绝大部分。<code>Meltdown</code>漏洞可以在用户态越权读取内核态的内存数据，<code>Spectre</code>漏洞可以通过浏览器的<code>Javascript</code>读取用户态的内存数据。虽然这两个漏洞对个人PC影响有限，但是确摧毁了公有云的基石——用户可在虚拟机里可以无限制的读取宿主机或者其他虚拟机的数据。</p>
+    <content type="html"><![CDATA[<h2 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言"></a>0x00 前言</h2><p>2018伊始，两个芯片级漏洞<code>Meltdown</code>（熔断）、<code>Spectre</code>（幽灵）漏洞震惊的安全界。受影响的CPU包括<code>Intel</code>、<code>AMD</code>和<code>ARM</code>，基本囊括的消费级CPU市场的绝大部分。<code>Meltdown</code>漏洞可以在用户态越权读取内核态的内存数据，<code>Spectre</code>漏洞可以通过浏览器的<code>Javascript</code>读取用户态的内存数据。虽然这两个漏洞对个人PC影响有限，但是确摧毁了公有云的基石——用户可在虚拟机里可以无限制的读取宿主机或者其他虚拟机的数据。</p>
 <h2 id="0x01-背景知识"><a href="#0x01-背景知识" class="headerlink" title="0x01 背景知识"></a>0x01 背景知识</h2><p>了解<code>Meltdown</code>和<code>Spectre</code>漏洞之前，首先要知道几个背景知识。现代CPU为了提高运算效率与运算速度，会采用以下的手段提高CPU运算速度：分支预测（<code>branch prediction</code>）、推测执行（<code>speculation execution</code>）和乱序执行（<code>out-of-order execution</code>）。</p>
 <ul>
 <li><p>分支预测与推测执行</p>
@@ -87,7 +87,7 @@
     
     <summary type="html">
     
-      &lt;h2 id=&quot;从CPU漏洞Meltdown-amp-Spectre（CVE-2017-5754-CVE-2017-5715-CVE-2017-5753）看侧信道攻击&quot;&gt;&lt;a href=&quot;#从CPU漏洞Meltdown-amp-Spectre（CVE-2017-5754-CVE-
+      &lt;h2 id=&quot;0x00-前言&quot;&gt;&lt;a href=&quot;#0x00-前言&quot; class=&quot;headerlink&quot; title=&quot;0x00 前言&quot;&gt;&lt;/a&gt;0x00 前言&lt;/h2&gt;&lt;p&gt;2018伊始，两个芯片级漏洞&lt;code&gt;Meltdown&lt;/code&gt;（熔断）、&lt;code&gt;Spec
     
     </summary>
     
