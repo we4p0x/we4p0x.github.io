@@ -1,0 +1,16 @@
+<html><head><meta http-equiv="content-type" content="text/html; charset=utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"/><meta content="yes" name="apple-mobile-web-app-capable"/><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/><meta content="telephone=no" name="format-detection"/><meta name="description" content="Vulnerability|Security|Binary"/><title>DDCTF REVERSE baby_mips | WeaponX's Blog</title><link rel="stylesheet" type="text/css" href="/css/normalize.css"/><link rel="stylesheet" type="text/css" href="/css/highlight.css"/><link rel="stylesheet" type="text/css" href="/css/font.css"/><link rel="stylesheet" type="text/css" href="/css/noise.css"/><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/font-awesome/4.5.0/css/font-awesome.min.css"/><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"/><link rel="alternate" type="application/atom+xml" href="/atom.xml"/></head><body><article class="wrapper"><div class="post-main"><div class="nav"><nav class="container"><a class="sidebar-nav-item active" href="/">Home</a><a class="sidebar-nav-item" href="/archives">Archives</a></nav><div class="container post-meta"><div class="post-tags"><a class="post-tag-link" href="/tags/二进制/">二进制</a></div><div class="post-time">2018-05-23</div></div></div><div class="container post-header"><h1>DDCTF REVERSE baby_mips</h1></div><div class="container post-content"><h2 id="0x00-背景"><a href="#0x00-背景" class="headerlink" title="0x00 背景"></a>0x00 背景</h2><p>最近一直在研究IoT设备的安全，而在IoT设备上程序很多都是MIPS架构的。所以对MIPS指令有一定研究，而在DDCTF 2018中刚好有一道逆向题目是MIPS程序，于是尝试做了一下。</p>
+<a id="more"></a>
+<h2 id="0x01-环境搭建"><a href="#0x01-环境搭建" class="headerlink" title="0x01 环境搭建"></a>0x01 环境搭建</h2><p>由于我们通常的操作系统指令集都是x86的，所以无法跑MIPS程序。这时候就需要装QEMU来模拟，QEMU通过源码编译较为复杂，我们又没有特殊的需求，所以直接使用<code>ubuntu</code>的APT进行安装即可。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">sudo apt install qemu</div></pre></td></tr></table></figure>
+<p>由于MIPS架构有两种——大端MIPS和小端MIPS。所以，我们需要确定这个程序是大端MIPS还是小端MIPS。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">user@ubuntu ~ file baby_mips </div><div class="line">baby_mips: ELF 32-bit LSB executable, MIPS, MIPS32 version 1 (SYSV), statically linked, stripped</div></pre></td></tr></table></figure>
+<p><code>ELF 32-bit LSB</code>很明显，这个程序是32位小端的MIPS。所以，我们使用<code>qemu-mipsel baby_mips</code>来运行这个程序。因为我们需要远程调试MIPS程序，所以要加上<code>-g 端口</code>参数，<code>qemu-mipsel -g 1234 baby_mips</code>，此时用IDA pro就可以通过<code>Remote GDB Server</code>来调试这个MIPS程序。</p>
+<h2 id="0x02-题目分析"><a href="#0x02-题目分析" class="headerlink" title="0x02 题目分析"></a>0x02 题目分析</h2><p>直接打开IDA来载入程序，搜索字符串，可以看到</p>
+<p><img src="1.png" alt=""></p>
+<p>查找这个字符串的交叉引用，直接到<code>sub_403238</code>。</p>
+<p><img src="2.png" alt=""></p>
+<p>可以看到一个简单的</p>
+</div></div><div class="post-main post-comment"></div></article><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.css"/><script src="//cdn.bootcss.com/jquery/2.0.3/jquery.min.js"></script><script src="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.pack.js"></script><script>$(document).ready(function() {
+    $(".fancybox").fancybox();
+});
+</script></body></html>

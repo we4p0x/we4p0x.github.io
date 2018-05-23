@@ -1,0 +1,54 @@
+<html><head><meta http-equiv="content-type" content="text/html; charset=utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"/><meta content="yes" name="apple-mobile-web-app-capable"/><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/><meta content="telephone=no" name="format-detection"/><meta name="description" content="Vulnerability|Security|Binary"/><title>American Fuzz Lop (AFL) Fuzz 初探 | WeaponX's Blog</title><link rel="stylesheet" type="text/css" href="/css/normalize.css"/><link rel="stylesheet" type="text/css" href="/css/highlight.css"/><link rel="stylesheet" type="text/css" href="/css/font.css"/><link rel="stylesheet" type="text/css" href="/css/noise.css"/><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/font-awesome/4.5.0/css/font-awesome.min.css"/><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"/><link rel="alternate" type="application/atom+xml" href="/atom.xml"/></head><body><article class="wrapper"><div class="post-main"><div class="nav"><nav class="container"><a class="sidebar-nav-item active" href="/">Home</a><a class="sidebar-nav-item" href="/archives">Archives</a></nav><div class="container post-meta"><div class="post-tags"><a class="post-tag-link" href="/tags/二进制/">二进制</a></div><div class="post-time">2018-05-17</div></div></div><div class="container post-header"><h1>American Fuzz Lop (AFL) Fuzz 初探</h1></div><div class="container post-content"><h3 id="0x00-AFL-基础"><a href="#0x00-AFL-基础" class="headerlink" title="0x00 AFL 基础"></a>0x00 AFL 基础</h3><p><code>American Fuzz Lop</code>简称 <code>AFL</code>，是一款模糊测试工具。模糊测试（<a href="https://baike.baidu.com/item/Fuzzing" target="_blank" rel="external">Fuzzing</a>），是一种通过向目标系统提供非预期的输入并监视异常结果来发现软件漏洞的方法。通常的流程：提供一个正常的输入；修改一部分内容；输入给程序；观察程序的处理过程是否异常。</p>
+<a id="more"></a>
+<p>环境</p>
+<ul>
+<li>Ubuntu 16.04 LTS X86_64</li>
+</ul>
+<p>安装</p>
+<p><code>apt install afl</code></p>
+<p>如果大家需要较新版本的AFL，也可通过AFL的官网下载源码自行编译。</p>
+<figure class="highlight awk"><table><tr><td class="code"><pre><div class="line">wget http:<span class="regexp">//</span>lcamtuf.coredump.cx<span class="regexp">/afl/</span>releases<span class="regexp">/afl-latest.tgz</span></div></pre></td></tr></table></figure>
+<h3 id="0x01-AFL的FUZZ模式"><a href="#0x01-AFL的FUZZ模式" class="headerlink" title="0x01 AFL的FUZZ模式"></a>0x01 AFL的FUZZ模式</h3><p>AFL同时支持两种Fuzz模式：</p>
+<ol>
+<li>有源码模式</li>
+<li>无源码模式（<code>afl-qemu</code>）</li>
+</ol>
+<h4 id="有源码模式"><a href="#有源码模式" class="headerlink" title="有源码模式"></a>有源码模式</h4><p>使用AFL来进行有源码fuzz基本上是依赖于AFL中的代码插桩。使用有源码模式需要使用afl-clang或afl-clang++来编译。</p>
+<p>我们以UPX为例，讲解使用AFL来fuzz UPX。</p>
+<p>首先，我们从github上下载UPX的代码，随后进入到src文件夹后使用如下命令编译。</p>
+<p><code>make CC=&quot;afl-clang&quot; CXX=&quot;afl-clang++&quot; -j16</code></p>
+<p>其中CC为c语言的编译器，CXX为c++语言的编译器。</p>
+<p>不过，报了如下的错误<br><img src="1.png" alt=""></p>
+<p>这个是由于没有<code>upx-lzma-sdk</code>导致的，我们需要从github下载这个sdk放到<code>lzma-sdk</code>文件夹下</p>
+<p><img src="2.png" alt=""></p>
+<p>接着继续编译，会报这些错误</p>
+<p><img src="3.png" alt=""></p>
+<p>这个是由于没有安装libucl库导致的，我们安装一下即可<code>sudo apt install libucl-dev</code>。安装完成后，我们继续编译。然后报了一个这个错</p>
+<p><img src="4.png" alt=""></p>
+<p>需要修改文件<code>src/stub/scripts/check_whitespace.sh</code>将下图部分注释掉</p>
+<p><img src="5.png" alt=""></p>
+<p>继续编译，会在当前目录下生成文件<code>upx.out，这个就是upx的程序本身了</code>。接着我们就可以使用afl来fuzz这个UPX程序。首先我们创建输入文件夹fuzz_input和输出文件夹fuzz_output，将一个ELF文件拷贝到输入文件夹中。随后执行命令</p>
+<p><code>afl-fuzz -i fuzz_input -o fuzz_output ./upx.out -1 @@ -o /dev/null</code></p>
+<p>这里面，afl会用自己生成的testcase替换@@。不过，执行后程序又报错了，如下图</p>
+<p><img src="6.png" alt=""></p>
+<p>这是因为，没有开启系统的coredump，我们用它的命令开启系统的coredump。开启完成后，我们继续执行fuzz的命令，就可以看到如下界面了。此时，afl已经开始fuzz UPX程序了</p>
+<p><img src="7.png" alt=""></p>
+<p>如果程序有崩溃，afl会将崩溃的样本放在fuzz_output中，我们就可以详细进行分析了。</p>
+<h4 id="无源码模式"><a href="#无源码模式" class="headerlink" title="无源码模式"></a>无源码模式</h4><p>AFL的无源码模式的fuzz依赖于qemu虚拟化。我们使用apt方式安装的afl没有<code>afl-qemu-trace</code>(不支持使用QEMU模式)，所以我们需要下载afl的源码自己编译。</p>
+<p>下载解压后，我们通过make直接编译。编译完成后，需要配置qemu环境。不过，afl提供了一个脚本，在qemu-mode文件夹下的<code>build_qemu_support.sh</code>。我们运行一下这个脚本来配置qemu环境。运行后会提示libtool没有安装，我们使用<code>sudo apt install libtool-bin</code>安装即可。</p>
+<p>QEMU环境配置完成后提示</p>
+<p><img src="8.png" alt=""></p>
+<p>然后使用命令<code>afl-fuzz -i fuzz_input -o fuzz_output1 -Q -m 200 ./upx.out -1 @@ -o /dev/null</code>即可开始fuzz，如图。</p>
+<p><img src="10.png" alt=""></p>
+<h3 id="0x02-分布式fuzz"><a href="#0x02-分布式fuzz" class="headerlink" title="0x02 分布式fuzz"></a>0x02 分布式fuzz</h3><p>在使用afl-fuzz时，每个进程只会占用一个CPU核心。如果我们的机器是多核处理器，我们可以通过进行分布式fuzz来提高fuzz速度。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">afl-fuzz -i input_dir -o fuzz_output -M master ./<span class="built_in">test</span> @@</div><div class="line">afl-fuzz -i input_dir -o fuzz_output -S slave1 ./<span class="built_in">test</span> @@</div></pre></td></tr></table></figure>
+<p>注意，这里<code>-o</code>跟的参数一定要保持一致，这个是用来同步各个fuzz进程的。</p>
+<p>若分布式意外退出可以使用以下命令继续fuzz任务。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">afl-fuzz -i- -o fuzz_output -M master ./<span class="built_in">test</span> @@</div><div class="line">afl-fuzz -i- -o fuzz_output -S slave1 ./<span class="built_in">test</span> @@</div></pre></td></tr></table></figure>
+<p>最后祝大家早日FUZZ到属于自己的漏洞。</p>
+<h2 id="Refer"><a href="#Refer" class="headerlink" title="Refer"></a>Refer</h2><p><a href="http://lcamtuf.coredump.cx/afl/" target="_blank" rel="external">http://lcamtuf.coredump.cx/afl/</a> </p>
+<p><a href="https://baike.baidu.com/item/%E6%A8%A1%E7%B3%8A%E6%B5%8B%E8%AF%95/2848962" target="_blank" rel="external">https://baike.baidu.com/item/%E6%A8%A1%E7%B3%8A%E6%B5%8B%E8%AF%95/2848962</a></p>
+</div></div><div class="post-main post-comment"></div></article><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.css"/><script src="//cdn.bootcss.com/jquery/2.0.3/jquery.min.js"></script><script src="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.pack.js"></script><script>$(document).ready(function() {
+    $(".fancybox").fancybox();
+});
+</script></body></html>

